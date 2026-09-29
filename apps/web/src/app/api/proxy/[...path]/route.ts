@@ -34,7 +34,7 @@ function apiBase(): string {
  * pilote.* au nom de l'association. Les pages publiques (école, formulaire
  * public, boutique…) gardent le comportement d'avant.
  */
-const PUBLIQUES_PILOTE = ['/f', '/ecole', '/cours', '/apprendre', '/boutique', '/medias', '/classe', '/integration', '/connexion', '/inscription'];
+const PUBLIQUES_PILOTE = ['/f', '/ecole', '/cours', '/apprendre', '/boutique', '/medias', '/classe', '/integration', '/connexion', '/inscription', '/stagiaire', '/signer-document', '/avis-commanditaire'];
 
 async function comptePilote(req: NextRequest): Promise<string | null> {
   const hote = (req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? '').split(':')[0].toLowerCase();

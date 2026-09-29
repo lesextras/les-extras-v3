@@ -6325,3 +6325,71 @@ indisponible" pendant chaque déploiement ». Deux causes, deux filets :
   navigateur n'est pas relancée en boucle.
 - `global-error.tsx` signe « Pilote » sur `*.toulali.fr` (séparation des deux
   produits). Tests : `lib/__tests__/reprise-deploiement.test.ts` (7).
+
+## 29/09/2026 — Pilote académie : l'administration de l'organisme (parité Digiforma)
+
+Demande de Siham : « optimise pilote académie en intégrant tout ce qu'a Digiforma
+qu'on n'a pas, en l'intégrant bien, fusionnant avec l'existant ». Tout vit sous
+`apps/api/src/academie/gestion/` (module `AcademieModule`) et, côté web, dans le
+groupe de menu **« Gestion de l'organisme »** de `/academie`.
+
+| Écran | Quoi |
+|---|---|
+| `/academie/sessions` | La liste d'administration, avec ce qui manque à chaque session |
+| `/academie/sessions/[id]` | 7 onglets : Aperçu (réglages + classement BPF), Planning, Stagiaires, Émargement, Documents, Évaluations, Facturation |
+| `/academie/planning` | La semaine de toute l'académie, conflits de formateur et de salle |
+| `/academie/formateurs` | Annuaire des formateurs (sans compte) + salles ; l'équipe à compte reste listée dessous |
+| `/academie/facturation` | Devis, factures, avoirs émis aux clients ; journal des ventes CSV |
+| `/academie/qualite` | Indicateurs de résultats (Qualiopi ind. 2), texte à publier |
+| `/academie/bpf` | Cadres C à G calculés, saisies D, export Excel |
+| `/academie/edof` | Préparation Mon Compte Formation, formation par formation |
+| `/stagiaire/[jeton]` | Espace stagiaire sans compte : émargement, documents, enquêtes, positionnement |
+| `/signer-document/[jeton]` | Signature d'une convention ou d'un contrat (code par e-mail) |
+| `/avis-commanditaire/[jeton]` | Enquête du commanditaire |
+
+Une session se **programme** toujours depuis sa formation (AtelierCours, onglet
+Sessions, qui porte maintenant le bouton « Administrer ») ; elle s'**administre**
+ici. Migration `20260929180000_academie_administration`, idempotente, testée sur
+PostgreSQL 16 réel : rejouée deux fois, zéro dérive.
+
+### ⚠ CE QU'IL NE FAUT PAS DÉFAIRE
+
+- **Aucune identité d'organisme en dur dans `documents-session.pdf.ts`** : chaque
+  académie imprime SON nom, SON NDA, SON représentant. `formation.pdf.ts` imprime
+  ADéPA et ne sert que les formations de l'association. Un test le vérifie.
+- **L'émargement exige le code de séance** (6 chiffres, affiché en salle par le
+  formateur) : c'est lui qui prouve la présence. Une signature posée ne se
+  remplace pas. La présence DÉCLARÉE par l'organisme reste possible et la feuille
+  la distingue. On ne prétend à aucune norme d'émargement électronique : il n'y
+  en a pas.
+- **`heureParis` passe par `formatToParts`** : en français une heure seule
+  s'écrit « 09 h », `Number('09 h')` vaut NaN, et toutes les séances tombaient
+  l'après-midi sans erreur. Trouvé par le test, pas en relisant.
+- **Une facture émise ne se modifie ni ne se supprime** : avoir numéroté
+  (montants négatifs). Numéro pris dans la transaction d'émission
+  (`CompteurNumerotation`, série F/AV/D + année). SIRET obligatoire pour émettre.
+  Un organisme exonéré (261-4-4° a) ne facture jamais de TVA, quelle que soit la
+  saisie.
+- **Conventions et contrats se signent sur leur texte canonique** (empreinte
+  SHA-256) : modifier la session après l'envoi rend la signature impossible, et
+  c'est voulu. Contrat = personne qui paie elle-même (typeStagiaire PARTICULIER
+  ou financing PERSONAL), convention = une par entreprise.
+- **Aucune réponse d'enquête ne se réécrit** ; les messages au stagiaire sont au
+  vouvoiement (l'organisme, lui, est tutoyé dans son espace).
+- **Envois automatiques** (`GestionScheduler`, 7 h 40 Paris) : convocations J-7
+  si demandé, enquête de fin le lendemain, à froid après `delaiFroidJours`,
+  commanditaire, relances J+1/J+15/J+30, fermeture des séances oubliées. Verrou
+  `ActionAutoSession.cle` posé AVANT l'envoi. `MISE_EN_SERVICE` = 29/09/2026 :
+  rien d'antérieur n'est rattrapé.
+- **EDOF** : on n'y écrit pas à la place de l'organisme (ProConnect, identifiants
+  du représentant). L'écran vérifie seulement que tout est prêt.
+- **Les documents sont des modèles** (D6353-1, L6353-3 à 7, certificat au modèle
+  ministériel) : l'écran demande de faire valider le premier par un juriste.
+- La preuve d'activité est proposée en regard des indicateurs Qualiopi
+  (`CertificationService.preuvesDeLActivite`) : on ne coche jamais à la place de
+  l'organisme.
+- Le menu garde « Mes factures » (premium, factures REÇUES) ; les factures ÉMISES
+  s'appellent « Devis et factures clients ». Ne pas les fusionner : deux sens.
+
+Au passage : le spec de `billing.service` ne simulait pas `abonnementFactures`
+(deux tests rouges depuis « Mes factures ») : réparé.

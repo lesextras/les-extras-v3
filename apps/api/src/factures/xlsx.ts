@@ -84,7 +84,7 @@ function crc32(buf: Buffer) {
   return (c ^ 0xffffffff) >>> 0;
 }
 
-function zip(entrees: { nom: string; contenu: Buffer }[]): Buffer {
+export function zip(entrees: { nom: string; contenu: Buffer }[]): Buffer {
   const locaux: Buffer[] = [];
   const centraux: Buffer[] = [];
   let offset = 0;

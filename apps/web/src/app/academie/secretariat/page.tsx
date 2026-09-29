@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { BTN_DISCRET, CARTE, Encart, Pastille, Titre, formaterDate } from '../_ui';
-import type { Session } from '../sessions/Sessions';
+import type { LigneSessionAdmin } from '../_gestion/types';
 
 export const metadata: Metadata = { title: 'Mon secrétariat', robots: { index: false, follow: false } };
 
@@ -62,15 +62,15 @@ const PIECES = [
  */
 export default async function SecretariatPage() {
   const s = await sessionAcademie('/academie/secretariat');
-  const { data, error } = await apiAcademie<Session[]>(s, '/formations/mes-sessions');
+  const { data, error } = await apiAcademie<LigneSessionAdmin[]>(s, '/academie/gestion/sessions');
 
   const toutes = Array.isArray(data) ? data : [];
   const maintenant = Date.now();
   const aVenir = toutes
-    .filter((x) => new Date(x.startDate).getTime() >= maintenant)
+    .filter((x) => x.status !== 'CANCELLED' && new Date(x.startDate).getTime() >= maintenant)
     .sort((a, b) => +new Date(a.startDate) - +new Date(b.startDate));
   const recentes = toutes
-    .filter((x) => new Date(x.startDate).getTime() < maintenant)
+    .filter((x) => x.status !== 'CANCELLED' && new Date(x.startDate).getTime() < maintenant)
     .sort((a, b) => +new Date(b.startDate) - +new Date(a.startDate))
     .slice(0, 8);
 
@@ -103,13 +103,19 @@ export default async function SecretariatPage() {
         <ul className="mb-9 grid gap-3">
           {aVenir.map((x) => {
             const jours = Math.ceil((new Date(x.startDate).getTime() - maintenant) / 86400000);
-            const inscrits = x._count?.inscriptions ?? 0;
+            const inscrits = x.stagiaires;
+            const points = [
+              { ok: x.creneaux > 0, texte: 'Planning posé', onglet: 'planning' },
+              { ok: inscrits > 0, texte: `${inscrits} stagiaire${inscrits > 1 ? 's' : ''} inscrit${inscrits > 1 ? 's' : ''}`, onglet: 'stagiaires' },
+              { ok: x.conventions > 0 && x.conventionsSignees === x.conventions, texte: x.conventions ? `${x.conventionsSignees}/${x.conventions} convention${x.conventions > 1 ? 's' : ''} ou contrat${x.conventions > 1 ? 's' : ''} signé${x.conventionsSignees > 1 ? 's' : ''}` : 'Conventions à envoyer', onglet: 'documents' },
+              { ok: inscrits > 0 && x.convoques === inscrits, texte: `${x.convoques}/${inscrits} convocation${inscrits > 1 ? 's' : ''} envoyée${x.convoques > 1 ? 's' : ''}`, onglet: 'documents' },
+            ];
             return (
               <li key={x.id} className={`${CARTE} p-4 sm:p-5`}>
                 <div className="flex flex-wrap items-start gap-3">
                   <div className="min-w-[220px] flex-1">
                     <p className="text-[16px] font-extrabold text-[#12312A]">
-                      {x.title?.trim() || x.formation?.title || 'Session sans intitulé'}
+                      {x.titre || 'Session sans intitulé'}
                     </p>
                     <p className="text-[14px] text-[#5E7A6E]">
                       {formaterDate(x.startDate)}
@@ -125,12 +131,19 @@ export default async function SecretariatPage() {
                     </Pastille>
                   </div>
                 </div>
-                <p className="mt-3 rounded-xl bg-[#F2F7F5] px-4 py-3 text-[14px] leading-relaxed text-[#334A42]">
-                  {jours <= 7
-                    ? 'Convention signée, convocations envoyées, programme remis, feuille d’émargement imprimée.'
-                    : 'La convention et le programme se préparent dès maintenant ; les convocations partent une semaine avant.'}
-                  {!x.location ? ' Le lieu manque encore : sans adresse, la convocation ne peut pas partir.' : ''}
-                </p>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {points.map((p) => (
+                    <li key={p.texte}>
+                      <Link
+                        href={`/academie/sessions/${x.id}?onglet=${p.onglet}`}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[13px] font-bold no-underline ${p.ok ? 'bg-[#E3F5EC] text-[#0F5F3E]' : 'bg-[#FEF3E2] text-[#7C3E06]'}`}
+                      >
+                        {p.ok ? '✓' : '○'} {p.texte}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                {!x.location && !x.salle ? <p className="mt-2 text-[14px] text-[#7C3E06]">Le lieu manque encore : sans adresse, la convocation ne peut pas partir.</p> : null}
               </li>
             );
           })}
@@ -156,17 +169,34 @@ export default async function SecretariatPage() {
                   <div className="flex flex-wrap items-start gap-3">
                     <div className="min-w-[220px] flex-1">
                       <p className="text-[16px] font-extrabold text-[#12312A]">
-                        {x.title?.trim() || x.formation?.title || 'Session sans intitulé'}
+                        {x.titre || 'Session sans intitulé'}
                       </p>
                       <p className="text-[14px] text-[#5E7A6E]">
                         Terminée il y a {jours} jour{jours > 1 ? 's' : ''}
                       </p>
                     </div>
-                    {froidDu ? (
-                      <Pastille ton="attention">Évaluation à froid attendue</Pastille>
-                    ) : (
-                      <Pastille ton="neutre">Émargement et attestations</Pastille>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                      <Pastille ton={x.stagiaires && x.evaluesChaud === x.stagiaires ? 'ok' : 'attention'}>
+                        {x.evaluesChaud}/{x.stagiaires} enquêtes de fin
+                      </Pastille>
+                      {froidDu ? (
+                        <Pastille ton={x.stagiaires && x.evaluesFroid === x.stagiaires ? 'ok' : 'attention'}>
+                          {x.evaluesFroid}/{x.stagiaires} à froid
+                        </Pastille>
+                      ) : null}
+                      <Pastille ton={x.facturee ? 'ok' : 'attention'}>{x.facturee ? 'Facturée' : 'À facturer'}</Pastille>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link href={`/academie/sessions/${x.id}?onglet=documents`} className={BTN_DISCRET}>
+                      Attestations et certificats
+                    </Link>
+                    <Link href={`/academie/sessions/${x.id}?onglet=emargement`} className={BTN_DISCRET}>
+                      Feuille d&apos;émargement
+                    </Link>
+                    <Link href={`/academie/sessions/${x.id}?onglet=facturation`} className={BTN_DISCRET}>
+                      Facturation
+                    </Link>
                   </div>
                 </li>
               );

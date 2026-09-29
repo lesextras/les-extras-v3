@@ -25,7 +25,7 @@ export function espaceCourant(): string | null {
 
 export async function appel<T = unknown>(
   path: string,
-  init?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown; form?: FormData },
+  init?: { method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'; body?: unknown; form?: FormData },
 ): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   const espace = espaceCourant();

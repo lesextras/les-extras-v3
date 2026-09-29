@@ -46,6 +46,12 @@ import type { Transporter } from 'nodemailer';
  * du serveur au passage. Un ecrit professionnel qui transiterait par un
  * fichier temporaire y resterait le jour ou l'envoi echoue.
  */
+/** Le nom affiché et l'adresse de réponse d'un message, selon le produit qui écrit. */
+export interface Expediteur {
+  nom?: string;
+  repondreA?: string;
+}
+
 export interface PieceJointe {
   nom: string;
   contenu: Buffer;
@@ -392,6 +398,22 @@ export class MailService implements OnModuleDestroy {
     });
   }
 
+  /** Le nom et l'adresse de réponse des messages de Pilote. */
+  get expediteurPilote(): Expediteur {
+    return {
+      nom: this.config.get<string>('PILOTE_NOM') || 'Pilote',
+      repondreA: this.config.get<string>('PILOTE_MAIL_CONTACT') || undefined,
+    };
+  }
+
+  /** Une école écrit en son nom, « via Pilote ». */
+  expediteurEcole(ecole: { nom: string; contactEmail?: string | null }): Expediteur {
+    return {
+      nom: `${ecole.nom.replace(/["<>]/g, '').slice(0, 60)} via Pilote`,
+      repondreA: ecole.contactEmail || this.config.get<string>('PILOTE_MAIL_CONTACT') || undefined,
+    };
+  }
+
   private get piloteUrl() {
     return (this.config.get<string>('PILOTE_WEB_URL') || 'https://pilote.toulali.fr').replace(/\/$/, '');
   }
@@ -406,7 +428,7 @@ export class MailService implements OnModuleDestroy {
     const corps = `Votre message pour « ${echapper(data.espace)} » a été reçu. ${lues} pièce${lues > 1 ? 's' : ''} sur ${data.lignes.length} ${lues > 1 ? 'ont été lues' : 'a été lue'} et ${lues > 1 ? 'attendent' : 'attend'} votre relecture dans Mes factures.
       <ul style="padding-left:18px;margin:12px 0">${data.lignes.map((l) => `<li style="margin:4px 0">${l.ok ? '✔' : '✘'} <strong>${echapper(l.nom)}</strong> : ${echapper(l.detail)}</li>`).join('')}</ul>
       Une facture lue n'est jamais validée toute seule : ouvrez-la, relisez les montants, puis validez.`;
-    await this.send(to, `Mes factures : ${lues}/${data.lignes.length} pièce${data.lignes.length > 1 ? 's' : ''} reçue${data.lignes.length > 1 ? 's' : ''}`, this.layoutPilote('Facture reçue par e-mail', corps, { label: 'Ouvrir Mes factures', url }));
+    await this.send(to, `Mes factures : ${lues}/${data.lignes.length} pièce${data.lignes.length > 1 ? 's' : ''} reçue${data.lignes.length > 1 ? 's' : ''}`, this.layoutPilote('Facture reçue par e-mail', corps, { label: 'Ouvrir Mes factures', url }), undefined, this.expediteurPilote);
   }
 
   /**
@@ -560,6 +582,8 @@ export class MailService implements OnModuleDestroy {
           livraison,
         { label: 'Revenir à la boutique', url: data.lienBoutique },
       ),
+      undefined,
+      this.expediteurEcole(data.boutique),
     );
   }
 
@@ -895,6 +919,8 @@ export class MailService implements OnModuleDestroy {
         corps,
         { label: 'Ouvrir ma formation', url: data.lien },
       ),
+      undefined,
+      this.expediteurEcole(data.ecole),
     );
   }
 
@@ -908,7 +934,9 @@ export class MailService implements OnModuleDestroy {
    */
   async sendEcoleLibre(data: {
     to: string;
-    ecole: { nom: string; couleur?: string | null };
+    ecole: { nom: string; couleur?: string | null; contactEmail?: string | null };
+    /** Pièces jointes (convocation, convention, facture…) : l'académie écrit, le PDF suit. */
+    pieces?: PieceJointe[];
     sujet: string;
     titre: string;
     texte: string;
@@ -922,6 +950,8 @@ export class MailService implements OnModuleDestroy {
       data.to,
       data.sujet,
       this.layoutEcole(data.ecole, data.titre, corps, data.bouton ?? undefined),
+      data.pieces,
+      this.expediteurEcole(data.ecole),
     );
   }
 
@@ -936,7 +966,15 @@ export class MailService implements OnModuleDestroy {
     subject: string,
     html: string,
     pieces?: PieceJointe[],
+    expediteur?: Expediteur,
   ): Promise<void> {
+    // UN PRODUIT, UN EXPÉDITEUR (séparation de Pilote, 29/09/2026). L'adresse
+    // d'envoi reste celle du domaine authentifié (SPF, DKIM) : seule une boîte
+    // de ce domaine passe les filtres. Mais le NOM affiché et l'adresse de
+    // réponse suivent le produit : un message de Pilote ou d'une école ne
+    // s'affiche plus « LES EXTRAS » dans la boîte de réception.
+    const de = { ...this.sender, ...(expediteur?.nom ? { name: expediteur.nom } : {}) };
+    const repondreA = expediteur?.repondreA || this.config.get<string>('MAIL_REPLY_TO') || undefined;
     // ADRESSES QUI NE PEUVENT RIEN RECEVOIR (28/09/2026). Le domaine
     // `intervenants.les-extras.fr` n'a aucun enregistrement MX : les quatre
     // comptes créés par le seed du 27/07/2026 y ont une adresse de façade.
@@ -952,7 +990,7 @@ export class MailService implements OnModuleDestroy {
     if (transport) {
       try {
         const info = await transport.sendMail({
-          from: { name: this.sender.name, address: this.sender.email },
+          from: { name: de.name, address: de.email },
           to,
           subject,
           html,
@@ -961,7 +999,7 @@ export class MailService implements OnModuleDestroy {
           // il reste illisible dans les clients en mode texte.
           text: versionTexte(html),
           // Les réponses arrivent à l'association, pas dans une boîte muette.
-          replyTo: this.config.get<string>('MAIL_REPLY_TO') || undefined,
+          replyTo: repondreA,
           attachments: pieces?.map((p) => ({
             filename: p.nom,
             content: p.contenu,
@@ -992,8 +1030,9 @@ export class MailService implements OnModuleDestroy {
         method: 'POST',
         headers: { 'api-key': apiKey, 'content-type': 'application/json', accept: 'application/json' },
         body: JSON.stringify({
-          sender: this.sender,
+          sender: de,
           to: [{ email: to }],
+          ...(repondreA ? { replyTo: { email: repondreA } } : {}),
           subject,
           htmlContent: html,
           // Brevo veut la piece en base64 ; nodemailer la veut en Buffer.

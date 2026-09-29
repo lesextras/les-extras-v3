@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { BTN_DISCRET, CARTE, Encart, Pastille, Titre, formaterDate } from '../_ui';
 import type { Vente } from '../_ecole/types';
+import type { ListeFactures } from '../_gestion/types';
 
 export const metadata: Metadata = { title: 'Ma comptabilité', robots: { index: false, follow: false } };
 
@@ -23,7 +24,12 @@ function euros(cents: number) {
  */
 export default async function ComptabilitePage() {
   const s = await sessionAcademie('/academie/comptabilite');
-  const { data, error } = await apiAcademie<Vente[]>(s, '/ecole/ventes');
+  const annee0 = new Date().getFullYear();
+  const [{ data, error }, factures] = await Promise.all([
+    apiAcademie<Vente[]>(s, '/ecole/ventes'),
+    apiAcademie<ListeFactures>(s, `/academie/gestion/factures?annee=${annee0}`),
+  ]);
+  const pro = factures.data?.resume;
 
   if (!data) {
     return (
@@ -95,6 +101,38 @@ export default async function ComptabilitePage() {
           </p>
         </div>
       </div>
+
+      {/* ------------------------------ la formation professionnelle facturée */}
+      {pro ? (
+        <section className={`${CARTE} mb-7 p-5`}>
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <h2 className="text-[17px] font-extrabold text-[#12312A]">Formation professionnelle : devis et factures clients</h2>
+            <Link href="/academie/facturation" className={`${BTN_DISCRET} ml-auto`}>
+              Ouvrir la facturation
+            </Link>
+            <Link href="/academie/bpf" className={BTN_DISCRET}>
+              Mon BPF
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">Facturé HT en {annee0}</p>
+              <p className="mt-1 text-[26px] font-black leading-none text-[#0F5F3E]">{euros(Math.round(pro.chiffreAffairesHt * 100))}</p>
+            </div>
+            <div>
+              <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">À encaisser</p>
+              <p className={`mt-1 text-[26px] font-black leading-none ${pro.aEncaisser ? 'text-[#7C3E06]' : 'text-[#12312A]'}`}>{euros(Math.round(pro.aEncaisser * 100))}</p>
+            </div>
+            <div>
+              <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">En retard</p>
+              <p className={`mt-1 text-[26px] font-black leading-none ${pro.enRetard ? 'text-[#C42B57]' : 'text-[#12312A]'}`}>
+                {pro.enRetard} facture{pro.enRetard > 1 ? 's' : ''}
+              </p>
+              {pro.enRetard ? <p className="mt-1 text-[14px] text-[#5E7A6E]">{euros(Math.round(pro.montantEnRetard * 100))}, relancées automatiquement</p> : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {attente.length ? (
         <div className="mb-7">

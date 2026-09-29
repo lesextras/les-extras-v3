@@ -8,13 +8,13 @@ export const metadata: Metadata = { title: 'API développeur', robots: { index: 
 
 /**
  * L'adresse publique de l'API de Pilote, celle que l'organisme écrit dans son
- * CRM ou dans Zapier. Elle est PROPRE À PILOTE (`NEXT_PUBLIC_PILOTE_API_URL`,
- * ex. https://api.pilote.toulali.fr/api) : un produit à part ne fait pas
- * écrire l'hôte d'un autre produit dans les intégrations de ses clients. Tant
- * que ce domaine n'est pas posé sur l'app API dans Coolify, on retombe sur
- * l'adresse commune.
+ * CRM ou dans Zapier. Elle est PROPRE À PILOTE : pilote.toulali.fr/api/v1/…,
+ * relayée vers l'API par le site (`next.config.mjs`, réécriture limitée à
+ * l'hôte de Pilote). Un produit à part ne fait pas écrire l'hôte d'un autre
+ * produit dans les intégrations de ses clients. `NEXT_PUBLIC_PILOTE_API_URL`
+ * prend le relais le jour où l'API a son propre domaine.
  */
-const BASE_API = `${(process.env.NEXT_PUBLIC_PILOTE_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'https://api.les-extras.fr/api').replace(/\/$/, '')}/v1/academie`;
+const BASE_API = `${(process.env.NEXT_PUBLIC_PILOTE_API_URL ?? 'https://pilote.toulali.fr/api').replace(/\/$/, '')}/v1/academie`;
 
 export default async function PageApi() {
   const s = await sessionAcademie('/academie/parametres/api');

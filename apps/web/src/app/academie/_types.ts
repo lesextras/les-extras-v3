@@ -48,6 +48,15 @@ export interface FicheAcademie {
   resume: string | null;
   presentation: string | null;
   etapesFaites: string[];
+  /** Administration (29/09/2026) : ce que les documents et les factures impriment. */
+  representantNom?: string | null;
+  representantQualite?: string | null;
+  numeroTva?: string | null;
+  exonereTva?: boolean;
+  tauxTva?: number;
+  coordonneesBancaires?: string | null;
+  delaiPaiementJours?: number;
+  reglementInterieurUrl?: string | null;
 }
 
 export interface EtapeAcademie {

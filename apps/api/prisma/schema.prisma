@@ -300,57 +300,57 @@ model Account {
 
   memberships                   Membership[]
   invitations                   Invitation[]
-  reliefMissions                ReliefMission[]      @relation("MissionAccount")
+  reliefMissions                ReliefMission[]        @relation("MissionAccount")
   leaveRequests                 LeaveRequest[]
-  services                      Service[]            @relation("ServiceAccount")
+  services                      Service[]              @relation("ServiceAccount")
   bookings                      Booking[]
   invoices                      Invoice[]
   /// Les factures adressees a ce compte (formation, prestation) sans qu'il en
   /// soit l'emetteur.
-  facturesAPayer                Invoice[]            @relation("InvoicePayer")
+  facturesAPayer                Invoice[]              @relation("InvoicePayer")
   creditLedger                  CreditLedger[]
   shifts                        Shift[]
-  formationsOwned               Formation[]          @relation("FormationOwner")
-  sessionsHosted                FormationSession[]   @relation("SessionHost")
-  inscriptionsPaid              Inscription[]        @relation("InscriptionPayer")
-  qualiopiProofs                QualiopiProof[]      @relation("QualiopiOf")
+  formationsOwned               Formation[]            @relation("FormationOwner")
+  sessionsHosted                FormationSession[]     @relation("SessionHost")
+  inscriptionsPaid              Inscription[]          @relation("InscriptionPayer")
+  qualiopiProofs                QualiopiProof[]        @relation("QualiopiOf")
   complianceDocuments           ComplianceDocument[]
   orgUnits                      OrgUnit[]
-  auditLogs                     AuditLog[]           @relation("AuditAccount")
+  auditLogs                     AuditLog[]             @relation("AuditAccount")
   /// Le vivier de cet etablissement : les intervenants qu'il veut revoir.
-  vivier                        PoolMember[]         @relation("PoolEtablissement")
+  vivier                        PoolMember[]           @relation("PoolEtablissement")
   /// Les etablissements qui ont place cet intervenant dans leur vivier.
-  vivierDe                      PoolMember[]         @relation("PoolIntervenant")
+  vivierDe                      PoolMember[]           @relation("PoolIntervenant")
   /// Les regles de temps de travail lues dans SA convention collective.
   parametresTemps               ParametresTemps?
   /// Demandes de signature electronique emises par ce compte.
-  signatures                    Signature[]          @relation("SignatureCompte")
+  signatures                    Signature[]            @relation("SignatureCompte")
   /// Les missions que ce compte intervenant s'est engage a prendre.
-  engagements                   MissionEngagement[]  @relation("EngagementIntervenant")
+  engagements                   MissionEngagement[]    @relation("EngagementIntervenant")
   /// Les modeles d'ecrits appris dans ce compte.
   tramesMaison                  TrameMaison[]
   lexPreferences                LexPreference[]
   lexMots                       LexMot[]
   lexPseudonymes                LexPseudonyme[]
-  uploadedFiles                 FileAsset[]          @relation("FileAccount")
+  uploadedFiles                 FileAsset[]            @relation("FileAccount")
   creditPurchases               CreditPurchase[]
   subscription                  Subscription?
-  quotesAsClient                Quote[]              @relation("QuoteClient")
-  quotesAsProvider              Quote[]              @relation("QuoteProvider")
+  quotesAsClient                Quote[]                @relation("QuoteClient")
+  quotesAsProvider              Quote[]                @relation("QuoteProvider")
   assistantDocuments            AssistantDocument[]
   contratsCDD                   ContratCDD[]
   /// Demandes envoyées par CE compte pour se rattacher à un établissement
   /// (compte individuel « salarié » créé en solo, côté freelance en attendant).
-  attachmentRequestsAsRequester AttachmentRequest[]  @relation("AttachmentRequesterAccount")
+  attachmentRequestsAsRequester AttachmentRequest[]    @relation("AttachmentRequesterAccount")
   /// Demandes de rattachement reçues par CET établissement (à approuver/refuser).
-  attachmentRequestsReceived    AttachmentRequest[]  @relation("AttachmentTarget")
+  attachmentRequestsReceived    AttachmentRequest[]    @relation("AttachmentTarget")
   organisation                  Organisation?
   /// Piloter mon academie : la fiche de l'organisme de formation.
   academie                      Academie?
   /// Les formulaires que le compte compose lui-meme (les deux espaces).
   formulaires                   Formulaire[]
   /// L'ecole en ligne de l'academie : les cours, ce qui se vend, qui apprend.
-  cours                         Cours[]              @relation("CoursCompte")
+  cours                         Cours[]                @relation("CoursCompte")
   packs                         PackCours[]
   codesPromo                    CodePromo[]
   ventesCours                   VenteCours[]
@@ -362,14 +362,14 @@ model Account {
   produitsBoutique              ProduitBoutique[]
   commandesBoutique             CommandeBoutique[]
   /// Les ateliers payes en ligne sur les fiches de cet intervenant.
-  reservationsAteliers          ReservationAtelier[] @relation("ReservationVendeur")
+  reservationsAteliers          ReservationAtelier[]   @relation("ReservationVendeur")
   /// Les ateliers que CE compte a payes en ligne (compte ouvert au paiement).
-  ateliersAchetes               ReservationAtelier[] @relation("ReservationAcheteur")
+  ateliersAchetes               ReservationAtelier[]   @relation("ReservationAcheteur")
   supportTickets                SupportTicket[]
   rendezVous                    RendezVous[]
   /// L'agenda de ce compte, partagé avec d'autres personnes (24/09/2026).
-  partagesDonnes                PartageAgenda[]      @relation("PartageCompte")
-  enveloppesLex                 EnveloppeLex[]       @relation("EnveloppePayeur")
+  partagesDonnes                PartageAgenda[]        @relation("PartageCompte")
+  enveloppesLex                 EnveloppeLex[]         @relation("EnveloppePayeur")
   abonnementFactures            AbonnementFactures?
   facturesFournisseurs          FactureFournisseur[]
   enveloppesFactures            EnveloppeFactures[]
@@ -380,6 +380,11 @@ model Account {
   journalFactures               JournalFactures[]
   reglagesFactures              ReglagesFactures?
   devisFournisseurs             DevisFournisseur[]
+  formateursOrganisme           FormateurOrganisme[]
+  sallesOrganisme               SalleOrganisme[]
+  documentsSession              DocumentSession[]
+  facturesOrganisme             FactureOrganisme[]
+  compteursNumerotation         CompteurNumerotation[]
   /// Les fils de discussion rattachés à ce compte (interne, service, demande).
   conversations                 Conversation[]
   /// Demandes portant sur un service de cet établissement.
@@ -2171,6 +2176,20 @@ model Formation {
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
+  /// ADMINISTRATION DE L'ORGANISME (Pilote académie, 29/09/2026).
+  ///
+  /// Ces trois champs alimentent le bilan pédagogique et financier (cadres
+  /// F-3 et F-4) et le certificat de réalisation (nature de l'action, les
+  /// quatre catégories de l'article L6313-1). Ils vivent sur le PROGRAMME et
+  /// non sur la session : une formation ne change pas d'objectif d'une session
+  /// à l'autre.
+  natureAction      NatureAction @default(ACTION_FORMATION)
+  objectifBpf       ObjectifBpf  @default(AUTRE)
+  /// Code NSF (nomenclature des spécialités de formation, 3 chiffres + lettre).
+  codeNsf           String?
+  /// Code RNCP ou RS visé, quand la formation mène à une certification.
+  codeCertification String?
+
   sessions     FormationSession[]
   attestations DemandeAttestation[]
   /// La formation suivie qui porte cette fiche (Piloter mon académie).
@@ -2246,19 +2265,19 @@ enum StatutAttestation {
 
 /// SESSION : instance datee d'un programme.
 model FormationSession {
-  id               String        @id @default(cuid())
-  formationId      String
-  formation        Formation     @relation(fields: [formationId], references: [id], onDelete: Cascade)
-  trainerId        String?
-  trainer          User?         @relation("SessionTrainer", fields: [trainerId], references: [id], onDelete: SetNull)
-  hostAccountId    String?
-  hostAccount      Account?      @relation("SessionHost", fields: [hostAccountId], references: [id], onDelete: SetNull)
-  title            String?
-  startDate        DateTime
-  endDate          DateTime?
-  location         String?
-  maxSeats         Int?
-  priceHt          Decimal?      @db.Decimal(10, 2)
+  id                   String              @id @default(cuid())
+  formationId          String
+  formation            Formation           @relation(fields: [formationId], references: [id], onDelete: Cascade)
+  trainerId            String?
+  trainer              User?               @relation("SessionTrainer", fields: [trainerId], references: [id], onDelete: SetNull)
+  hostAccountId        String?
+  hostAccount          Account?            @relation("SessionHost", fields: [hostAccountId], references: [id], onDelete: SetNull)
+  title                String?
+  startDate            DateTime
+  endDate              DateTime?
+  location             String?
+  maxSeats             Int?
+  priceHt              Decimal?            @db.Decimal(10, 2)
   /// REMUNERATION DU FORMATEUR, hors taxes.
   ///
   /// `priceHt` est ce que l'organisme VEND a l'etablissement ; ce champ-ci est
@@ -2270,7 +2289,7 @@ model FormationSession {
   /// Le montant est fixe par l'organisme qui commande la prestation. Le
   /// formateur ne peut pas l'editer : on ne fixe pas, depuis le compte de son
   /// client, le prix que ce client vous paiera (cf. `updateSession`).
-  trainerFeeHt     Decimal?      @db.Decimal(10, 2)
+  trainerFeeHt         Decimal?            @db.Decimal(10, 2)
   /// Facture emise PAR LE FORMATEUR a l'organisme pour cette session.
   ///
   /// Elle lui appartient : c'est son SIRET qui l'engage, et lui seul l'emet,
@@ -2279,15 +2298,50 @@ model FormationSession {
   /// facturation, et l'organisme ne peut pas la creer a sa place.
   ///
   /// Une seule par session : le lien unique tient lieu de verrou.
-  trainerInvoiceId String?       @unique
-  trainerInvoice   Invoice?      @relation("SessionTrainerInvoice", fields: [trainerInvoiceId], references: [id], onDelete: SetNull)
-  status           SessionStatus @default(SCHEDULED)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  trainerInvoiceId     String?             @unique
+  trainerInvoice       Invoice?            @relation("SessionTrainerInvoice", fields: [trainerInvoiceId], references: [id], onDelete: SetNull)
+  status               SessionStatus       @default(SCHEDULED)
+  /// ADMINISTRATION DE L'ORGANISME (Pilote académie, 29/09/2026).
+  ///
+  /// Le formateur de l'académie : une fiche de SON annuaire, pas un compte de
+  /// la plateforme (`trainerId`, qui reste pour les formations du réseau).
+  formateurOrganismeId String?
+  formateurOrganisme   FormateurOrganisme? @relation(fields: [formateurOrganismeId], references: [id], onDelete: SetNull)
+  salleId              String?
+  salle                SalleOrganisme?     @relation(fields: [salleId], references: [id], onDelete: SetNull)
+  modalite             ModaliteSession     @default(PRESENTIEL)
+  /// Part des enseignements à distance sur la durée totale (D6353-1 1°).
+  tauxDistanciel       Int?
+  /// Intra (un seul client) ou inter (plusieurs entreprises).
+  intra                Boolean             @default(false)
+  /// Sous-traitance : RECUE = un autre organisme nous confie l'action (BPF,
+  /// ligne C-10 et cadre G) ; CONFIEE = nous la confions (cadre F-2).
+  sousTraitance        SousTraitance       @default(AUCUNE)
+  /// L'organisme donneur d'ordre, ou celui à qui l'action est confiée.
+  organismePartenaire  String?
+  /// Durée prévue par stagiaire, en heures. Si vide : celle du programme, ou
+  /// la somme des créneaux.
+  dureeHeures          Decimal?            @db.Decimal(7, 2)
+  /// Ce que la convocation dit en plus du lieu : accès, matériel à apporter.
+  infosPratiques       String?
+  /// Enquêtes envoyées toutes seules (évaluation à chaud, à froid).
+  enquetesAuto         Boolean             @default(true)
+  /// Convocations envoyées toutes seules, sept jours avant le début (ou tout
+  /// de suite si la session commence plus tôt). Désactivé par défaut : un
+  /// premier message à un stagiaire se décide.
+  convocationsAuto     Boolean             @default(false)
+  /// Délai de l'évaluation à froid, en jours après la fin.
+  delaiFroidJours      Int                 @default(60)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
 
   inscriptions   Inscription[]
   emargements    Emargement[]
   qualiopiProofs QualiopiProof[]
+  creneaux       CreneauSession[]
+  seances        SeanceEmargement[]
+  documents      DocumentSession[]
+  factures       FactureOrganisme[]
 
   @@index([formationId, startDate])
   @@index([trainerId])
@@ -2295,39 +2349,79 @@ model FormationSession {
 
 /// INSCRIPTION : un apprenant sur une session.
 model Inscription {
-  id                  String            @id @default(cuid())
-  sessionId           String
-  session             FormationSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  learnerId           String?
-  learner             User?             @relation("InscriptionLearner", fields: [learnerId], references: [id], onDelete: SetNull)
-  learnerName         String?
-  learnerEmail        String?
-  payerAccountId      String?
-  payerAccount        Account?          @relation("InscriptionPayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
-  financing           FinancingType     @default(ESTABLISHMENT)
-  status              InscriptionStatus @default(PENDING)
+  id                      String              @id @default(cuid())
+  sessionId               String
+  session                 FormationSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  learnerId               String?
+  learner                 User?               @relation("InscriptionLearner", fields: [learnerId], references: [id], onDelete: SetNull)
+  learnerName             String?
+  learnerEmail            String?
+  payerAccountId          String?
+  payerAccount            Account?            @relation("InscriptionPayer", fields: [payerAccountId], references: [id], onDelete: SetNull)
+  financing               FinancingType       @default(ESTABLISHMENT)
+  status                  InscriptionStatus   @default(PENDING)
   /// EVALUATION A CHAUD — recueillie en fin de session.
   /// Indicateur 30 du referentiel national qualite : l'organisme recueille les
   /// appreciations des beneficiaires. Le champ existait ; rien ne le remplissait.
-  satisfaction        Int?
-  satisfactionComment String?
-  satisfactionAt      DateTime?
+  satisfaction            Int?
+  satisfactionComment     String?
+  satisfactionAt          DateTime?
   /// Resultat de l'evaluation des acquis (indicateur 11).
-  evalResult          String?
+  evalResult              String?
   /// EVALUATION A FROID — recueillie quelques mois apres, sur le terrain.
   /// C'est elle qui distingue un organisme audite d'un organisme qui remplit
   /// des cases : elle mesure ce qui reste une fois la salle quittee.
-  coldRating          Int?
+  coldRating              Int?
   /// Mise en oeuvre des acquis : OUI / PARTIELLEMENT / NON.
-  coldTransfer        String?
-  coldComment         String?
-  coldAt              DateTime?
-  attestationUrl      String?
-  certificatUrl       String?
-  invoiceId           String?           @unique
-  invoice             Invoice?          @relation("InscriptionInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  coldTransfer            String?
+  coldComment             String?
+  coldAt                  DateTime?
+  attestationUrl          String?
+  certificatUrl           String?
+  invoiceId               String?             @unique
+  invoice                 Invoice?            @relation("InscriptionInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
+  /// ADMINISTRATION DE L'ORGANISME (Pilote académie, 29/09/2026).
+  ///
+  /// Le lien personnel du stagiaire (espace stagiaire : convocation,
+  /// émargement, évaluations, documents). ⚠ Seule son EMPREINTE n'est pas
+  /// gardée ici, au contraire des jetons de connexion : ce lien est envoyé à
+  /// chaque message et doit pouvoir être renvoyé tel quel. Il n'ouvre que les
+  /// pièces de CETTE inscription, rien d'autre.
+  jetonStagiaire          String?             @unique
+  /// Le lien de l'évaluation par le commanditaire (employeur, client).
+  jetonCommanditaire      String?             @unique
+  telephone               String?
+  /// Type de stagiaire au sens du BPF (cadre F-1).
+  typeStagiaire           TypeStagiaire       @default(SALARIE_PRIVE)
+  /// Origine du financement au sens du BPF (cadre C). Plus fine que
+  /// `financing` : un OPCO finance au titre d'un dispositif précis.
+  origineFinancement      OrigineFinancement?
+  /// Le commanditaire : l'employeur ou le client qui signe la convention.
+  entrepriseNom           String?
+  entrepriseSiret         String?
+  entrepriseAdresse       String?
+  entrepriseContact       String?
+  entrepriseEmail         String?
+  /// Le financeur (OPCO, France Travail…) et son numéro de dossier, qui doit
+  /// figurer sur la facture.
+  financeurNom            String?
+  numeroDossier           String?
+  /// Prix HT de CETTE inscription. Vide : le prix de la session.
+  prixHt                  Decimal?            @db.Decimal(10, 2)
+  /// Positionnement d'entrée et de sortie : une note de 0 à 4 par objectif.
+  /// C'est l'évaluation des acquis (indicateur 11) que l'attestation reprend.
+  positionnementEntree    Json?
+  positionnementSortie    Json?
+  /// Réponses détaillées des enquêtes (les notes restent aussi dans les
+  /// champs `satisfaction` / `coldRating` pour les écrans existants).
+  evaluationChaudDetail   Json?
+  evaluationFroidDetail   Json?
+  evaluationCommanditaire Json?
+  convocationEnvoyeeLe    DateTime?
+  abandonLe               DateTime?
+  motifAbandon            String?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
 
   emargements Emargement[]
   tutorat     Tutorat?
@@ -2338,17 +2432,28 @@ model Inscription {
 
 /// EMARGEMENT : presence signee par apprenant et par creneau.
 model Emargement {
-  id            String           @id @default(cuid())
-  sessionId     String
-  session       FormationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  inscriptionId String
-  inscription   Inscription      @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
-  slotDate      DateTime
-  slot          EmargementSlot   @default(MORNING)
-  present       Boolean          @default(false)
-  signatureUrl  String?
-  signedAt      DateTime?
-  createdAt     DateTime         @default(now())
+  id                  String           @id @default(cuid())
+  sessionId           String
+  session             FormationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  inscriptionId       String
+  inscription         Inscription      @relation(fields: [inscriptionId], references: [id], onDelete: Cascade)
+  slotDate            DateTime
+  slot                EmargementSlot   @default(MORNING)
+  present             Boolean          @default(false)
+  signatureUrl        String?
+  signedAt            DateTime?
+  /// SIGNATURE DU STAGIAIRE (Pilote académie, 29/09/2026).
+  ///
+  /// Le tracé du doigt ou de la souris, en chemin SVG (quelques kilo-octets),
+  /// l'heure, l'adresse IP et le navigateur, et l'empreinte SHA-256 de
+  /// l'ensemble. `present` coché par l'organisme sans signature reste
+  /// possible ; la feuille dit alors « présence déclarée par l'organisme ».
+  signatureTrace      String?
+  signeParStagiaireLe DateTime?
+  signatureIp         String?
+  signatureUa         String?
+  signatureEmpreinte  String?
+  createdAt           DateTime         @default(now())
 
   @@unique([inscriptionId, slotDate, slot])
   @@index([sessionId])
@@ -3933,6 +4038,27 @@ model Academie {
   /// Ce qu'on affiche en une phrase, et le texte long de la page publique.
   resume       String?
   presentation String?
+
+  /// ADMINISTRATION (29/09/2026) : ce que les documents et les factures
+  /// impriment. Le représentant signe les conventions, attestations et
+  /// certificats de réalisation.
+  /// Numéro de TVA intracommunautaire (obligatoire sur la facture d'un
+  /// organisme assujetti).
+  numeroTva             String?
+  representantNom       String?
+  representantQualite   String?
+  /// Exonération de TVA (art. 261-4-4° a du CGI) : elle n'est ni automatique
+  /// ni acquise, elle suppose l'imprimé 3511 déposé auprès de la DREETS.
+  /// Tant que la case n'est pas cochée, les factures portent la TVA saisie.
+  exonereTva            Boolean @default(false)
+  /// Taux de TVA par défaut quand l'organisme n'est pas exonéré (en %).
+  tauxTva               Int     @default(20)
+  /// Coordonnées de paiement imprimées sur les factures (IBAN de l'académie).
+  coordonneesBancaires  String?
+  /// Délai de paiement par défaut, en jours.
+  delaiPaiementJours    Int     @default(30)
+  /// Lien vers le règlement intérieur (L6352-3), repris sur la convocation.
+  reglementInterieurUrl String?
 
   /// Les étapes du chemin cochées à la main. Le reste se déduit des données.
   etapesFaites String[] @default([])
@@ -5779,4 +5905,367 @@ model DevisFournisseur {
 
   @@index([accountId, statut])
   @@index([accountId, fournisseur])
+}
+
+// ---------------------------------------------------------------------------
+// ADMINISTRATION DE L'ORGANISME DE FORMATION (Pilote académie, 29/09/2026)
+// ---------------------------------------------------------------------------
+//
+// Ce qu'un logiciel de gestion d'organisme fait AUTOUR d'une session : les
+// formateurs et les salles, le planning, l'émargement signé, les documents
+// réglementaires, la facturation des clients, les enquêtes et le BPF. Tout
+// s'appuie sur FormationSession / Inscription / Emargement, qui existaient.
+
+/// Un formateur de l'annuaire de l'académie. Pas un compte : un formateur
+/// occasionnel n'a aucune raison d'ouvrir un espace.
+model FormateurOrganisme {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  prenom      String
+  nom         String
+  email       String?
+  telephone   String?
+  /// INTERNE = « personnes de votre organisme » au sens du BPF (salariés,
+  /// bénévoles, indépendants dont c'est l'activité principale) ; EXTERNE =
+  /// sous contrat de prestation ou sur honoraires (cadre E).
+  statut      StatutFormateur @default(INTERNE)
+  /// Pour un formateur externe : sa structure et son SIRET.
+  structure   String?
+  siret       String?
+  metier      String?
+  competences String[]        @default([])
+  /// Diplômes, titres et références (L6353-4 4° : ils figurent au contrat).
+  diplomes    String?
+  actif       Boolean         @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions FormationSession[]
+  creneaux CreneauSession[]
+
+  @@index([accountId, actif])
+}
+
+enum StatutFormateur {
+  INTERNE
+  EXTERNE
+}
+
+/// Une salle de l'académie (ou louée) : le planning y détecte les conflits.
+model SalleOrganisme {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  nom           String
+  adresse       String?
+  capacite      Int?
+  accessiblePmr Boolean @default(false)
+  equipements   String?
+  actif         Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions FormationSession[]
+  creneaux CreneauSession[]
+
+  @@index([accountId, actif])
+}
+
+/// Un créneau du planning d'une session : ce jour, de telle heure à telle
+/// heure, avec ce formateur, dans cette salle (ou à distance).
+model CreneauSession {
+  id        String           @id @default(cuid())
+  sessionId String
+  session   FormationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  debut       DateTime
+  fin         DateTime
+  intitule    String?
+  formateurId String?
+  formateur   FormateurOrganisme? @relation(fields: [formateurId], references: [id], onDelete: SetNull)
+  salleId     String?
+  salle       SalleOrganisme?     @relation(fields: [salleId], references: [id], onDelete: SetNull)
+  distanciel  Boolean             @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId, debut])
+  @@index([formateurId, debut])
+  @@index([salleId, debut])
+}
+
+/// UNE DEMI-JOURNÉE D'ÉMARGEMENT OUVERTE PAR LE FORMATEUR.
+///
+/// Le formateur ouvre la séance à l'écran : un code à six chiffres s'affiche,
+/// que les stagiaires présents recopient avant de signer depuis leur lien.
+/// C'est ce code qui prouve la présence dans la salle (un lien seul prouve
+/// seulement qu'on a reçu un e-mail). Le formateur signe la séance lui aussi.
+model SeanceEmargement {
+  id        String           @id @default(cuid())
+  sessionId String
+  session   FormationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  slotDate  DateTime
+  slot      EmargementSlot
+  /// Le code affiché en salle. En clair : il ne vaut que le temps de la
+  /// séance et ne protège rien d'autre qu'elle.
+  code      String
+  ouverteLe DateTime       @default(now())
+  fermeeLe  DateTime?
+
+  formateurNom     String?
+  formateurTrace   String?
+  formateurSigneLe DateTime?
+  formateurIp      String?
+
+  @@unique([sessionId, slotDate, slot])
+}
+
+/// UN DOCUMENT PRODUIT POUR UNE SESSION — et, s'il se signe, sa signature.
+///
+/// C'est le registre des pièces : ce qui a été fabriqué, envoyé à qui et
+/// quand, signé ou non. Il sert de preuve Qualiopi « produite par
+/// l'activité » et porte la signature électronique simple (art. 1367 c. civ.)
+/// des conventions et contrats : code à six chiffres envoyé par e-mail,
+/// haché, quinze minutes, trois essais, empreinte du document signé.
+model DocumentSession {
+  id            String           @id @default(cuid())
+  accountId     String
+  account       Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  sessionId     String
+  session       FormationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  inscriptionId String?
+
+  type      TypeDocumentSession
+  titre     String
+  /// Empreinte SHA-256 du contenu au moment de l'envoi : une signature ne vaut
+  /// que pour ce contenu-là.
+  empreinte String?
+  envoyeLe  DateTime?
+  envoyeA   String?
+
+  /// Signature (conventions et contrats seulement).
+  jetonSignature  String?               @unique
+  signataireNom   String?
+  signataireEmail String?
+  codeHache       String?
+  codeExpireLe    DateTime?
+  tentatives      Int                   @default(0)
+  statut          StatutDocumentSession @default(PRODUIT)
+  signeLe         DateTime?
+  signeIp         String?
+  signeUa         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, sessionId])
+  @@index([inscriptionId])
+}
+
+enum TypeDocumentSession {
+  CONVENTION
+  CONTRAT
+  CONVOCATION
+  PROGRAMME
+  ATTESTATION
+  CERTIFICAT_REALISATION
+  EMARGEMENT
+}
+
+enum StatutDocumentSession {
+  PRODUIT
+  ENVOYE
+  A_SIGNER
+  SIGNE
+  REFUSE
+}
+
+/// UNE FACTURE, UN AVOIR OU UN DEVIS DE L'ORGANISME À SON CLIENT.
+///
+/// ⚠ Rien à voir avec « Mes factures » (FactureFournisseur), qui lit les
+/// factures REÇUES. Ici l'académie ÉMET.
+///
+/// ⚠ UNE FACTURE ÉMISE NE SE MODIFIE PLUS ET NE SE SUPPRIME JAMAIS (art. 242
+/// nonies A ann. II CGI) : elle s'annule par un AVOIR, qui porte son propre
+/// numéro. Seul un brouillon se corrige ou se supprime. La numérotation est
+/// continue, par type et par année (`CompteurNumerotation`).
+model FactureOrganisme {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  type   TypeFactureOrganisme   @default(FACTURE)
+  statut StatutFactureOrganisme @default(BROUILLON)
+  /// Attribué à l'émission (brouillon : null).
+  numero String?
+
+  sessionId      String?
+  session        FormationSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  inscriptionIds String[]          @default([])
+
+  /// Le client : { nom, adresse, codePostal, ville, siret, email, contact, genre }
+  /// où genre = ENTREPRISE | OPCO | PARTICULIER | PUBLIC | ORGANISME.
+  client          Json
+  /// Ligne du cadre C du BPF où ce produit se range.
+  origineBpf      OrigineFinancement?
+  /// Numéro de dossier ou d'accord de prise en charge (obligatoire chez
+  /// plusieurs OPCO), et référence de commande du client.
+  numeroDossier   String?
+  referenceClient String?
+
+  /// [{ libelle, quantite, prixUnitaireHt, tauxTva }]
+  lignes     Json
+  totalHt    Decimal @db.Decimal(12, 2)
+  totalTva   Decimal @db.Decimal(12, 2)
+  totalTtc   Decimal @db.Decimal(12, 2)
+  /// La mention d'exonération, recopiée telle quelle sur le document.
+  mentionTva String?
+
+  dateEmission DateTime?
+  echeance     DateTime?
+  conditions   String?
+  montantPaye  Decimal   @default(0) @db.Decimal(12, 2)
+  payeeLe      DateTime?
+
+  relancesActives   Boolean   @default(true)
+  relances          Int       @default(0)
+  derniereRelanceLe DateTime?
+
+  /// Un avoir annule (tout ou partie de) cette facture.
+  factureOrigineId String?
+  /// Une facture née d'un devis.
+  devisId          String?
+  /// Identité de l'émetteur figée à l'émission.
+  emetteur         Json?
+  notes            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, numero])
+  @@index([accountId, type, statut])
+  @@index([sessionId])
+}
+
+enum TypeFactureOrganisme {
+  FACTURE
+  AVOIR
+  DEVIS
+}
+
+enum StatutFactureOrganisme {
+  BROUILLON
+  EMISE
+  PAYEE
+  ANNULEE
+  ACCEPTE
+  REFUSE
+}
+
+/// Le dernier numéro utilisé, par compte et par série (« F-2026 », « AV-2026 »,
+/// « D-2026 »). Incrémenté en transaction : deux émissions simultanées ne
+/// peuvent pas prendre le même numéro, et un numéro pris n'est jamais rendu.
+model CompteurNumerotation {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  serie     String
+  dernier   Int     @default(0)
+
+  @@unique([accountId, serie])
+}
+
+/// Ce que le BPF ne peut pas déduire de l'activité et que l'organisme saisit :
+/// charges (cadre D), part du chiffre d'affaires, montants corrigés. Une
+/// ligne par exercice.
+model BpfExercice {
+  id        String    @id @default(cuid())
+  accountId String
+  annee     Int
+  saisies   Json      @default("{}")
+  deposeLe  DateTime?
+  updatedAt DateTime  @updatedAt
+
+  @@unique([accountId, annee])
+}
+
+/// Le journal des envois automatiques (convocations, enquêtes, relances) : la
+/// clé unique rend un doublon impossible, pas seulement improbable.
+model ActionAutoSession {
+  id        String   @id @default(cuid())
+  accountId String
+  cle       String   @unique
+  type      String
+  createdAt DateTime @default(now())
+
+  @@index([accountId, createdAt])
+}
+
+enum NatureAction {
+  ACTION_FORMATION
+  BILAN_COMPETENCES
+  VAE
+  APPRENTISSAGE
+}
+
+enum ObjectifBpf {
+  RNCP_6_8
+  RNCP_5
+  RNCP_4
+  RNCP_3
+  RNCP_2
+  CQP_SANS_NIVEAU
+  RS
+  CQP_NON_ENREGISTRE
+  AUTRE
+  BILAN
+  VAE
+}
+
+enum ModaliteSession {
+  PRESENTIEL
+  DISTANCIEL
+  MIXTE
+}
+
+enum SousTraitance {
+  AUCUNE
+  RECUE
+  CONFIEE
+}
+
+enum TypeStagiaire {
+  SALARIE_PRIVE
+  APPRENTI
+  DEMANDEUR_EMPLOI
+  PARTICULIER
+  AUTRE
+}
+
+/// Les lignes du cadre C du BPF (cerfa 10443*17).
+enum OrigineFinancement {
+  ENTREPRISE
+  OPCO_APPRENTISSAGE
+  OPCO_PROFESSIONNALISATION
+  OPCO_PRO_A
+  OPCO_TRANSITION
+  OPCO_CPF
+  OPCO_DEMANDEURS
+  OPCO_NON_SALARIES
+  OPCO_PLAN
+  PUBLICS_AGENTS
+  EUROPE
+  ETAT
+  REGION
+  FRANCE_TRAVAIL
+  AUTRES_PUBLICS
+  PARTICULIER
+  AUTRE_ORGANISME
+  AUTRES
 }

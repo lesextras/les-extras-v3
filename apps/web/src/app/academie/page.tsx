@@ -329,7 +329,7 @@ async function TableauDeBord() {
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Tuile libelle="Formations" valeur={catalogue.total} detail={`${catalogue.publiees} en ligne`} href="/academie/formations" />
-        <Tuile libelle="Sessions à venir" valeur={sessions.length} detail={prochaine ? formaterDate(prochaine.debut) ?? undefined : undefined} href="/academie/formations?onglet=sessions" />
+        <Tuile libelle="Sessions à venir" valeur={sessions.length} detail={prochaine ? formaterDate(prochaine.debut) ?? undefined : undefined} href="/academie/sessions" />
         <Tuile libelle="Apprenants" valeur={apprenants.total} href="/academie/apprenants" />
         <Tuile libelle="Devoirs à corriger" valeur={aCorriger} href="/academie/devoirs" ton={aCorriger > 0 ? 'attention' : 'neutre'} />
       </section>

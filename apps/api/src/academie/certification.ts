@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProofStatus } from '@prisma/client';
+import { Prisma, ProofStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -54,6 +54,7 @@ export class CertificationService {
       },
     });
 
+    const activite = await this.preuvesDeLActivite(accountId);
     const composes = criteres.map((c) => ({
       numero: c.number,
       titre: c.title,
@@ -67,6 +68,7 @@ export class CertificationService {
           intitule: p?.label ?? null,
           lien: p?.documentUrl ?? null,
           notePosee: p?.updatedAt ?? null,
+          activite: activite[i.number] ?? null,
         };
       }),
     }));
@@ -82,6 +84,46 @@ export class CertificationService {
       couverts: couverts.length,
       pourcentage: concernes.length ? Math.round((couverts.length / concernes.length) * 100) : 0,
     };
+  }
+
+  /**
+   * LES PREUVES QUE L'ACTIVITÉ PRODUIT TOUTE SEULE.
+   *
+   * Un auditeur préfère une trace de l'activité réelle à un document écrit pour
+   * l'audit. Ce que l'administration des sessions enregistre (positionnements,
+   * convocations, émargements signés, enquêtes, formateurs) est donc proposé en
+   * regard de l'indicateur qu'il prouve. ⚠ On ne coche rien à la place de
+   * l'organisme : la ligne dit ce qui existe, l'organisme décide de s'en servir.
+   */
+  async preuvesDeLActivite(accountId: string): Promise<Record<number, string>> {
+    const sessions = { session: { formation: { ownerAccountId: accountId } } };
+    const [positionnes, sortis, convoques, signes, chauds, froids, commanditaires, formateurs, diplomes, seances] = await Promise.all([
+      this.prisma.inscription.count({ where: { ...sessions, positionnementEntree: { not: Prisma.AnyNull } } }).catch(() => 0),
+      this.prisma.inscription.count({ where: { ...sessions, positionnementSortie: { not: Prisma.AnyNull } } }).catch(() => 0),
+      this.prisma.inscription.count({ where: { ...sessions, convocationEnvoyeeLe: { not: null } } }),
+      this.prisma.emargement.count({ where: { session: { formation: { ownerAccountId: accountId } }, signatureTrace: { not: null } } }),
+      this.prisma.inscription.count({ where: { ...sessions, satisfactionAt: { not: null } } }),
+      this.prisma.inscription.count({ where: { ...sessions, coldAt: { not: null } } }),
+      this.prisma.inscription.count({ where: { ...sessions, evaluationCommanditaire: { not: Prisma.AnyNull } } }).catch(() => 0),
+      this.prisma.formateurOrganisme.count({ where: { accountId, actif: true } }),
+      this.prisma.formateurOrganisme.count({ where: { accountId, actif: true, diplomes: { not: null } } }),
+      this.prisma.seanceEmargement.count({ where: { session: { formation: { ownerAccountId: accountId } } } }),
+    ]);
+    const r: Record<number, string> = {};
+    const pl = (n: number, un: string, plusieurs: string) => `${n} ${n > 1 ? plusieurs : un}`;
+    if (chauds || froids) r[2] = `Indicateurs de résultats calculés sur ${pl(chauds, 'enquête de fin', 'enquêtes de fin')} et ${pl(froids, 'enquête à froid', 'enquêtes à froid')} (Administration → Qualité).`;
+    if (positionnes) {
+      r[4] = `${pl(positionnes, 'positionnement', 'positionnements')} d'entrée recueilli${positionnes > 1 ? 's' : ''} auprès des stagiaires.`;
+      r[8] = r[4];
+    }
+    if (convoques) r[9] = `${pl(convoques, 'convocation envoyée', 'convocations envoyées')} avec le programme et les informations pratiques.`;
+    if (sortis) r[11] = `${pl(sortis, 'positionnement', 'positionnements')} de sortie : l'évolution par objectif figure sur l'attestation.`;
+    if (signes) r[12] = `${pl(signes, 'demi-journée signée', 'demi-journées signées')} par les stagiaires sur ${pl(seances, 'séance', 'séances')} ouvertes : l'assiduité est suivie.`;
+    if (formateurs) r[21] = `${pl(formateurs, 'formateur', 'formateurs')} dans l'annuaire, dont ${diplomes} avec diplômes et références renseignés.`;
+    if (chauds || froids || commanditaires) {
+      r[30] = `Appréciations recueillies : ${chauds} en fin de formation, ${froids} à froid, ${commanditaires} auprès des commanditaires.`;
+    }
+    return r;
   }
 
   /** Poser ou corriger la preuve d'un indicateur, pour CE compte et lui seul. */

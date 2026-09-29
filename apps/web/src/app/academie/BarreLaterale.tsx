@@ -120,7 +120,22 @@ const MENU: Element[] = [
     entrees: [
       { href: '/academie/apprenants', libelle: 'Mes apprenants', icone: ICONES.apprenants },
       { href: '/academie/communaute', libelle: 'Communauté', icone: ICONES.affiliation },
-      { href: '/academie/formateurs', libelle: 'Mes formateurs', icone: ICONES.formateurs },
+    ],
+  },
+  {
+    // L'ADMINISTRATION DE L'ORGANISME (29/09/2026) : ce qu'une session produit,
+    // de la convocation au BPF. Rangé à part des ventes : on y gère des
+    // obligations, pas un chiffre d'affaires.
+    libelle: "Gestion de l'organisme",
+    icone: ICONES.secretariat,
+    entrees: [
+      { href: '/academie/sessions', libelle: 'Sessions', icone: ICONES.sessions },
+      { href: '/academie/planning', libelle: 'Planning', icone: ICONES.agenda },
+      { href: '/academie/formateurs', libelle: 'Formateurs et salles', icone: ICONES.formateurs },
+      { href: '/academie/facturation', libelle: 'Devis et factures clients', icone: ICONES.factures },
+      { href: '/academie/qualite', libelle: 'Qualité et enquêtes', icone: ICONES.certification },
+      { href: '/academie/bpf', libelle: 'Bilan pédagogique (BPF)', icone: ICONES.statistiques },
+      { href: '/academie/edof', libelle: 'Mon Compte Formation', icone: ICONES.cles },
     ],
   },
   {
@@ -164,7 +179,6 @@ const PORTEES: Record<string, string> = {
   '/academie/versements': '/academie/comptabilite',
   // Les cinq anciennes adresses des formations mènent au même écran fusionné.
   '/academie/catalogue': '/academie/formations',
-  '/academie/sessions': '/academie/formations',
   '/academie/cours-en-ligne': '/academie/formations',
   '/academie/cours-en-presentiel': '/academie/formations',
   '/academie/statistiques': '/academie',

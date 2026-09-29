@@ -303,7 +303,19 @@ const nextConfig = {
     ],
   },
   async rewrites() {
-    return [];
+    // L'API PUBLIQUE DE PILOTE SOUS SON PROPRE DOMAINE (séparation, 29/09/2026).
+    // Les clés d'API des académies s'utilisent sur pilote.toulali.fr/api/v1/… :
+    // aucune adresse de Les Extras n'apparaît plus dans l'intégration d'une
+    // école. Le site relaie vers l'API, sans rien lire ni rien garder.
+    // (`/api` est hors du middleware : la réécriture s'applique telle quelle.)
+    const api = (process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'https://api.les-extras.fr/api').replace(/\/$/, '');
+    return [
+      {
+        source: '/api/v1/:chemin*',
+        has: [{ type: 'host', value: 'pilote.toulali.fr' }],
+        destination: `${api}/v1/:chemin*`,
+      },
+    ];
   },
   // Les URL /actualites ont été indexées avant le passage à « Édublog » :
   // on les redirige définitivement pour ne perdre ni le référencement ni les

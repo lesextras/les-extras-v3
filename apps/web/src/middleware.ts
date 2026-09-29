@@ -50,7 +50,7 @@ const PAGE_CHOIX_CHEMIN = `${PREFIXE_ASSOCIATION}/choisir-le-chemin`;
  * Oublier d'inscrire ici une adresse publique ne se voit pas tout de suite :
  * elle part se faire réécrire dans l'espace association et répond 404.
  */
-const PUBLIQUES = ['/f', '/ecole', '/cours', '/apprendre', '/boutique', '/medias', '/classe', '/integration'];
+const PUBLIQUES = ['/f', '/ecole', '/cours', '/apprendre', '/boutique', '/medias', '/classe', '/integration', '/stagiaire', '/signer-document', '/avis-commanditaire'];
 
 /**
  * LE DOMAINE PERSONNALISÉ D'UNE ÉCOLE (formations.monsite.fr).
@@ -81,9 +81,34 @@ async function ecoleDuDomaine(hote: string): Promise<string | null> {
 /** L'administration de Piloter : une seule adresse, sur le domaine de Piloter. */
 const ADMINISTRATION = '/administration';
 
+/**
+ * DEUX PRODUITS, DEUX DÉPLOIEMENTS (séparation de Pilote, étape 3).
+ *
+ * Le même code sert les deux sites. Posée sur une application Coolify,
+ * `PRODUIT` dit lequel elle sert : `pilote` n'accepte que Pilote et les
+ * domaines d'école, `les-extras` que Les Extras. Une requête arrivée sur la
+ * mauvaise application (domaine encore rattaché à l'autre, DNS en cours de
+ * bascule) est renvoyée vers le bon site au lieu d'être servie ici. Sans la
+ * variable, rien ne change : l'application sert les deux, comme avant. Les
+ * pages statiques et `/api` ne passent pas par ce filtre (matcher) : elles
+ * sont identiques des deux côtés.
+ */
+const PRODUIT = (process.env.PRODUIT ?? '').trim().toLowerCase();
+const HOTES_LES_EXTRAS = /(^|\.)les-extras\.(fr|com)$/;
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hote = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();
+
+  // L'hôte est le bon, c'est l'application qui ne l'est pas : on ne redirige
+  // pas sur soi-même (boucle), on répond 421 « requête mal aiguillée », que le
+  // routeur ne met pas en cache.
+  if (PRODUIT === 'pilote' && HOTES_LES_EXTRAS.test(hote)) {
+    return new NextResponse('Ce site est servi par l’application Les Extras.', { status: 421 });
+  }
+  if (PRODUIT === 'les-extras' && (hote === HOTE_PILOTE || hote === HOTE_ANCIEN)) {
+    return new NextResponse('Ce site est servi par l’application Pilote.', { status: 421 });
+  }
 
   // Le domaine personnalisé d'une école : son accueil est la vitrine de l'école.
   if (hote && hote !== HOTE_PILOTE && hote !== HOTE_ANCIEN && !HOTES_CONNUS.test(hote)) {

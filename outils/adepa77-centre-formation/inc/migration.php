@@ -65,6 +65,10 @@ function adepa_cf_migrer() {
 		// 1.4.7 : le menu « Notre académie » du modèle d'en-tête aligné sur celui de l'accueil.
 		adepa_cf_migration_147();
 	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.5.0', '<')) {
+		// 1.5.0 : l'Édu Blog de Les Extras retiré du menu, du pied de page et de l'accueil (inc/edublog.php).
+		adepa_cf_migration_150();
+	}
 
 	update_option('adepa_cf_version', ADEPA_CF_VERSION, true);
 	delete_transient('adepa_cf_migration_en_cours');

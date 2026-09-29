@@ -41,7 +41,9 @@ function service(secretConfigure: string | null = SECRET) {
       count: 1,
     })),
   };
-  const prisma = { subscription, invoice } as never;
+  // Le même événement Stripe porte aussi les abonnements « Mes factures » de Pilote.
+  const abonnementFactures = { updateMany: jest.fn(async () => ({ count: 0 })) };
+  const prisma = { subscription, invoice, abonnementFactures } as never;
   const config = {
     get: jest.fn((clef: string) =>
       clef === 'STRIPE_WEBHOOK_SECRET' ? (secretConfigure ?? undefined) : 'sk_test_x',

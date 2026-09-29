@@ -4,6 +4,7 @@ import { apiAcademie, sessionAcademie } from '../_session';
 import { Barre, CARTE, Carte, Encart, Pastille, SousTitre, Titre, formaterDate } from '../_ui';
 import { LIBELLES_QUALIOPI, type EspaceAcademie } from '../_types';
 import { FormulaireFiche } from './FormulaireFiche';
+import { ReglagesAdministration } from '../_gestion/Reglages';
 
 export const metadata: Metadata = { title: 'Mon académie', robots: { index: false, follow: false } };
 
@@ -136,6 +137,16 @@ export default async function MonAcademiePage() {
           </div>
         )}
         <FormulaireFiche fiche={academie} />
+      </section>
+
+      {/* -------------------------------------------- documents et facturation */}
+      <section id="documents" className={`${CARTE} mt-6 p-5 sm:p-7`}>
+        <SousTitre>Ce que mes documents et mes factures impriment</SousTitre>
+        <p className="mb-5 max-w-[68ch] text-sm leading-relaxed text-[#5E7A6E]">
+          Le représentant qui signe, la TVA, le délai et les coordonnées de paiement, le règlement intérieur : repris sur les conventions,
+          les convocations, les certificats de réalisation et les factures de l&apos;administration des sessions.
+        </p>
+        <ReglagesAdministration fiche={academie} />
       </section>
 
       <p className="mt-6 text-sm text-[#5E7A6E]">

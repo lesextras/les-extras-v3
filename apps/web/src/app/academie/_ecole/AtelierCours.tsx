@@ -2255,6 +2255,15 @@ function Sessions({
                           </p>
                         ) : null}
                         <div className="mt-3 flex flex-wrap gap-2">
+                          {!annulee ? (
+                            <a
+                              href={`/academie/sessions/${s.id}`}
+                              className="rounded-lg px-3 py-1.5 text-sm font-bold text-white no-underline"
+                              style={{ backgroundColor: VERT.fonce }}
+                            >
+                              Administrer : planning, émargement, documents
+                            </a>
+                          ) : null}
                           <button
                             type="button"
                             onClick={() => {
