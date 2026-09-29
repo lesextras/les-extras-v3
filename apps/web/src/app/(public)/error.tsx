@@ -8,7 +8,9 @@
 // vitrine du produit : elle doit rester présentable même quand ça casse.
 import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useRepriseAutomatique } from "@/lib/reprise-deploiement";
 
 export default function ErreurPublique({
   error,
@@ -17,10 +19,34 @@ export default function ErreurPublique({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const router = useRouter();
   useEffect(() => {
     // eslint-disable-next-line no-console
     console.error(error);
   }, [error]);
+  // Pendant une mise en ligne, la page se répare seule (voir lib/reprise-deploiement).
+  const etat = useRepriseAutomatique(error, () => {
+    router.refresh();
+    reset();
+  });
+
+  if (etat !== "abandon") {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center gap-4 px-4 text-center"
+      >
+        <span className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" aria-hidden="true" />
+        <h1 className="text-2xl font-semibold text-foreground">Le site se met à jour</h1>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {etat === "version"
+            ? "Une nouvelle version vient d’être mise en ligne. La page se recharge."
+            : "Cette page revient d’elle-même dans quelques secondes, inutile de recharger."}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center gap-5 px-4 text-center">

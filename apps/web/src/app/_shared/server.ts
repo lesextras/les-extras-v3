@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { apiRequest, ApiError } from "@/lib/api";
+import { lireAvecReprise, type LecturePublique } from "@/lib/lecture-publique";
 import type { Session } from "./types";
 
 /**
@@ -130,30 +131,41 @@ export async function fetchApi<T>(
  * accès à l'API, donc pré-rendre les pages à la construction y graverait des
  * pages vides.
  */
+/**
+ * ⚠ UN REDÉPLOIEMENT NE DOIT PAS FAIRE TOMBER LES FICHES PUBLIQUES.
+ *
+ * Pendant un redéploiement de l'API (ou dans les secondes où le routeur
+ * bascule d'un conteneur à l'autre), l'API répond 502/503 ou ne répond pas.
+ * Une fiche atelier rendue à cet instant levait (`exigerFiche`) et le visiteur
+ * lisait un écran d'incident. Trois filets, du plus fin au plus large :
+ *
+ *  1. on RÉESSAIE deux fois une panne passagère (réseau, 502, 503, 504), à
+ *     0,8 s puis 2 s : la bascule du routeur dure rarement plus ;
+ *  2. on garde en mémoire la DERNIÈRE RÉPONSE BONNE de chaque adresse publique
+ *     et on la ressert si l'API reste muette : une fiche vue il y a dix minutes
+ *     vaut mieux qu'un écran d'erreur, et c'est une donnée publique ;
+ *  3. le cache de données de Next (revalidate) sert déjà l'entrée périmée
+ *     pendant qu'il revalide en arrière-plan.
+ *
+ * ⚠ ON NE RESSERT JAMAIS UNE RÉPONSE SUR UN 404 OU UN 410 : une fiche retirée
+ * doit disparaître, pas survivre en mémoire. Et on ne réessaie pas un 4xx : ce
+ * n'est pas une panne, réessayer ne changerait rien.
+ */
 export async function fetchPublic<T>(
   path: string,
-  options?: { revalidate?: number },
-): Promise<{ data?: T; error?: string; introuvable?: boolean; status?: number }> {
+  options?: { revalidate?: number; attentesMs?: number[] },
+): Promise<LecturePublique<T>> {
   const revalidate = options?.revalidate ?? 60;
-  try {
-    const data = (await apiRequest(path, {
-      method: "GET",
-      ...(revalidate > 0 ? { next: { revalidate } } : { cache: "no-store" }),
-    })) as T;
-    return { data };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Erreur inconnue";
-    // ⚠ « PAS DE DONNÉE » N'EST PAS « N'EXISTE PAS ».
-    //
-    // Les fiches publiques traitaient toute absence de donnée comme un 404 :
-    // `notFound()` et `robots: noindex`. Une API en panne cinq minutes — un
-    // redéploiement suffit — faisait donc répondre « cette page n'existe pas »
-    // à Google pour TOUT le catalogue, et un désindexage se paie en semaines
-    // de trafic. Le statut HTTP distingue les deux cas ; il était simplement
-    // jeté ici. `introuvable` n'est vrai que sur un vrai 404 ou 410.
-    const status = err instanceof ApiError ? err.status : 0;
-    return { error: message, status, introuvable: status === 404 || status === 410 };
-  }
+  return lireAvecReprise<T>(
+    path,
+    () =>
+      apiRequest(path, {
+        method: "GET",
+        ...(revalidate > 0 ? { next: { revalidate } } : { cache: "no-store" }),
+      }) as Promise<T>,
+    (err) => (err instanceof ApiError ? err.status : 0),
+    options?.attentesMs,
+  );
 }
 
 /**

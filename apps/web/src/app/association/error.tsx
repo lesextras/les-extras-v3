@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useRepriseAutomatique } from '@/lib/reprise-deploiement';
 
 /**
  * QUAND UN ÉCRAN DE PILOTER TOMBE.
@@ -15,6 +17,24 @@ export default function Erreur({ error, reset }: { error: Error & { digest?: str
   useEffect(() => {
     console.error('[Piloter association]', error);
   }, [error]);
+  const router = useRouter();
+  // Pendant une mise en ligne, l'écran se répare seul (voir lib/reprise-deploiement).
+  const etat = useRepriseAutomatique(error, () => {
+    router.refresh();
+    reset();
+  });
+  if (etat !== "abandon") {
+    return (
+      <div role="status" aria-live="polite" className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-center">
+        <h2 className="text-2xl font-extrabold tracking-tight text-[#12312A]">Pilote se met à jour</h2>
+        <p className="max-w-md leading-relaxed text-[#334A42]">
+          {etat === "version"
+            ? "Une nouvelle version vient d’être mise en ligne. La page se recharge."
+            : "Cet écran revient de lui-même dans quelques secondes, inutile de recharger."}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-[560px] py-10 text-center">

@@ -6301,3 +6301,27 @@ faut vraiment que Pilote soit dissocié de Les Extras ».
   expéditeur, deux déploiements, deux bases, dépôt, Stripe) avec ce qui
   revient à Siham. Les étapes 1 à 3 sont sans risque ; 4 à 6 demandent sa
   décision écrite.
+
+### 29/09/2026 — les fiches ne tombent plus pendant un déploiement
+
+Signalé par Siham : « les fiches d'atelier tombent en "plateforme
+indisponible" pendant chaque déploiement ». Deux causes, deux filets :
+
+- **Décalage de version (web).** Pendant la bascule, la page vient d'un
+  conteneur et ses fichiers JS de l'autre (noms différents à chaque build) :
+  `ChunkLoadError` → `global-error.tsx`. `lib/reprise-deploiement.ts` le
+  reconnaît et recharge la page UNE fois (1,5 s après, puis pas plus d'une
+  fois par 20 s, horodatage en sessionStorage).
+- **API qui redémarre.** `fetchPublic` passe par `lib/lecture-publique.ts` :
+  deux nouveaux essais sur réseau/502/503/504 (0,8 s puis 2 s), puis la
+  DERNIÈRE RÉPONSE BONNE de l'adresse est resservie (mémoire, 800 adresses).
+  ⚠ Jamais sur 404/410 (la fiche retirée est oubliée) ; ni 4xx ni 500 ne sont
+  réessayés ; lectures PUBLIQUES seulement.
+- **Les six frontières d'erreur** (public, dashboard, admin, académie,
+  association, global) réessaient seules une erreur SERVEUR (celle qui porte un
+  `digest`) toutes les 10 s, 12 fois au plus par adresse (compteur en
+  sessionStorage, sinon `global-error` rechargerait à l'infini), en affichant
+  « Le site se met à jour » au lieu d'un incident. Une erreur de rendu côté
+  navigateur n'est pas relancée en boucle.
+- `global-error.tsx` signe « Pilote » sur `*.toulali.fr` (séparation des deux
+  produits). Tests : `lib/__tests__/reprise-deploiement.test.ts` (7).
