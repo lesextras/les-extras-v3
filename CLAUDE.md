@@ -6548,3 +6548,6 @@ quatre défauts étaient réels et sont corrigés :
   ⚠ La politique de confidentialité liste encore les sous-traitants de
   l'ancien service payant (Stripe, ElevenLabs, fal.ai…) : à revoir le jour où
   le code du cockpit est retiré, pas avant (il tourne encore).
+- **Healthcheck de l'API élargi** (`apps/api/Dockerfile`) : start-period 120 s,
+  12 essais à 20 s. Les échecs « Healthcheck starting » sans erreur venaient
+  d'un démarrage plus long que la fenêtre ; Coolify lit ce HEALTHCHECK.

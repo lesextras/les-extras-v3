@@ -55,7 +55,12 @@ WORKDIR /app/apps/api
 EXPOSE 3001
 # L'API expose /api/health (Backend-Core). Le healthcheck tolère l'absence
 # de route en n'échouant que sur un 5xx.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
+# ⚠ 29/09/2026 : quatre déploiements sur dix ont échoué en « Healthcheck
+# starting » alors que Nest finissait de mapper ses 600 routes : le démarrage
+# (migrate deploy + Nest) dépasse souvent 3 minutes sur ce serveur, et
+# Coolify tuait un conteneur sain. Fenêtre élargie : 2 min de grâce, puis
+# 12 essais espacés de 20 s. Un conteneur vraiment cassé échoue quand même.
+HEALTHCHECK --interval=20s --timeout=5s --start-period=120s --retries=12 \
   CMD node -e "require('http').get('http://127.0.0.1:'+(process.env.API_PORT||3001)+'/api/health',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"
 
 # Migrations appliquées au démarrage, puis lancement de l'API.
