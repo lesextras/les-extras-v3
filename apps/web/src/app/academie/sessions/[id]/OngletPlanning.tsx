@@ -241,7 +241,7 @@ export function OngletPlanning({ ctx }: { ctx: ContexteFiche }) {
           <ul className="grid gap-3">
             {parJour.map(([jour, liste]) => (
               <li key={jour} className="rounded-2xl border border-[#DDEBE4] bg-white p-4">
-                <p className="mb-2 text-[15px] font-extrabold capitalize text-[#12312A]">{jourLong(liste[0].debut)}</p>
+                <p className="mb-2 text-[15px] font-extrabold first-letter:uppercase text-[#12312A]">{jourLong(liste[0].debut)}</p>
                 <ul className="grid gap-2">
                   {liste.map((c) => (
                     <li key={c.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl px-3 py-2 ${enConflit.has(c.id) ? 'bg-[#FDE7EC]' : 'bg-[#F7FBF9]'}`}>

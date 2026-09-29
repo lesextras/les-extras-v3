@@ -9,6 +9,7 @@ import {
   heuresRealisees,
   numero,
   objectifsEnListe,
+  ordreSlot,
   totaux,
   traceValide,
 } from './outils';
@@ -34,8 +35,8 @@ describe("Administration de l'organisme : les règles", () => {
       { debut: instantParis('2026-10-13', '09:00'), fin: instantParis('2026-10-13', '12:00') },
     ]);
     expect(planning.map((p) => [p.cle, p.heures])).toEqual([
-      ['2026-10-12:AFTERNOON', 3.5],
       ['2026-10-12:MORNING', 3.5],
+      ['2026-10-12:AFTERNOON', 3.5],
       ['2026-10-13:MORNING', 3],
     ]);
     const presences = [
@@ -50,6 +51,11 @@ describe("Administration de l'organisme : les règles", () => {
   it('sans planning, estime au prorata des demi-journées émargées de la session', () => {
     const p = [{ slotDate: new Date('2026-10-12T00:00:00Z'), slot: 'MORNING', present: true }];
     expect(heuresRealisees(p, [], 14, 4)).toEqual({ heures: 3.5, estime: true });
+  });
+
+  it('range le matin avant l’après-midi, pas par ordre alphabétique', () => {
+    const cles = ['2026-10-13:MORNING', '2026-10-12:AFTERNOON', '2026-10-12:MORNING'];
+    expect([...cles].sort(ordreSlot)).toEqual(['2026-10-12:MORNING', '2026-10-12:AFTERNOON', '2026-10-13:MORNING']);
   });
 
   it('les créneaux bout à bout ne se chevauchent pas', () => {

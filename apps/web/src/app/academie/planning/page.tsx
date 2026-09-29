@@ -88,7 +88,7 @@ export default async function PlanningPage({ searchParams }: { searchParams: Pro
           const liste = creneaux.filter((c) => jour(new Date(c.debut)) === k);
           return (
             <section key={k} className={`${CARTE} p-3`}>
-              <h2 className="mb-2 text-[14px] font-extrabold capitalize text-[#12312A]">{j.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' })}</h2>
+              <h2 className="mb-2 text-[14px] font-extrabold first-letter:uppercase text-[#12312A]">{j.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' })}</h2>
               {liste.length ? (
                 <ul className="grid gap-2">
                   {liste.map((c) => (

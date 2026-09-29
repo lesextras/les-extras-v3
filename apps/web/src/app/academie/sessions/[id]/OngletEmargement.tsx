@@ -61,7 +61,9 @@ export function OngletEmargement({ ctx }: { ctx: ContexteFiche }) {
     for (const p of s.planning) m.set(cle(p.slotDate, p.slot), { slotDate: p.slotDate, slot: p.slot });
     for (const x of etat?.seances ?? s.seances) m.set(cle(x.slotDate, x.slot), { slotDate: x.slotDate, slot: x.slot });
     for (const e of etat?.emargements ?? []) m.set(cle(e.slotDate, e.slot), { slotDate: e.slotDate, slot: e.slot as 'MORNING' | 'AFTERNOON' });
-    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    // ⚠ Chronologique, pas alphabétique : « AFTERNOON » passerait avant « MORNING ».
+    const rang = (k: string) => k.slice(0, 10) + (k.endsWith('MORNING') ? '1' : '2');
+    return [...m.entries()].sort((a, b) => (rang(a[0]) < rang(b[0]) ? -1 : rang(a[0]) > rang(b[0]) ? 1 : 0));
   }, [s.planning, s.seances, etat]);
 
   const emargementDe = (inscriptionId: string, k: string) => etat?.emargements.find((e) => e.inscriptionId === inscriptionId && cle(e.slotDate, e.slot) === k);
@@ -110,7 +112,7 @@ export function OngletEmargement({ ctx }: { ctx: ContexteFiche }) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#B7E4CE]">
-                Émargement ouvert · <span className="capitalize">{jourLong(ouverte.slotDate)}</span>, {MOMENT[ouverte.slot].toLowerCase()}
+                Émargement ouvert · <span className="first-letter:uppercase">{jourLong(ouverte.slotDate)}</span>, {MOMENT[ouverte.slot].toLowerCase()}
               </p>
               <p className="mt-3 text-lg">Ouvrez votre lien personnel, recopiez ce code, puis signez :</p>
             </div>
@@ -263,7 +265,7 @@ export function OngletEmargement({ ctx }: { ctx: ContexteFiche }) {
           <ul className="mt-4 grid gap-1 text-[14px] text-[#5E7A6E]">
             {(etat?.seances ?? []).map((x) => (
               <li key={x.id}>
-                <span className="capitalize">{jourLong(x.slotDate)}</span>, {MOMENT[x.slot].toLowerCase()} : {x.signatures} signature{x.signatures > 1 ? 's' : ''}
+                <span className="inline-block first-letter:uppercase">{jourLong(x.slotDate)}</span>, {MOMENT[x.slot].toLowerCase()} : {x.signatures} signature{x.signatures > 1 ? 's' : ''}
                 {x.formateurSigneLe ? `, signée par ${x.formateurNom}` : ', sans signature du formateur'}
                 {x.fermeeLe ? '' : ' (ouverte)'}
               </li>

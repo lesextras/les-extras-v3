@@ -30,7 +30,7 @@ export const BTN_PRIMAIRE =
 export const BTN_SECONDAIRE =
   'inline-flex items-center justify-center gap-2 rounded-xl border-2 border-[#CFE4D9] bg-white px-5 py-[10px] text-base font-bold text-[#12312A] no-underline transition hover:border-[#1E9E6A] hover:text-[#0F5F3E] focus:outline-none focus:ring-4 focus:ring-[#E3F5EC] disabled:opacity-60';
 export const BTN_DISCRET =
-  'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold text-[#0F5F3E] no-underline hover:bg-[#E3F5EC]';
+  'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold text-[#0F5F3E] no-underline hover:bg-[#E3F5EC] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
 export const CARTE = 'rounded-2xl border border-[#DDEBE4] bg-white shadow-[0_1px_2px_rgba(15,95,62,0.05)]';
 /** La même carte, qui se soulève un peu au survol : pour ce qui se clique. */
 export const CARTE_VIVE = `${CARTE} transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#B7E4CE] hover:shadow-[0_10px_28px_rgba(15,95,62,0.10)] motion-reduce:transition-none motion-reduce:hover:translate-y-0`;

@@ -36,6 +36,7 @@ import {
   heuresRealisees,
   nouveauJeton,
   objectifsEnListe,
+  ordreSlot,
 } from './outils';
 
 type SessionComplete = Prisma.FormationSessionGetPayload<{
@@ -354,7 +355,7 @@ export class DocumentsSessionService {
     for (const se of s.seances) cles.add(cleSlot(se.slotDate, se.slot));
     const actives = this.actives(s);
     return [...cles]
-      .sort()
+      .sort(ordreSlot)
       .filter((cle) => new Date(`${cle.slice(0, 10)}T23:59:59Z`) <= new Date(Date.now() + 86_400_000))
       .map((cle) => {
         const [jour, slot] = cle.split(':') as [string, 'MORNING' | 'AFTERNOON'];

@@ -95,7 +95,18 @@ export function demiJourneesDuPlanning(creneaux: CreneauLite[]): { cle: string; 
   }
   return [...table.entries()]
     .map(([cle, v]) => ({ cle, ...v }))
-    .sort((x, y) => x.cle.localeCompare(y.cle));
+    .sort((x, y) => ordreSlot(x.cle, y.cle));
+}
+
+/**
+ * L'ordre chronologique de deux clés « AAAA-MM-JJ:MORNING ».
+ *
+ * ⚠ Pas un tri alphabétique : « AFTERNOON » passe avant « MORNING » dans
+ * l'alphabet, et la feuille d'émargement mettait l'après-midi avant le matin.
+ */
+export function ordreSlot(a: string, b: string): number {
+  const rang = (c: string) => c.slice(0, 10) + (c.endsWith('MORNING') ? '1' : '2');
+  return rang(a) < rang(b) ? -1 : rang(a) > rang(b) ? 1 : 0;
 }
 
 export function cleSlot(slotDate: Date, slot: string): string {

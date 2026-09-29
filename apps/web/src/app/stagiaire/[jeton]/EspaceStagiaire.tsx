@@ -167,7 +167,7 @@ export function EspaceStagiaire({ jeton, initial }: { jeton: string; initial: Es
       <div className="mx-auto grid max-w-[760px] gap-5">
         <header className="rounded-3xl p-6 text-white sm:p-8" style={{ backgroundColor: couleur }}>
           <p className="text-sm font-bold uppercase tracking-[0.14em] opacity-80">{e.organisme.nom}</p>
-          <h1 className="mt-2 text-[28px] font-extrabold leading-tight tracking-tight sm:text-[34px]">{s.intitule}</h1>
+          <h1 className="mt-2 text-[28px] font-extrabold leading-tight tracking-tight text-white sm:text-[34px]">{s.intitule}</h1>
           <p className="mt-2 text-[17px] opacity-95">
             {periode}
             {s.dureeHeures ? ` · ${String(s.dureeHeures).replace('.', ',')} heures` : ''}

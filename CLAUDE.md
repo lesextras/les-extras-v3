@@ -6393,3 +6393,14 @@ PostgreSQL 16 réel : rejouée deux fois, zéro dérive.
 
 Au passage : le spec de `billing.service` ne simulait pas `abonnementFactures`
 (deux tests rouges depuis « Mes factures ») : réparé.
+
+**Testé en production le 29/09/2026** sur l'académie « les extras » : formation,
+session, formateur, salle, planning en série, deux stagiaires (salarié financé
+OPCO, particulier), séance ouverte, mauvais code refusé (400), signature du
+stagiaire (201), signature du formateur, présence déclarée, heures réalisées
+3,5 h, positionnement, enquête, sept PDF, ZIP, deux brouillons de facture (par
+financeur), rapport qualité, BPF (F-1 et E justes), Excel, EDOF, planning.
+Données d'essai supprimées ensuite. ⚠ Le test a trouvé un défaut : les
+demi-journées étaient triées par ordre ALPHABÉTIQUE (l'après-midi avant le
+matin) ; `ordreSlot()` les range dans l'ordre du jour, partout. Pendant les
+deux déploiements de l'API, les fiches d'atelier sont restées en 200.
