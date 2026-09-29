@@ -345,7 +345,9 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         <Link href="/" className="flex items-center gap-2 no-underline lg:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/pilote/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
-          <span className="text-[15px] font-extrabold text-[#1D1B5C]">Piloter</span>
+          {/* Sous 430 px, « Connexion » et « Créer un espace » ne laissent pas la place au mot : il était coupé en « P » (vu le 29/09). Le logo reste, le nom passe au lecteur d'écran. */}
+          <span className="hidden text-[15px] font-extrabold text-[#1D1B5C] min-[430px]:inline">Piloter</span>
+          <span className="sr-only min-[430px]:hidden">Piloter</span>
         </Link>
         {compte && (compte.espaceOuvert || (compte.espaces?.length ?? 0) > 0) ? <MenuEspaces compte={compte} /> : null}
         <Link href="/centre-d-aide" className="hidden items-center gap-2 text-[15px] font-bold text-[#1D1B5C] no-underline hover:text-[#4F46E5] md:flex">

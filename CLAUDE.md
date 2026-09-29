@@ -6489,3 +6489,12 @@ prévisionnel au réalisé, pour le budget, les objectifs et le public visé.
   par code de compte, intitulé d'objectif, catégorie de public).
 - Le compte rendu Excel de l'enveloppe gagne trois feuilles : budget prévu et
   réalisé, objectifs, public (`compteRendu(…, supplementaires)`).
+- ⚠ **Pas encore en ligne le 29/09** : le déploiement de l'API (`6860006`) a
+  échoué sur le délai de santé (création de la table au démarrage, cas du
+  16/09) et la relance a été refusée au garde-fou. L'ancienne API tourne,
+  rien n'est cassé. À faire par Siham : Redeploy API, PUIS Redeploy web (le
+  panneau appelle des routes qui n'existent pas avant l'API).
+- Pilote : sous 430 px le mot « Piloter » du logo mobile est masqué (il était
+  coupé en « P » par Connexion + Créer un espace), le logo reste.
+- Audit du 29/09 : doc « Audit complet des cinq sites et du business model
+  ADéPA » (notes 74 adepa77, 71 Pilote, 70 toulali, 68 Les Extras, 62 a2pa).

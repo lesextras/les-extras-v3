@@ -415,7 +415,9 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
         <Link href="/academie" className="flex items-center gap-2 no-underline lg:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/academie/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
-          <span className="text-[15px] font-extrabold text-[#12312A]">Piloter</span>
+          {/* Sous 430 px le mot était coupé en « P » : le logo reste, le nom passe au lecteur d'écran. */}
+          <span className="hidden text-[15px] font-extrabold text-[#12312A] min-[430px]:inline">Piloter</span>
+          <span className="sr-only min-[430px]:hidden">Piloter</span>
         </Link>
         {compte && (compte.espaceOuvert || (compte.espaces?.length ?? 0) > 0) ? <MenuEspaces compte={compte} /> : null}
         <Link href="/academie/centre-d-aide" className="hidden items-center gap-2 text-[15px] font-bold text-[#12312A] no-underline hover:text-[#0F5F3E] md:flex">
