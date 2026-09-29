@@ -6525,3 +6525,13 @@ quatre défauts étaient réels et sont corrigés :
   première convention (service-public F19087). Aucun blocage logiciel n'existait.
 - **CM Mobile = 59 €** (décision de Siham) : prix du cours de Pilote aligné sur
   Teachizy.
+- **Décisions de Siham (29/09, soir)** : les offres payantes d'a2pa.fr
+  (abonnement vocal WhatsApp, Solo, Pro, captation) n'existent PLUS → dépôt
+  `a2pa-studio` : `src/app/cgv/page.tsx` devient « Conditions d'utilisation du
+  studio » (gratuit, droit à l'image, annulation ; pas de prix, pas de
+  médiateur), lien « Offres » → « Se former », boutons « Commencer » → #analyse,
+  plus de mention Solo/Pro ni « vocal WhatsApp ». « L'association vérifie
+  chaque professionnel » (RenforTeam, adepa77) : VRAI, on garde. L'indicateur 33
+  Qualiopi : abandonné, ne pas l'ajouter.
+- Page des frais : les prix de LEX sont écrits (19 € / 200 générations, packs
+  dès 9 €) au lieu de « affichés dans votre espace ».
