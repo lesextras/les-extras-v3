@@ -154,7 +154,7 @@ async function TableauDeBord() {
   if (!academie.nda) {
     aFaire.push({
       titre: "Ton numéro de déclaration d'activité manque",
-      detail: "Sans NDA, aucune convention ne peut être facturée en formation professionnelle. Renseigne-le dès que la DREETS te l'a délivré.",
+      detail: "La déclaration d'activité se dépose dans les trois mois qui suivent ta première convention ou ton premier contrat de formation. Les financeurs (OPCO, France Travail, Mon Compte Formation) demandent ce numéro pour prendre en charge une formation : renseigne-le dès que la DREETS te l'a délivré.",
       href: '/academie/mon-academie',
     });
   }

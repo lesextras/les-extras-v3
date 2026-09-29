@@ -321,14 +321,19 @@ function htmlEnBlocs(html: string): ReactNode[] {
 }
 
 /** Le contenu vient-il de WordPress plutôt que de l'éditeur de l'application ? */
-function ressembleAduHtml(value: string): boolean {
+export function ressembleAduHtml(value: string): boolean {
   return /<(p|h[1-6]|ul|ol|li|blockquote|figure|img|br|strong|em|a)\b[^>]*>/i.test(value);
 }
 
-export function RichText({ value }: { value: string }) {
+/**
+ * `className` remplace la classe du bloc racine : hors de Les Extras (les
+ * fiches de cours de Pilote), le texte doit hériter de la couleur et de la
+ * taille de la page au lieu de prendre celles du thème de Les Extras.
+ */
+export function RichText({ value, className }: { value: string; className?: string }) {
   if (ressembleAduHtml(value)) {
     return (
-      <div className="space-y-4 text-base text-foreground/90">{htmlEnBlocs(value)}</div>
+      <div className={className ?? "space-y-4 text-base text-foreground/90"}>{htmlEnBlocs(value)}</div>
     );
   }
 
@@ -439,7 +444,7 @@ export function RichText({ value }: { value: string }) {
   viderParagraphe(lignes.length);
   viderListe(lignes.length);
 
-  return <div className="space-y-4 text-base text-foreground/90">{blocs}</div>;
+  return <div className={className ?? "space-y-4 text-base text-foreground/90"}>{blocs}</div>;
 }
 
 /** Version texte brut : meta description, aperçus, données structurées. */

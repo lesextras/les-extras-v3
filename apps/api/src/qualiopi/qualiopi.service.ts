@@ -2,97 +2,26 @@ import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpsertProofDto } from './dto/upsert-proof.dto';
 
-/**
- * Référentiel National Qualité (RNQ) — 7 critères / 32 indicateurs.
- * Libellés synthétiques (support de suivi de conformité, non substituable au
- * texte officiel du décret). Seedés automatiquement, non éditables par les comptes.
- */
-const RNQ: { c: number; title: string; indicators: { n: number; label: string }[] }[] = [
-  {
-    c: 1,
-    title: "Conditions d'information du public",
-    indicators: [
-      { n: 1, label: 'Information accessible au public (objectifs, durée, tarifs, prérequis, contacts, délais, accessibilité)' },
-      { n: 2, label: 'Diffusion d’indicateurs de résultats' },
-      { n: 3, label: 'Taux d’obtention, de poursuite et d’insertion (certifications)' },
-    ],
-  },
-  {
-    c: 2,
-    title: 'Identification des objectifs et adaptation des prestations',
-    indicators: [
-      { n: 4, label: 'Analyse du besoin du bénéficiaire' },
-      { n: 5, label: 'Objectifs pédagogiques opérationnels et évaluables' },
-      { n: 6, label: 'Contenus et modalités adaptés aux objectifs' },
-      { n: 7, label: 'Adéquation au référentiel de la certification visée' },
-      { n: 8, label: 'Positionnement et prérequis à l’entrée' },
-    ],
-  },
-  {
-    c: 3,
-    title: 'Adaptation aux publics : accueil, accompagnement, suivi, évaluation',
-    indicators: [
-      { n: 9, label: 'Conditions de déroulement communiquées' },
-      { n: 10, label: 'Adaptation de l’accompagnement et du suivi' },
-      { n: 11, label: 'Évaluation de l’atteinte des objectifs' },
-      { n: 12, label: 'Prise en compte des besoins d’adaptation (rythmes, situations)' },
-      { n: 13, label: 'Coordination avec l’entreprise (alternance)' },
-      { n: 14, label: 'Exercice de la fonction tutorale / maître d’apprentissage' },
-      { n: 15, label: 'Information de l’apprenant sur ses droits et devoirs' },
-      { n: 16, label: 'Accompagnement et prévention des ruptures de parcours' },
-    ],
-  },
-  {
-    c: 4,
-    title: 'Moyens pédagogiques, techniques et d’encadrement',
-    indicators: [
-      { n: 17, label: 'Moyens humains et techniques adaptés + coordination' },
-      { n: 18, label: 'Ressources pédagogiques mises à disposition' },
-      { n: 19, label: 'Personnels dédiés à l’accompagnement' },
-      { n: 20, label: 'Réseau de partenaires socio-économiques' },
-      { n: 21, label: 'Accueil des personnes en situation de handicap' },
-    ],
-  },
-  {
-    c: 5,
-    title: 'Qualification et développement des compétences des personnels',
-    indicators: [
-      { n: 22, label: 'Qualification et compétences des intervenants' },
-      { n: 23, label: 'Développement continu des compétences des personnels' },
-      { n: 24, label: 'Actualisation des compétences des équipes pédagogiques' },
-    ],
-  },
-  {
-    c: 6,
-    title: 'Inscription et investissement dans l’environnement professionnel',
-    indicators: [
-      { n: 25, label: 'Veille légale, réglementaire et sur les évolutions du secteur' },
-      { n: 26, label: 'Veille sur les innovations pédagogiques et technologiques' },
-      { n: 27, label: 'Mobilisation d’expertises et sous-traitance maîtrisée' },
-    ],
-  },
-  {
-    c: 7,
-    title: 'Recueil et prise en compte des appréciations et réclamations',
-    indicators: [
-      { n: 28, label: 'Recueil des appréciations des parties prenantes' },
-      { n: 29, label: 'Traitement des aléas et difficultés rencontrés' },
-      { n: 30, label: 'Traitement des réclamations' },
-      { n: 31, label: 'Analyse et mesures d’amélioration continue' },
-      { n: 32, label: 'Prise en compte du handicap dans l’amélioration continue' },
-    ],
-  },
-];
+import { planifierReport, RNQ } from './referentiel';
+
+/** Le repère qui dit que les preuves ont été reportées sur la numérotation officielle. */
+const REPERE_REPORT = 'qualiopi.rnq.report-numerotation-officielle';
 
 @Injectable()
 export class QualiopiService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Seed idempotent des critères/indicateurs au démarrage. */
+  /**
+   * Le référentiel au démarrage : les 7 critères et 32 indicateurs sont
+   * RÉÉCRITS à chaque démarrage (libellés et rattachements), pour qu'une
+   * correction du référentiel arrive sans intervention. Avant la première
+   * réécriture sur la numérotation officielle, les preuves déjà déposées sont
+   * reportées sur le numéro qui porte leur sens (`planifierReport`), après une
+   * copie intégrale gardée dans `Reglage`.
+   */
   async onModuleInit() {
     try {
-      const count = await this.prisma.qualiopiIndicator.count();
-      if (count >= 32) return;
+      await this.reporterPreuvesSiBesoin();
       for (const crit of RNQ) {
         const criterion = await this.prisma.qualiopiCriterion.upsert({
           where: { number: crit.c },
@@ -110,6 +39,39 @@ export class QualiopiService implements OnModuleInit {
     } catch {
       // Table pas encore créée (premier démarrage avant db push) : ignoré.
     }
+  }
+
+  /**
+   * UNE SEULE FOIS : reporter les preuves déposées sous l'ancienne
+   * numérotation. On reconnaît l'ancienne base à son indicateur 21, qui y
+   * portait le handicap. Rien n'est perdu : copie intégrale d'abord, puis
+   * remplacement dans une transaction.
+   */
+  async reporterPreuvesSiBesoin() {
+    const deja = await this.prisma.reglage.findUnique({ where: { cle: REPERE_REPORT } });
+    if (deja) return;
+    const i21 = await this.prisma.qualiopiIndicator.findUnique({ where: { number: 21 } });
+    const ancienne = !!i21 && /handicap/i.test(i21.label);
+    const preuves = ancienne ? await this.prisma.qualiopiProof.findMany({ include: { indicator: { select: { number: true } } } }) : [];
+    if (preuves.length) {
+      const indicateurs = await this.prisma.qualiopiIndicator.findMany({ select: { id: true, number: true } });
+      const idDe = new Map(indicateurs.map((i) => [i.number, i.id]));
+      const plan = planifierReport(preuves.map((p) => ({ id: p.id, ofAccountId: p.ofAccountId, ancienNumero: p.indicator.number, status: p.status, label: p.label, documentUrl: p.documentUrl, updatedAt: p.updatedAt })));
+      const sessionDe = new Map(preuves.map((p) => [p.id, p.sessionId]));
+      const reviewedDe = new Map(preuves.map((p) => [p.id, p.reviewedAt]));
+      await this.prisma.$transaction(async (tx) => {
+        await tx.reglage.create({ data: { cle: `${REPERE_REPORT}.copie`, valeur: JSON.stringify(preuves.map((p) => ({ ...p, ancienNumero: p.indicator.number }))) } });
+        await tx.qualiopiProof.deleteMany({ where: { id: { in: preuves.map((p) => p.id) } } });
+        for (const r of plan) {
+          const indicatorId = idDe.get(r.numero);
+          if (!indicatorId) continue;
+          await tx.qualiopiProof.create({
+            data: { indicatorId, ofAccountId: r.ofAccountId, status: r.status as never, label: r.label, documentUrl: r.documentUrl, sessionId: sessionDe.get(r.depuis[0]) ?? null, reviewedAt: reviewedDe.get(r.depuis[0]) ?? null },
+          });
+        }
+      });
+    }
+    await this.prisma.reglage.create({ data: { cle: REPERE_REPORT, valeur: JSON.stringify({ le: new Date().toISOString(), ancienne, preuves: preuves.length }) } });
   }
 
   /** Résout le compte OF (ADéPA) porteur de la certification. */

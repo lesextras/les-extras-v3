@@ -6498,3 +6498,30 @@ prévisionnel au réalisé, pour le budget, les objectifs et le public visé.
   coupé en « P » par Connexion + Créer un espace), le logo reste.
 - Audit du 29/09 : doc « Audit complet des cinq sites et du business model
   ADéPA » (notes 74 adepa77, 71 Pilote, 70 toulali, 68 Les Extras, 62 a2pa).
+
+### 29/09/2026 (suite) — les défauts confirmés de l'audit externe
+
+Un second audit (fait par un autre outil) a été vérifié point par point ;
+quatre défauts étaient réels et sont corrigés :
+
+- **Référentiel Qualiopi mal numéroté** (`qualiopi/referentiel.ts`, 8 tests).
+  L'ancien semis rangeait le handicap en 21 et 32, 5 indicateurs au critère 4.
+  Numérotation officielle : C1 1-3, C2 4-8, C3 9-16, C4 17-20, C5 21-22,
+  C6 23-29, C7 30-32 ; 26 = handicap. Le référentiel est désormais RÉÉCRIT à
+  chaque démarrage. ⚠ Avant la première réécriture, les preuves déjà déposées
+  sont REPORTÉES sur le numéro qui porte leur sens (`planifierReport`) : sûr
+  pour 26 anciens numéros, « à vérifier » (mention dans l'intitulé) pour 6 ;
+  deux preuves sur le même numéro → la plus sûre garde la place, l'autre est
+  recopiée dans son intitulé. Copie intégrale avant report dans `Reglage`
+  (`qualiopi.rnq.report-numerotation-officielle.copie`), repère sans `.copie`.
+  Testé sur PG16 (deux démarrages, idempotent). ⚠ L'indicateur 33 du décret
+  n° 2026-728 (CFA, au 1er/11/2026) n'est PAS ajouté : son critère n'a pas pu
+  être lu, on ne le devine pas.
+- **HTML brut sur les fiches de cours de Pilote** (`cours/[slug]`) : description,
+  « pour qui » et prérequis passent par `RichText` (liste blanche, jamais
+  d'injection) quand ils contiennent du HTML ; `RichText` prend un `className`.
+- **NDA** : « Sans NDA, aucune convention ne peut être facturée » était faux.
+  La déclaration se dépose dans les 3 mois qui suivent la signature de la
+  première convention (service-public F19087). Aucun blocage logiciel n'existait.
+- **CM Mobile = 59 €** (décision de Siham) : prix du cours de Pilote aligné sur
+  Teachizy.

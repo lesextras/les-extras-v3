@@ -85,7 +85,7 @@ export default async function ParametresPage() {
           {manquants ? (
             <p className="mt-3 rounded-xl bg-[#FDE7EC] px-4 py-3 text-[14px] leading-relaxed text-[#8A1B3D]">
               {manquants} information{manquants > 1 ? 's' : ''} administrative{manquants > 1 ? 's' : ''} manque
-              {manquants > 1 ? 'nt' : ''}. Sans NDA ni SIRET, aucun financeur ne peut instruire un dossier.
+              {manquants > 1 ? 'nt' : ''}. Les financeurs (OPCO, France Travail, Mon Compte Formation) demandent le NDA et le SIRET pour prendre en charge une formation.
             </p>
           ) : null}
         </section>

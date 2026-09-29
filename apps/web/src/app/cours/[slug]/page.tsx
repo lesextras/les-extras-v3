@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { fetchPublic } from '../../_shared/server';
 import { Rejoindre } from './Rejoindre';
+import { RichText, ressembleAduHtml, texteBrut } from '../../_shared/RichText';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!c) return { title: 'Cours introuvable' };
   return {
     title: `${c.titre} · ${c.ecole.nom}`,
-    description: c.sousTitre ?? c.description?.slice(0, 160) ?? undefined,
+    description: c.sousTitre ?? (c.description ? texteBrut(c.description).slice(0, 160) : undefined),
     alternates: { canonical: `/cours/${c.slug}` },
   };
 }
@@ -88,7 +89,10 @@ export default async function PageDuCours({ params }: { params: Promise<{ slug: 
       <main className="mx-auto grid w-full max-w-[1040px] gap-8 px-4 py-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:py-14">
         <div className="min-w-0">
           {c.description ? (
-            <section className="max-w-[68ch] whitespace-pre-line text-lg leading-relaxed">{c.description}</section>
+            <section className="max-w-[68ch] text-lg leading-relaxed">
+              {/* Les fiches importées de Teachizy arrivent en HTML : sans lecture, la page affichait `<p>` et `&nbsp;` en clair (vu le 29/09). RichText lit ce HTML par liste blanche, sans jamais l'injecter. */}
+              {ressembleAduHtml(c.description) ? <RichText value={c.description} className="space-y-4 [&_ul]:list-disc [&_ul]:pl-5" /> : <span className="whitespace-pre-line">{c.description}</span>}
+            </section>
           ) : null}
 
           {c.objectifs.length ? (
@@ -140,13 +144,13 @@ export default async function PageDuCours({ params }: { params: Promise<{ slug: 
               {c.pourQui ? (
                 <div className="rounded-2xl border border-[#DDEBE4] bg-white p-5">
                   <h3 className="font-extrabold tracking-tight text-[#12312A]">Pour qui</h3>
-                  <p className="mt-1.5 whitespace-pre-line leading-relaxed">{c.pourQui}</p>
+                  {ressembleAduHtml(c.pourQui) ? <RichText value={c.pourQui} className="mt-1.5 space-y-2 leading-relaxed" /> : <p className="mt-1.5 whitespace-pre-line leading-relaxed">{c.pourQui}</p>}
                 </div>
               ) : null}
               {c.prerequis ? (
                 <div className="rounded-2xl border border-[#DDEBE4] bg-white p-5">
                   <h3 className="font-extrabold tracking-tight text-[#12312A]">Prérequis</h3>
-                  <p className="mt-1.5 whitespace-pre-line leading-relaxed">{c.prerequis}</p>
+                  {ressembleAduHtml(c.prerequis) ? <RichText value={c.prerequis} className="mt-1.5 space-y-2 leading-relaxed" /> : <p className="mt-1.5 whitespace-pre-line leading-relaxed">{c.prerequis}</p>}
                 </div>
               ) : null}
             </section>
