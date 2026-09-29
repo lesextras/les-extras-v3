@@ -39,7 +39,7 @@ const COMMUNES: Reponse[] = [
     cle: 'gratuit',
     question: "C'est vraiment gratuit ?",
     reponse:
-      "Oui. Pas d'essai limité, pas de compteur, pas de carte bancaire. L'outil est porté par ADéPA, association éducative de Melun, avec Toulali, centre de formation. Un don la soutient et ouvre droit à un reçu fiscal, mais rien n'est demandé pour se servir de l'outil.",
+      "Oui. Pas d'essai limité, pas de compteur, pas de carte bancaire. L'outil est porté par ADéPA, association éducative de Melun. Un don la soutient et ouvre droit à un reçu fiscal, mais rien n'est demandé pour se servir de l'outil.",
     suite: ['espace', 'donnees'],
   },
   {

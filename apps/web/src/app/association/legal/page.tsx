@@ -21,7 +21,7 @@ const SECTIONS: { id: string; titre: string; paragraphes: string[] }[] = [
     id: 'mentions',
     titre: 'Mentions légales',
     paragraphes: [
-      "Piloter (Piloter mon association, Piloter mon académie) est édité par ADéPA, association loi 1901, SIRET 820 051 852 00011, dont le siège est au 7 rue André Malraux, 77000 Melun. Toulali est l'organisme de formation d'ADéPA (déclaration d'activité 11771011677, certification Qualiopi QNW0132).",
+      "Piloter (Piloter mon association, Piloter mon académie) est édité par ADéPA, association loi 1901, SIRET 820 051 852 00011, dont le siège est au 7 rue André Malraux, 77000 Melun. ADéPA est aussi organisme de formation (déclaration d'activité 11771011677, certification Qualiopi QNW0132) ; Toulali est la marque sous laquelle elle publie Piloter.",
       'Directeur de la publication : Christophe Renaud. Contact : assoc.adepa@gmail.com.',
       'Hébergement : Hostinger International Ltd., 61 Lordou Vironos Street, 6023 Larnaca, Chypre. Les serveurs utilisés sont situés dans l’Union européenne.',
     ],

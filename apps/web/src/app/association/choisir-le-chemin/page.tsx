@@ -120,7 +120,7 @@ export default async function ChoisirLeChemin() {
   return (
     <>
       {/* ------------------------------------------------------------- l'entrée */}
-      <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#6B6A8A]">Par Toulali, centre de formation</p>
+      <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#6B6A8A]">Par Toulali</p>
       <h1 className="mt-2 text-4xl font-extrabold leading-[1.05] tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-5xl">
         Les deux chemins, <Accent>en entier</Accent>.
       </h1>

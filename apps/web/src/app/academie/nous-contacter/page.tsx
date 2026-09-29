@@ -45,7 +45,7 @@ export default function NousContacterAcademiePage() {
             <p className="mt-2 font-extrabold text-[#12312A]">ADéPA</p>
             <p className="mt-1 text-sm leading-relaxed text-[#334A42]">
               Association éducative basée à Melun (Seine-et-Marne). C&apos;est elle qui construit « Piloter mon académie » avec
-              Toulali, son centre de formation certifié Qualiopi.
+              son centre de formation certifié Qualiopi.
             </p>
             <p className="mt-3 text-sm">
               <a href={`mailto:${ADRESSE_ADEPA}`} className="font-bold text-[#0F5F3E] underline underline-offset-4">

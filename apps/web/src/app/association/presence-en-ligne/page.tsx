@@ -72,7 +72,7 @@ export default function PresenceEnLignePage() {
         <Encart ton="neutre">
           <p className="text-lg font-extrabold text-[#1D1B5C]">Pour aller plus loin</p>
           <p className="mt-1 leading-relaxed">
-            Faire vivre ces pages chaque semaine, c&apos;est un métier : Toulali forme au community management avec un simple téléphone, et une association peut faire financer la formation.
+            Faire vivre ces pages chaque semaine, c&apos;est un métier : le centre de formation d&apos;ADéPA forme au community management avec un simple téléphone, et une association peut faire financer la formation.
           </p>
           <p className="mt-3 text-sm text-[#6B6A8A]">
             Liens relus le {formaterDate(VERIFIE_LE)}.{' '}

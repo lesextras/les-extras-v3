@@ -84,7 +84,7 @@ export default async function PageFormulaire({ params }: { params: Promise<{ slu
           <a href="https://pilote.toulali.fr" className="font-bold text-[#4F46E5] underline underline-offset-4">
             Piloter
           </a>
-          , un outil de Toulali, centre de formation. Tes réponses ne sont lues que par la structure qui pose les
+          , un outil de Toulali. Tes réponses ne sont lues que par la structure qui pose les
           questions.
         </p>
       </main>

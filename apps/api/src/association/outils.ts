@@ -183,8 +183,8 @@ export const CARTE_DES_OUTILS: readonly BesoinOutille[] = [
         cout: 'PUBLIC',
       },
       {
-        nom: 'Toulali, centre de formation',
-        lien: 'https://toulali.fr/',
+        nom: 'Le centre de formation d’ADéPA',
+        lien: 'https://adepa77.fr/formations/',
         ceQuIlFait: "Les formations de l'opérateur de cet outil, finançables par votre OPCO pour les associations employeuses.",
         cout: 'PAYANT',
         coutDetail: 'Prise en charge possible par l\'OPCO.',

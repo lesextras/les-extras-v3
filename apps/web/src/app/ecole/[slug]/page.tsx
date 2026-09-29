@@ -209,7 +209,7 @@ export default async function PageEcole({ params }: { params: Promise<{ slug: st
             <a href="https://pilote.toulali.fr" className="font-bold underline underline-offset-4">
               Piloter
             </a>
-            , un outil de Toulali, centre de formation.
+            , un outil de Toulali.
           </p>
         </footer>
       </main>

@@ -179,7 +179,7 @@ function Plateforme() {
             </h2>
             <p className="mt-3 max-w-[58ch] text-lg leading-relaxed text-[#3B3A66]">
               <span className="font-bold text-[#1D1B5C]">ADéPA</span>, association éducative de Melun, porte ce dispositif
-              avec <span className="font-bold text-[#1D1B5C]">Toulali</span>, son centre de formation. Pas d&apos;actionnaire,
+              avec <span className="font-bold text-[#1D1B5C]">Toulali</span>, le logiciel qu&apos;elle a créé pour les créateurs d&apos;activité. Pas d&apos;actionnaire,
               pas d&apos;abonnement : ce que tu construis ici t&apos;appartient.
             </p>
 
@@ -262,7 +262,7 @@ function Plateforme() {
 function EspaceAssociation() {
   return (
     <>
-      <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#6B6A8A]">Par Toulali, centre de formation</p>
+      <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#6B6A8A]">Par Toulali</p>
       <h1 className="mt-2 text-4xl font-extrabold leading-[1.05] tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-5xl">
         Piloter mon <Accent>association</Accent>
       </h1>

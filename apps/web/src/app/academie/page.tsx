@@ -31,7 +31,7 @@ async function Presentation() {
   return (
     <>
       <Titre
-        surtitre="Par Toulali, centre de formation"
+        surtitre="Par Toulali"
         sousTitre="Ton organisme, tes preuves Qualiopi, tes financements : le chemin est balisé."
       >
         Piloter mon <Accent>académie</Accent>

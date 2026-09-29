@@ -199,7 +199,7 @@ export default async function PageDuCours({ params }: { params: Promise<{ slug: 
         <a href="https://pilote.toulali.fr" className="font-bold underline underline-offset-4">
           Piloter
         </a>
-        , un outil de Toulali, centre de formation.
+        , un outil de Toulali.
       </footer>
     </div>
   );

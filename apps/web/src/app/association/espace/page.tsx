@@ -405,7 +405,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
               <h2 className="text-xl font-extrabold text-[#1D1B5C]">Apprends, étape par étape</h2>
               <p className="mt-1 leading-relaxed">
                 Chaque étape du chemin explique pourquoi, comment faire, et donne les papiers à remplir. Et pour aller plus loin,
-                les formations de Toulali (centre de formation certifié Qualiopi) peuvent être financées par ton OPCO.
+                les formations du centre de formation d&apos;ADéPA (certifié Qualiopi) peuvent être financées par ton OPCO.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 md:justify-end">

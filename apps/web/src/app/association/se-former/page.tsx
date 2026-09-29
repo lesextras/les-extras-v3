@@ -5,7 +5,7 @@ import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Carte, Encart, SousTitre, 
 export const metadata: Metadata = {
   title: 'Se former',
   description:
-    "Les étapes du chemin pour apprendre gratuitement, et les formations de Toulali, centre de formation certifié Qualiopi, finançables par l'OPCO de l'association.",
+    "Les étapes du chemin pour apprendre gratuitement, et les formations d'ADéPA, centre de formation certifié Qualiopi, finançables par l'OPCO de l'association.",
   alternates: { canonical: '/se-former' },
 };
 
@@ -27,23 +27,23 @@ const FORMATIONS = [
   {
     titre: 'Community manager mobile : 100 % smartphone',
     duree: 'En ligne, à son rythme',
-    prix: '190 €',
+    prix: 'Tarif sur la fiche',
     pourQui: "Faire connaître l'association sur les réseaux, sans matériel.",
-    lien: 'https://toulali.teachizy.fr/',
+    lien: 'https://adepa77.fr/formations/',
   },
   {
     titre: 'Community manager IA : Essentielle',
     duree: 'En ligne, à son rythme',
-    prix: '790 € (ou 2 × 395 €)',
+    prix: 'Tarif sur la fiche',
     pourQui: "Communiquer plus vite avec l'intelligence artificielle : textes, visuels, planning.",
-    lien: 'https://toulali.teachizy.fr/',
+    lien: 'https://adepa77.fr/formations/',
   },
   {
     titre: 'Community manager IA : Accompagnement',
     duree: 'En ligne + accompagnement',
-    prix: '2 200 € (ou 4 × 550 €)',
+    prix: 'Tarif sur la fiche',
     pourQui: 'Avec un suivi personnalisé, pour la personne qui tient la communication.',
-    lien: 'https://toulali.teachizy.fr/',
+    lien: 'https://adepa77.fr/formations/',
   },
 ];
 
@@ -52,7 +52,7 @@ export default function SeFormerPage() {
     <>
       <Titre
         surtitre="Se former"
-        sousTitre="D'abord ce qui est gratuit : le chemin explique chaque démarche. Ensuite, pour aller plus loin, les formations de Toulali, centre de formation certifié Qualiopi : une association peut les faire financer."
+        sousTitre="D'abord ce qui est gratuit : le chemin explique chaque démarche. Ensuite, pour aller plus loin, les formations d'ADéPA, centre de formation certifié Qualiopi : une association peut les faire financer."
       >
         Apprendre, <Accent>gratuitement</Accent> d&apos;abord.
       </Titre>
@@ -73,7 +73,7 @@ export default function SeFormerPage() {
       </section>
 
       <section className="mt-10">
-        <SousTitre>Les formations Toulali, certifiées Qualiopi</SousTitre>
+        <SousTitre>Les formations d&apos;ADéPA, certifiées Qualiopi</SousTitre>
         <div className="grid gap-4 md:grid-cols-2">
           {FORMATIONS.map((f) => (
             <Carte key={f.titre}>
@@ -89,7 +89,7 @@ export default function SeFormerPage() {
             </Carte>
           ))}
         </div>
-        <p className="mt-3 text-xs text-[#6B6A8A]">Les tarifs sont ceux affichés sur la boutique de Toulali ; ils peuvent évoluer.</p>
+        <p className="mt-3 text-xs text-[#6B6A8A]">Les tarifs à jour sont sur le catalogue du centre de formation d&apos;ADéPA (adepa77.fr), qui fait foi.</p>
       </section>
 
       <section className="mt-10 grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
@@ -102,7 +102,7 @@ export default function SeFormerPage() {
               « formation des bénévoles » financent aussi.
             </li>
             <li>
-              <span className="font-bold">2. Demande un devis et le programme.</span> Toulali est certifié Qualiopi : c&apos;est la condition
+              <span className="font-bold">2. Demande un devis et le programme.</span> ADéPA est certifiée Qualiopi : c&apos;est la condition
               pour qu&apos;un financeur public ou un OPCO accepte.
             </li>
             <li>
@@ -112,12 +112,12 @@ export default function SeFormerPage() {
           </ol>
         </Encart>
         <Carte>
-          <p className="text-lg font-extrabold text-[#1D1B5C]">Parler à Toulali</p>
+          <p className="text-lg font-extrabold text-[#1D1B5C]">Parler au centre de formation</p>
           <p className="mt-1 leading-relaxed">
             Pour un devis, un programme, ou savoir quel financement est possible pour ton association.
           </p>
-          <a href="https://toulali.fr" target="_blank" rel="noopener" className={`${BTN_PRIMAIRE} mt-4`}>
-            toulali.fr ↗
+          <a href="https://adepa77.fr/prendre-rendez-vous/" target="_blank" rel="noopener" className={`${BTN_PRIMAIRE} mt-4`}>
+            Prendre rendez-vous ↗
           </a>
         </Carte>
       </section>
