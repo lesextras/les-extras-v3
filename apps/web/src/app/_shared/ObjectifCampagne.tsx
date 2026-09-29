@@ -1,6 +1,8 @@
-// Jalon de campagne (esprit Vesk) : où en est-on des 4 000 € avant fin
-// septembre, et quel rythme hebdomadaire il reste à tenir. Données réelles :
-// réservations confirmées + factures payées.
+// Jalon de campagne (esprit Vesk) : où en est-on de l'objectif, et quel
+// rythme hebdomadaire il reste à tenir. ⚠ 29/09/2026 : l'objectif ne compte
+// que la RECETTE PROPRE de l'association (crédits LEX payés, factures qu'elle
+// a émises et encaissées). Le volume des réservations, payé aux intervenants,
+// est affiché à part : ce n'est pas une recette.
 import Link from "next/link";
 import { Target, TrendingUp, CalendarClock, Radio, Compass } from "lucide-react";
 
@@ -15,7 +17,7 @@ export interface ObjectifData {
   echeance?: string;
   /// Vrai quand l'échéance est passée : on cesse d'afficher un rythme.
   echue?: boolean;
-  detail?: { reservations: number; factures: number };
+  detail?: { reservations: number; factures: number; lex?: number };
 }
 
 const euros = (n: number) =>
@@ -73,7 +75,7 @@ export function ObjectifCampagne({ objectif, funnel, sources, inscriptionsParSou
                 : null}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Réservations confirmées et factures payées, en temps réel.
+              Recette propre de l’association : crédits LEX et factures qu’elle a émises, payés.
             </p>
           </div>
         </div>
@@ -116,7 +118,7 @@ export function ObjectifCampagne({ objectif, funnel, sources, inscriptionsParSou
           <p className="mt-0.5 text-lg font-semibold">{euros(objectif.rythmeHebdo)} / semaine</p>
         </div>
         <div className="rounded-xl bg-muted/60 px-4 py-3">
-          <p className="text-xs text-muted-foreground">Dont réservations</p>
+          <p className="text-xs text-muted-foreground">Volume des réservations (payé aux intervenants, hors recette)</p>
           <p className="mt-0.5 text-lg font-semibold">
             {euros(objectif.detail?.reservations ?? 0)}
           </p>
@@ -137,7 +139,8 @@ export function ObjectifCampagne({ objectif, funnel, sources, inscriptionsParSou
               { l: "Réservations", v: funnel.reservations },
             ].map((e, i, arr) => {
               const prec = i > 0 ? arr[i - 1]!.v : 0;
-              const taux = i > 0 && prec > 0 ? Math.round((e.v / prec) * 100) : null;
+              // Au-dessus de 100 %, les deux étapes ne portent pas sur la même population : pas de taux.
+              const taux = i > 0 && prec > 0 && e.v <= prec ? Math.round((e.v / prec) * 100) : null;
               return (
                 <li key={e.l} className="rounded-xl border border-border/70 px-4 py-3">
                   <p className="text-xs text-muted-foreground">{e.l}</p>

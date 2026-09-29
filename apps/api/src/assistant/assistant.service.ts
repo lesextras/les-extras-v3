@@ -1,3 +1,4 @@
+import { ecritDepuisJsonEventuel } from './reponse-json';
 import {
   BadRequestException,
   ForbiddenException,
@@ -296,7 +297,8 @@ export class AssistantService {
       // plafond calculé sur la seule trame produirait un document tronqué.
       maxTokens: ecrits.length ? 2600 : trameMaison ? 1600 : undefined,
     });
-    let brouillon = this.pseudo.restaurer(brouillonMasque, table);
+    // Un JSON à la place d'un écrit est remis en forme, ou refusé s'il est coupé (voir reponse-json.ts).
+    let brouillon = this.pseudo.restaurer(ecritDepuisJsonEventuel(brouillonMasque), table);
     // Le modèle invente parfois des jetons absents de la table ([DATE-9]…) :
     // on les remplace par une mention neutre à compléter par l'auteur.
     brouillon = sansBalisage(nettoyerJetonsResiduels(brouillon));

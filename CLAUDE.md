@@ -6535,3 +6535,16 @@ quatre défauts étaient réels et sont corrigés :
   Qualiopi : abandonné, ne pas l'ajouter.
 - Page des frais : les prix de LEX sont écrits (19 € / 200 générations, packs
   dès 9 €) au lieu de « affichés dans votre espace ».
+- **Objectif de l'admin = recette propre** (`admin.service.ts` `funnel()`) :
+  crédits LEX PAYÉS + factures PAYÉES émises par les comptes ADéPA. Les
+  réservations confirmées (payées aux intervenants, 0 % de commission) sont
+  affichées à part comme « volume des réservations, hors recette ». Le tunnel
+  vues → demandes → devis → réservations porte sur les MÊMES fiches (comptes
+  non archivés, hors test) ; un taux > 100 % n'est plus affiché.
+- **LEX : réponse JSON du moteur** (`assistant/reponse-json.ts`, 4 tests) :
+  JSON complet → remis en écrit (rubrique par clé, puce par élément) ; JSON
+  coupé → erreur 503, le crédit est rendu par `avecCredit`.
+- a2pa.fr : zéro tiret cadratin dans confidentialité, mentions légales, Club.
+  ⚠ La politique de confidentialité liste encore les sous-traitants de
+  l'ancien service payant (Stripe, ElevenLabs, fal.ai…) : à revoir le jour où
+  le code du cockpit est retiré, pas avant (il tourne encore).

@@ -1922,81 +1922,74 @@ export class AdminService {
    * pour lire la conversion à chaque étage : vue → demande → devis → réservation.
    */
   async funnel() {
-    const [services, formations, devis, reservations, reservationsTotales, demandesPubliques] =
-      await this.prisma.$transaction([
-        this.prisma.service.findMany({
-          where: { status: 'PUBLISHED' },
-          orderBy: { views: 'desc' },
-          take: 100,
-          select: {
-            id: true,
-            title: true,
-            views: true,
-            requestsCount: true,
-            price: true,
-            _count: { select: { bookings: true, quotes: true } },
-          },
-        }),
-        this.prisma.formation.findMany({
-          where: { status: 'PUBLISHED' },
-          orderBy: { views: 'desc' },
-          take: 100,
-          select: { id: true, slug: true, title: true, views: true, requestsCount: true },
-        }),
-        this.prisma.quote.count(),
-        // Seules les réservations réellement issues d'un devis appartiennent au
-        // tunnel : compter toutes les réservations (dont celles créées à la main
-        // ou par RenforTeam) produisait des taux absurdes, supérieurs à 100 %.
-        this.prisma.quote.count({ where: { bookingId: { not: null } } }),
-        this.prisma.booking.count(),
-        this.prisma.contactRequest.count(),
-      ]);
+    // ⚠ 29/09/2026 (audit externe) : les étapes du tunnel doivent porter sur
+    // la MÊME population, sinon un taux dépasse 100 % (2 demandes, 3 devis :
+    // 150 %). On part des fiches publiées par des comptes non archivés, hors
+    // données de test, et on ne compte que les devis et réservations issus de
+    // CES fiches. Même périmètre que `stats()` (archivedAt + sansTitreTest).
+    const actifs = { account: { archivedAt: null } };
+    const [services, formations, reservationsTotales, demandesPubliques] = await this.prisma.$transaction([
+      this.prisma.service.findMany({
+        where: { status: 'PUBLISHED', ...actifs, ...sansTitreTest() },
+        orderBy: { views: 'desc' },
+        take: 100,
+        select: {
+          id: true,
+          title: true,
+          views: true,
+          requestsCount: true,
+          price: true,
+          _count: { select: { bookings: true, quotes: true } },
+        },
+      }),
+      this.prisma.formation.findMany({
+        where: { status: 'PUBLISHED', ownerAccount: { archivedAt: null } },
+        orderBy: { views: 'desc' },
+        take: 100,
+        select: { id: true, slug: true, title: true, views: true, requestsCount: true },
+      }),
+      this.prisma.booking.count({ where: actifs }),
+      this.prisma.contactRequest.count(),
+    ]);
+    const idsFiches = services.map((s) => s.id);
+    const [devis, reservations] = await this.prisma.$transaction([
+      this.prisma.quote.count({ where: { serviceId: { in: idsFiches } } }),
+      // Seules les réservations issues d'un devis de ces fiches appartiennent au tunnel.
+      this.prisma.quote.count({ where: { serviceId: { in: idsFiches }, bookingId: { not: null } } }),
+    ]);
 
     const vues = services.reduce((t, s) => t + (s.views ?? 0), 0);
     const demandes = services.reduce((t, s) => t + (s.requestsCount ?? 0), 0);
 
-    // Objectif de campagne : CA encaissé (réservations confirmées + factures
-    // payées) — DONNÉES DE DÉMONSTRATION EXCLUES.
+    // L'OBJECTIF NE COMPTE QUE LA RECETTE PROPRE DE L'ASSOCIATION.
     //
-    // Le cockpit agrégeait jusqu'ici les comptes de démonstration et la
-    // facture du jeu d'essai : on pilotait l'objectif de l'association sur un
-    // chiffre partiellement fictif, ce qui est la pire base de décision. Les
-    // comptes de démo se reconnaissent à leur nom ou à l'adresse de leur
-    // propriétaire ; ce filtre disparaîtra de lui-même quand ces comptes
-    // auront été supprimés.
-    const comptesDemo = await this.prisma.account.findMany({
-      where: {
-        OR: [
-          { name: { contains: '(démo)', mode: 'insensitive' } },
-          { name: { contains: '(demo)', mode: 'insensitive' } },
-          { name: { startsWith: 'QA ' } },
-          { name: { startsWith: 'Verif ' } },
-          { name: { startsWith: 'Audit ' } },
-          { owner: { email: { endsWith: '@example.com' } } },
-          { owner: { email: { endsWith: '@mailinator.com' } } },
-        ],
-      },
+    // Il additionnait les réservations confirmées (le prix que l'établissement
+    // paie à l'INTERVENANT, commission 0 %) et les factures payées : un volume
+    // d'affaires présenté comme de l'argent encaissé. La recette de
+    // l'association, c'est : les crédits LEX réellement payés, et les factures
+    // payées qu'ELLE a émises. Le volume des réservations reste affiché à part,
+    // sous son vrai nom.
+    const comptesAssociation = await this.prisma.account.findMany({
+      where: { archivedAt: null, OR: [{ name: { contains: 'adépa', mode: 'insensitive' } }, { name: { contains: 'adepa', mode: 'insensitive' } }] },
       select: { id: true },
     });
-    const idsDemo = comptesDemo.map((c) => c.id);
-    const horsDemo = idsDemo.length ? { accountId: { notIn: idsDemo } } : {};
-
-    const [reservationsPayees, facturesPayees] = await Promise.all([
+    const idsAssociation = comptesAssociation.map((c) => c.id);
+    const [reservationsConfirmees, facturesPayees, achatsLex] = await Promise.all([
       this.prisma.booking.findMany({
-        where: { status: { in: ['CONFIRMED', 'COMPLETED'] }, ...horsDemo },
-        select: { totalAmount: true, createdAt: true },
+        where: { status: { in: ['CONFIRMED', 'COMPLETED'] }, ...actifs },
+        select: { totalAmount: true },
       }),
       this.prisma.invoice.findMany({
-        // La série FAC- est celle du jeu de démonstration ; les factures
-        // réelles sont numérotées INV- (séquence légale continue).
-        where: { status: 'PAID', number: { startsWith: 'INV-' }, ...horsDemo },
-        select: { amount: true, issuedAt: true, createdAt: true },
+        where: { status: 'PAID', number: { startsWith: 'INV-' }, accountId: { in: idsAssociation } },
+        select: { amount: true },
       }),
+      this.prisma.creditPurchase.findMany({ where: { status: 'PAID' }, select: { amountCents: true } }),
     ]);
     const nombre = (v: unknown) => (v == null ? 0 : Number(v));
-    const caReservations = reservationsPayees.reduce((t, b) => t + nombre(b.totalAmount), 0);
+    const volumeReservations = reservationsConfirmees.reduce((t, b) => t + nombre(b.totalAmount), 0);
     const caFactures = facturesPayees.reduce((t, f) => t + nombre(f.amount), 0);
-    const caEncaisse = Math.round(caReservations + caFactures);
+    const caLex = achatsLex.reduce((t, a) => t + a.amountCents, 0) / 100;
+    const caEncaisse = Math.round(caFactures + caLex);
 
     // La cible et l'échéance étaient écrites en dur. Passé la date, le cockpit
     // affichait « 0 jour restant » pour toujours, et il fallait un déploiement
@@ -2027,9 +2020,7 @@ export class AdminService {
         ? 0
         : Math.ceil(Math.max(0, OBJECTIF - caEncaisse) / semainesRestantes),
       echeance: echeance.toISOString(),
-      detail: { reservations: Math.round(caReservations), factures: Math.round(caFactures) },
-      /// Nombre de comptes de démonstration exclus du calcul (0 = base saine).
-      comptesDemoExclus: idsDemo.length,
+      detail: { reservations: Math.round(volumeReservations), factures: Math.round(caFactures), lex: Math.round(caLex) },
     };
 
     // Attribution : d'où viennent les demandes (mécanisme Vesk).
@@ -2109,8 +2100,10 @@ export class AdminService {
       .sort((a, b) => (a.date < b.date ? 1 : -1))
       .slice(0, 8);
 
+    // Un taux au-dessus de 100 % trahit deux populations différentes : on
+    // n'affiche alors aucun taux plutôt qu'un chiffre faux.
     const taux = (haut: number, bas: number) =>
-      bas > 0 ? Math.round((haut / bas) * 1000) / 10 : null;
+      bas > 0 && haut <= bas ? Math.round((haut / bas) * 1000) / 10 : null;
 
     return {
       objectif,
