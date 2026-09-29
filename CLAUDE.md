@@ -6404,3 +6404,46 @@ Données d'essai supprimées ensuite. ⚠ Le test a trouvé un défaut : les
 demi-journées étaient triées par ordre ALPHABÉTIQUE (l'après-midi avant le
 matin) ; `ordreSlot()` les range dans l'ordre du jour, partout. Pendant les
 deux déploiements de l'API, les fiches d'atelier sont restées en 200.
+
+### 29/09/2026 — adepa77 1.5.1 / 1.5.2 : un seul menu, celui de l'accueil
+
+- L'en-tête était déjà le même sur toutes les pages. Ce qui faisait « changer
+  le menu » : un second menu (`div.legal-nav` : logo ADÉPA. + Accueil, Notre
+  histoire, Mentions légales, Confidentialités, CGU) écrit DANS le contenu de
+  quatre pages. Retiré (`inc/menu-unique.php`), copies d'avant en métas
+  `_adepa_cf_avant_151` et `_adepa_cf_elementor_avant_152`. Vérifié sur les
+  95 adresses du plan du site : 91 portent le menu de l'accueil, 0 bloc
+  `legal-nav` ; les 4 sans en-tête sont les pages embarquées des fenêtres
+  (don, newsletter, rendez-vous) et /merci-don/.
+- ⚠ Mentions légales, CGU et confidentialités sont des pages ELEMENTOR : le
+  vrai contenu est dans `_elementor_data`, `post_content` n'en garde qu'une
+  copie en texte (sans les `div`). Une migration sur `post_content` seul n'y
+  change rien à l'écran. « Notre histoire » est une page classique.
+- Le pied de page reste différent entre l'accueil (pied Elementor) et les
+  autres pages (menu Astra 22, qui porte les liens Qualiopi : informations
+  réglementaires, CGV formation). Non touché.
+
+### 29/09/2026 (suite) — les points 12, 14, 15, 16 et 17 de l'audit
+
+- **Pilote, /chemin sur téléphone** (`association/choisir-le-chemin`) : sous
+  `md`, la frise horizontale (2 800 px à faire glisser) devient un fil
+  vertical ; au-dessus, la frise est inchangée. **Menu mobile** des deux
+  espaces : bouton « Menu » dans la barre du haut (événement `pilote:menu`),
+  tiroir avec bouton Fermer ; le rond flottant en bas à droite est retiré.
+- **Accueil Les Extras** : chaque situation dit « Combien ça coûte » (champ
+  `tarif` de `QuatreSituations`), relu dans le code : 15 % de frais de gestion
+  payés par le demandeur (RenforTeam), tarif affiché sans commission (ateliers),
+  15 écrits gratuits puis 19 € / 200 ou packs dès 9 € (LEX).
+- **Mail de Pilote** : boîte propre `PILOTE_SMTP_*` (voir
+  `docs/separation-pilote.md`, étape 2).
+- **adepa77 1.5.3** : le pied de page de l'accueil gagne « Nos formations »,
+  « Partenaires associatifs », « Informations réglementaires », « CGV
+  formation » (rien retiré ; copie en `_adepa_cf_elementor_avant_153`).
+- **toulali-pilote 1.1.3** : la feuille Google Fonts est préchargée au lieu de
+  bloquer l'affichage, jQuery UI (inutilisé) retiré de l'accueil : 17 → 13
+  requêtes, premier affichage ~1,3 s (mesuré, navigateur sans cache).
+- ⚠ **Session d'admin toulali.fr expirée** : on y rentre par hPanel →
+  toulali.fr → « Admin WordPress » (connexion automatique Hostinger), jamais
+  en tapant un mot de passe.
+- ⚠ Refusé encore au garde-fou le 29/09 : supprimer le doublon d'extension
+  `adepa77-centre-formation` 1.4.7 (inactif). À faire par Siham.

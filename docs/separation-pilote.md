@@ -28,6 +28,21 @@ reviennent. Il se lit avant de toucher à quoi que ce soit du sujet.
   variable existe.
 - Les comptes Pilote (`ASSOCIATION`, `ACADEMIE`) ne peuvent plus s'ouvrir
   depuis les-extras.fr (`auth/trois-comptes.spec.ts`).
+- **Étape 2, côté code (29/09/2026)** : `MailService` choisit la boîte d'envoi
+  selon le produit. Un message de Pilote ou d'une école (`expediteurPilote`,
+  `expediteurEcole`, qui portent `produit: 'pilote'`) part par
+  `PILOTE_SMTP_HOST` / `PILOTE_SMTP_USER` / `PILOTE_SMTP_PASSWORD`
+  (`PILOTE_SMTP_PORT`, 465 par défaut) avec l'adresse `PILOTE_MAIL_FROM` si elle
+  est du même domaine. Sans ces variables, rien ne change. Reste la boîte
+  elle-même (hPanel, toulali.fr) et son mot de passe, que Siham pose dans
+  Coolify. 3 tests dans `mail.service.spec.ts`.
+- **Étape 3, côté code** : le middleware lit `PRODUIT` (`pilote` ou
+  `les-extras`) et répond 421 à un hôte de l'autre produit. ⚠ Une SECONDE app
+  API n'est pas encore possible sans risque : tous les planificateurs (tunnel,
+  enquêtes, relances de factures, gestion de l'académie) tourneraient deux
+  fois sur la même base. Il faut d'abord les répartir par produit.
+- Sur téléphone, le menu de Pilote s'ouvre depuis un bouton « Menu » dans la
+  barre du haut, plus depuis un rond flottant.
 
 ## Le chemin, dans l'ordre, et ce que chaque étape coûte
 

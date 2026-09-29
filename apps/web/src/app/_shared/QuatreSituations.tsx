@@ -97,6 +97,15 @@ type Situation = {
   accent?: string;
   /** Le chiffre vrai, et ce qu'il désigne. */
   chiffre: { valeur: string; quoi: string };
+  /**
+   * COMBIEN ÇA COÛTE, ET COMMENT ON PAIE (audit du 28/09/2026, point 15 :
+   * « le prix ou le mode de vente de chaque service, aujourd'hui il faut
+   * cliquer »). Une phrase, lue dans le code et jamais inventée :
+   * `COMMISSION_RENFORT` (billing/commission.ts), le 0 % des ateliers,
+   * `FREE_MONTHLY_CREDITS`, `SUBSCRIPTION_PLANS` et `CREDIT_PACKS`
+   * (billing.service.ts). Si l'un bouge, cette ligne bouge avec.
+   */
+  tarif: string;
   lien: { href: string; libelle: string };
   /** Une photo, OU `visuel: 'lex'` pour le rendu maison. Jamais les deux. */
   image?: string;
@@ -154,6 +163,7 @@ const SITUATIONS: Situation[] = [
       ? 'Éducateurs spécialisés, moniteurs-éducateurs, AES. La team d’éducateurs en renfort intervient en Seine-et-Marne puis en Île-de-France, en présentiel ou en visioconférence quand personne n’est disponible près de chez vous.'
       : 'Éducateurs spécialisés, moniteurs-éducateurs, AES. La team d’éducateurs en renfort intervient dans votre établissement ou au domicile, en Seine-et-Marne puis en Île-de-France.',
     chiffre: { valeur: '48 h', quoi: 'pour recevoir un devis' },
+    tarif: 'Sur devis : le tarif de l’intervenant, plus 15 % de frais de gestion payés par le demandeur. Rien n’est prélevé sur l’intervenant.',
     lien: { href: '/renforteam', libelle: 'Comment ça se passe' },
     image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
     alt: 'Un professionnel accompagne un enfant lors d’une séance individuelle',
@@ -176,6 +186,7 @@ const SITUATIONS: Situation[] = [
       'Le tarif affiché est le tarif payé, l’association ne prend rien dessus',
     ],
     chiffre: { valeur: '0 %', quoi: 'de commission sur les ateliers' },
+    tarif: 'Le tarif affiché sur chaque fiche, confirmé par un devis. Vous payez l’intervenant, sans frais ajoutés.',
     lien: { href: '/ateliers', libelle: 'Parcourir le catalogue' },
     image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
     alt: 'Des enfants en activité collective en extérieur',
@@ -196,6 +207,7 @@ const SITUATIONS: Situation[] = [
       'Vous relisez, vous corrigez, vous signez. La plume reste la vôtre',
     ],
     chiffre: { valeur: '15', quoi: 'écrits offerts chaque mois, puis 19 €' },
+    tarif: 'Gratuit jusqu’à 15 écrits par mois, sans carte bancaire. Ensuite 19 € par mois pour 200 écrits, ou un pack dès 9 €.',
     lien: { href: '/lex', libelle: 'Ce que LEX fait, et ne fait pas' },
     // ⚠ PAS DE PHOTO ICI, ET C'EST UN CHOIX. Une photo de bureau n'explique
     // rien d'un assistant d'écriture, alors que le AVANT / APRÈS ci-dessous
@@ -338,6 +350,10 @@ export function QuatreSituations() {
                     encarts de la fiche formation, et il se reproduit à
                     l'identique dès qu'on empile deux surfaces voisines.
                   */}
+                  <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
+                    <span className={`font-bold ${s.teinte}`}>Combien ça coûte.</span> {s.tarif}
+                  </p>
+
                   {s.accent ? (
                     <p
                       className={`mt-5 rounded-xl border-l-2 bg-muted/30 py-3 pl-4 pr-3 text-sm font-medium leading-relaxed text-foreground ${s.bordure}`}

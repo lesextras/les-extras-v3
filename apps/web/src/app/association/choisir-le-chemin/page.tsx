@@ -175,8 +175,8 @@ export default async function ChoisirLeChemin() {
 
 /**
  * UNE FRISE. Les étapes se suivent sur un fil, de gauche à droite, groupées par
- * moment. On la fait glisser du doigt : la liste ne se coupe jamais, et on voit
- * toujours qu&apos;il y a une suite.
+ * moment. Sur un écran large on la fait glisser ; sur téléphone elle devient
+ * un fil vertical, qui se lit en défilant la page comme le reste.
  */
 function Frise({ p }: { p: Parcours }) {
   const dernier = p.etapes.length - 1;
@@ -208,7 +208,30 @@ function Frise({ p }: { p: Parcours }) {
         </ol>
       ) : null}
 
-      <div className="-mx-6 mt-7 overflow-x-auto px-6 pb-2 sm:-mx-8 sm:px-8">
+      {/* Sur téléphone, la frise se lit de haut en bas : un fil vertical, une
+          carte par étape. Glisser une frise de 2 800 px au doigt, sans rien qui
+          dise combien il en reste, fait perdre la moitié des étapes. */}
+      <ol className="mt-7 md:hidden">
+        {p.etapes.map((e, i) => (
+          <li key={e.numero} className="relative pb-3 pl-14 last:pb-0">
+            {i < dernier ? (
+              <span aria-hidden="true" className={`absolute bottom-0 left-[19px] top-10 w-[3px] ${p.ligne}`} />
+            ) : null}
+            <span
+              className={`absolute left-0 top-0 z-10 flex h-10 w-10 items-center justify-center rounded-full text-[15px] font-extrabold ${p.pastille}`}
+            >
+              {e.numero}
+            </span>
+            <Link href={e.href} className={`flex flex-col rounded-2xl border p-4 no-underline transition ${p.carte}`}>
+              {e.moment ? <span className={`text-[11px] font-extrabold uppercase tracking-[0.1em] ${p.texte}`}>{e.moment}</span> : null}
+              <span className={`mt-1 text-[15px] font-extrabold leading-snug ${p.encre}`}>{e.titre}</span>
+              <span className={`mt-1.5 line-clamp-3 text-[14px] leading-relaxed ${p.texte}`}>{e.resume}</span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+
+      <div className="-mx-6 mt-7 hidden overflow-x-auto px-6 pb-2 sm:-mx-8 sm:px-8 md:block">
         <ol className="flex min-w-max items-stretch">
           {p.etapes.map((e, i) => (
             <li key={e.numero} className="relative w-[228px] shrink-0 pt-12">
@@ -230,7 +253,7 @@ function Frise({ p }: { p: Parcours }) {
           ))}
         </ol>
       </div>
-      <p className={`mt-1 text-[13px] font-bold ${p.texte}`}>Fais glisser la frise pour voir la suite.</p>
+      <p className={`mt-1 hidden text-[13px] font-bold md:block ${p.texte}`}>Fais glisser la frise pour voir la suite.</p>
 
       <div className={`mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 ${p.carte}`}>
         <p className={`max-w-[46ch] text-[15px] font-extrabold ${p.encre}`}>{p.fin}</p>

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Toulali, page d'accueil de Pilote
  * Description: toulali.fr n'est plus un organisme de formation (décision du 28/09/2026) : les pages de formation renvoient vers le centre de formation d'ADéPA (adepa77.fr), l'en-tête et le pied de page des pages restantes présentent Pilote.
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: Association ADéPA
  * Requires PHP: 7.4
  *
@@ -83,6 +83,22 @@ function toulali_pilote_filtrer($html) {
 	if (!is_string($html) || stripos($html, '<html') === false) {
 		return $html;
 	}
+	/*
+	 * 1.1.3 : LES POLICES GOOGLE NE BLOQUENT PLUS L'AFFICHAGE (audit du 28/09,
+	 * 4,1 s sur mobile). La feuille est chargée en préchargement puis appliquée
+	 * dès qu'elle arrive ; `display=swap` affiche le texte tout de suite dans la
+	 * police de repli. Mêmes familles, mêmes graisses : le rendu final est
+	 * identique, il arrive seulement plus tôt.
+	 */
+	$html = preg_replace_callback(
+		'#<link href="(https://fonts\.googleapis\.com/css2\?[^"]+)" rel="stylesheet">#',
+		function ($m) {
+			$u = $m[1];
+			return '<link rel="preload" as="style" href="' . $u . '" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" href="' . $u . '"></noscript>';
+		},
+		$html,
+		1
+	);
 	// Menu des pages intérieures (ancien organisme de formation).
 	$html = preg_replace(
 		'#<ul class="cmia-clean-nav__links">.*?</ul>#s',
@@ -199,7 +215,7 @@ function toulali_pilote_sans_tirets($html) {
  */
 function toulali_pilote_inutile_sur_accueil($src) {
 	$src = (string) $src;
-	foreach (array('/plugins/tutor', '/plugins/woocommerce/', '/plugins/header-footer-elementor/', '/plugins/elementor/', '/plugins/astra-sites/', '/uploads/elementor/css/', 'fonts.googleapis.com/css?family=Roboto', '/plugins/google-site-kit/dist/assets/js/googlesitekit-events-provider-woocommerce') as $motif) {
+	foreach (array('/wp-includes/js/jquery/ui/', '/wp-includes/js/jquery/jquery.ui.touch-punch', '/plugins/tutor', '/plugins/woocommerce/', '/plugins/header-footer-elementor/', '/plugins/elementor/', '/plugins/astra-sites/', '/uploads/elementor/css/', 'fonts.googleapis.com/css?family=Roboto', '/plugins/google-site-kit/dist/assets/js/googlesitekit-events-provider-woocommerce') as $motif) {
 		if (strpos($src, $motif) !== false) {
 			return true;
 		}

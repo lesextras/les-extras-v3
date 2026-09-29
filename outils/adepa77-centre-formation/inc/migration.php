@@ -69,6 +69,18 @@ function adepa_cf_migrer() {
 		// 1.5.0 : l'Édu Blog de Les Extras retiré du menu, du pied de page et de l'accueil (inc/edublog.php).
 		adepa_cf_migration_150();
 	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.5.1', '<')) {
+		// 1.5.1 : le second menu écrit dans le contenu des pages légales retiré (inc/menu-unique.php).
+		adepa_cf_migration_151();
+	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.5.2', '<')) {
+		// 1.5.2 : le même bloc, dans les données Elementor des trois autres pages légales.
+		adepa_cf_migration_152();
+	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.5.3', '<')) {
+		// 1.5.3 : liens réglementaires dans le pied de page de l'accueil.
+		adepa_cf_migration_153();
+	}
 
 	update_option('adepa_cf_version', ADEPA_CF_VERSION, true);
 	delete_transient('adepa_cf_migration_en_cours');

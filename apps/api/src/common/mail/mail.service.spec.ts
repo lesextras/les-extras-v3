@@ -223,3 +223,45 @@ describe('Version texte du message', () => {
     expect(texte).toContain("Devis n'1 & facture");
   });
 });
+
+/**
+ * UN PRODUIT, UNE BOÎTE (séparation de Pilote, étape 2). Un message de Pilote
+ * part par la boîte de Pilote quand elle est posée, et seulement lui.
+ */
+describe('MailService : la boîte de Pilote', () => {
+  beforeEach(() => CREER.mockReset());
+  afterEach(() => jest.restoreAllMocks());
+
+  const DEUX_BOITES = {
+    SMTP_HOST: 'smtp.hostinger.com',
+    SMTP_USER: 'contact@les-extras.fr',
+    SMTP_PASSWORD: 'secret',
+    PILOTE_SMTP_HOST: 'smtp.hostinger.com',
+    PILOTE_SMTP_USER: 'contact@toulali.fr',
+    PILOTE_SMTP_PASSWORD: 'secret-pilote',
+  };
+
+  it('envoie un message de Pilote depuis la boîte de Pilote', async () => {
+    const sendMail = jest.fn().mockResolvedValue({ messageId: '<1@toulali.fr>' });
+    CREER.mockReturnValue({ sendMail, close: jest.fn() });
+    const service = new MailService(config(DEUX_BOITES));
+    await service.sendAccuseDepotFacture('tresoriere@asso.fr', { espace: 'Asso', chemin: '/espace/factures', lignes: [] });
+    expect(CREER).toHaveBeenCalledWith(expect.objectContaining({ auth: expect.objectContaining({ user: 'contact@toulali.fr' }) }));
+    expect(sendMail.mock.calls[0][0].from.address).toBe('contact@toulali.fr');
+  });
+
+  it('laisse les messages de Les Extras sur la boîte de Les Extras', async () => {
+    const sendMail = jest.fn().mockResolvedValue({ messageId: '<2@les-extras.fr>' });
+    CREER.mockReturnValue({ sendMail, close: jest.fn() });
+    await envoyer(new MailService(config(DEUX_BOITES)));
+    expect(sendMail.mock.calls[0][0].from.address).toBe('contact@les-extras.fr');
+  });
+
+  it('sans boîte Pilote, rien ne change : le message part de la boîte habituelle', async () => {
+    const sendMail = jest.fn().mockResolvedValue({ messageId: '<3@les-extras.fr>' });
+    CREER.mockReturnValue({ sendMail, close: jest.fn() });
+    const service = new MailService(config({ SMTP_HOST: 'smtp.hostinger.com', SMTP_USER: 'contact@les-extras.fr', SMTP_PASSWORD: 'secret' }));
+    await service.sendAccuseDepotFacture('tresoriere@asso.fr', { espace: 'Asso', chemin: '/espace/factures', lignes: [] });
+    expect(sendMail.mock.calls[0][0].from.address).toBe('contact@les-extras.fr');
+  });
+});

@@ -50,6 +50,13 @@ import type { Transporter } from 'nodemailer';
 export interface Expediteur {
   nom?: string;
   repondreA?: string;
+  /**
+   * Le produit qui écrit. `pilote` fait partir le message par la boîte de
+   * Pilote (`PILOTE_SMTP_*`) quand elle est configurée : adresse d'envoi,
+   * SPF et DKIM de toulali.fr, et plus rien de Les Extras dans l'en-tête.
+   * Sans ces variables, rien ne change (étape 2 de docs/separation-pilote.md).
+   */
+  produit?: 'pilote';
 }
 
 export interface PieceJointe {
@@ -99,6 +106,51 @@ export class MailService implements OnModuleDestroy {
     // pare-feu, et pas de fenêtre en clair même brève.
     const port = Number(this.config.get<string>('SMTP_PORT') ?? 465);
     return { host, port, secure: port === 465, user, pass };
+  }
+
+  /**
+   * LA BOÎTE D'ENVOI DE PILOTE (séparation, étape 2). Mêmes règles que
+   * `smtp` : les trois valeurs ou rien. Le mot de passe est posé par Siham
+   * dans Coolify, jamais ici.
+   */
+  private get smtpPilote() {
+    const host = (this.config.get<string>('PILOTE_SMTP_HOST') ?? '').trim();
+    const user = (this.config.get<string>('PILOTE_SMTP_USER') ?? '').trim();
+    const pass = this.config.get<string>('PILOTE_SMTP_PASSWORD') ?? '';
+    if (!host || !user || !pass) return null;
+    const port = Number(this.config.get<string>('PILOTE_SMTP_PORT') ?? 465);
+    return { host, port, secure: port === 465, user, pass };
+  }
+
+  private transporterPilote: Transporter | null = null;
+
+  private get transportPilote(): Transporter | null {
+    if (this.transporterPilote) return this.transporterPilote;
+    const smtp = this.smtpPilote;
+    if (!smtp) return null;
+    this.transporterPilote = nodemailer.createTransport({
+      host: smtp.host,
+      port: smtp.port,
+      secure: smtp.secure,
+      auth: { user: smtp.user, pass: smtp.pass },
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 20_000,
+    });
+    return this.transporterPilote;
+  }
+
+  /**
+   * L'adresse d'envoi de Pilote : `PILOTE_MAIL_FROM` si elle est du domaine
+   * de la boîte, sinon la boîte elle-même (même garde-fou SPF que `sender`).
+   */
+  private get senderPilote(): { name: string; email: string } | null {
+    const smtp = this.smtpPilote;
+    if (!smtp) return null;
+    const name = this.config.get<string>('PILOTE_NOM') || 'Pilote';
+    const demandee = (this.config.get<string>('PILOTE_MAIL_FROM') ?? '').trim();
+    const memeDomaine = demandee.split('@')[1]?.toLowerCase() === smtp.user.split('@')[1]?.toLowerCase();
+    return { name, email: demandee && memeDomaine ? demandee : smtp.user };
   }
 
   private get transport(): Transporter | null {
@@ -403,6 +455,7 @@ export class MailService implements OnModuleDestroy {
     return {
       nom: this.config.get<string>('PILOTE_NOM') || 'Pilote',
       repondreA: this.config.get<string>('PILOTE_MAIL_CONTACT') || undefined,
+      produit: 'pilote',
     };
   }
 
@@ -411,6 +464,7 @@ export class MailService implements OnModuleDestroy {
     return {
       nom: `${ecole.nom.replace(/["<>]/g, '').slice(0, 60)} via Pilote`,
       repondreA: ecole.contactEmail || this.config.get<string>('PILOTE_MAIL_CONTACT') || undefined,
+      produit: 'pilote',
     };
   }
 
@@ -973,7 +1027,8 @@ export class MailService implements OnModuleDestroy {
     // de ce domaine passe les filtres. Mais le NOM affiché et l'adresse de
     // réponse suivent le produit : un message de Pilote ou d'une école ne
     // s'affiche plus « LES EXTRAS » dans la boîte de réception.
-    const de = { ...this.sender, ...(expediteur?.nom ? { name: expediteur.nom } : {}) };
+    const propre = expediteur?.produit === 'pilote' ? this.senderPilote : null;
+    const de = { ...(propre ?? this.sender), ...(expediteur?.nom ? { name: expediteur.nom } : {}) };
     const repondreA = expediteur?.repondreA || this.config.get<string>('MAIL_REPLY_TO') || undefined;
     // ADRESSES QUI NE PEUVENT RIEN RECEVOIR (28/09/2026). Le domaine
     // `intervenants.les-extras.fr` n'a aucun enregistrement MX : les quatre
@@ -986,7 +1041,7 @@ export class MailService implements OnModuleDestroy {
       this.logger.warn(`[MAIL] non envoyé (domaine sans boîte) to=${to} subject="${subject}"`);
       return;
     }
-    const transport = this.transport;
+    const transport = propre ? this.transportPilote : this.transport;
     if (transport) {
       try {
         const info = await transport.sendMail({
@@ -1030,7 +1085,10 @@ export class MailService implements OnModuleDestroy {
         method: 'POST',
         headers: { 'api-key': apiKey, 'content-type': 'application/json', accept: 'application/json' },
         body: JSON.stringify({
-          sender: de,
+          // Brevo n'expédie que depuis un expéditeur vérifié chez lui : un
+          // message de Pilote qui y retombe part donc de l'adresse habituelle,
+          // avec le nom de Pilote.
+          sender: propre ? { ...this.sender, name: de.name } : de,
           to: [{ email: to }],
           ...(repondreA ? { replyTo: { email: repondreA } } : {}),
           subject,

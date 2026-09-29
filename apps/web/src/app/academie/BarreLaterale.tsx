@@ -230,6 +230,11 @@ export async function deconnecter() {
 export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
   const chemin = usePathname() ?? '/academie';
   const [ouvert, setOuvert] = useState(false);
+  useEffect(() => {
+    const basculer = () => setOuvert((o) => !o);
+    window.addEventListener('pilote:menu', basculer);
+    return () => window.removeEventListener('pilote:menu', basculer);
+  }, []);
   // Le groupe « Mon compte » s'ouvre tout seul quand on est sur l'une de ses pages.
   const [compteOuvert, setCompteOuvert] = useState(() => MON_COMPTE.some((e) => chemin.startsWith(e.href)));
   // Les groupes du métier : celui de la page courante s'ouvre tout seul.
@@ -366,20 +371,21 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOuvert((o) => !o)}
-        aria-expanded={ouvert}
-        aria-controls="menu-lateral-academie"
-        className="fixed bottom-4 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#12312A] text-white shadow-lg lg:hidden"
-      >
-        <span className="sr-only">{ouvert ? 'Fermer le menu' : 'Ouvrir le menu'}</span>
-        {ouvert ? ICONES.fermer : ICONES.menu}
-      </button>
+      {/* Petit écran : le tiroir. Il s'ouvre depuis le bouton « Menu » de la barre du
+          haut (événement pilote:menu) ; le rond flottant en bas à droite se voyait mal
+          et recouvrait les boutons des pages. */}
       {ouvert ? (
         <div className="fixed inset-0 z-30 lg:hidden" role="dialog" aria-modal="true">
           <button type="button" className="absolute inset-0 bg-[#12312A]/50" aria-label="Fermer le menu" onClick={() => setOuvert(false)} />
           <div id="menu-lateral-academie" className="absolute inset-y-0 left-0 w-[300px] max-w-[88vw] overflow-y-auto bg-[#12312A] p-4 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setOuvert(false)}
+              className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white"
+            >
+              <span className="sr-only">Fermer le menu</span>
+              {ICONES.fermer}
+            </button>
             {contenu}
           </div>
         </div>
@@ -396,6 +402,16 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
   return (
     <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-[#DDEBE4] bg-white px-4 py-2.5 sm:px-8">
       <div className="flex min-w-0 flex-1 items-center gap-4">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event('pilote:menu'))}
+          aria-controls="menu-lateral-academie"
+          className="-ml-1 flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-[#E6E4F3] px-2.5 text-[14px] font-extrabold text-[#12312A] lg:hidden"
+        >
+          {ICONES.menu}
+          <span className="hidden min-[400px]:inline">Menu</span>
+          <span className="sr-only min-[400px]:hidden">Ouvrir le menu</span>
+        </button>
         <Link href="/academie" className="flex items-center gap-2 no-underline lg:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/academie/marque.svg" alt="" width={30} height={30} className="h-[30px] w-[30px] rounded-lg" />
