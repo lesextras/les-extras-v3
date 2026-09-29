@@ -152,3 +152,29 @@ function adepa_cf_migration_153() {
 	do_action('litespeed_purge_all');
 	update_option('adepa_cf_migration_153', array('date' => current_time('mysql'), 'bilan' => $bilan), false);
 }
+
+/**
+ * 1.5.4 : « /merci-don/ » GARDE LE MENU DU SITE.
+ *
+ * La page de remerciement après un don était en gabarit « Elementor Canvas »,
+ * sans en-tête ni pied : une personne qui venait de donner arrivait sur une
+ * page sans aucun lien pour revenir au site. Elle passe au gabarit « Elementor
+ * pleine largeur » : même contenu, avec le menu principal et le pied de page.
+ * Les pages embarquées dans les fenêtres (don, newsletter, rendez-vous)
+ * restent en Canvas, elles s'affichent DANS une autre page.
+ * Gabarit d'avant en méta `_adepa_cf_gabarit_avant_154`.
+ */
+function adepa_cf_migration_154() {
+	$page = get_page_by_path('merci-don');
+	$bilan = array();
+	if ($page) {
+		$avant = (string) get_post_meta($page->ID, '_wp_page_template', true);
+		if ($avant === 'elementor_canvas') {
+			add_post_meta($page->ID, '_adepa_cf_gabarit_avant_154', $avant, true);
+			update_post_meta($page->ID, '_wp_page_template', 'elementor_header_footer');
+			$bilan[$page->ID] = $avant . ' -> elementor_header_footer';
+		}
+	}
+	do_action('litespeed_purge_all');
+	update_option('adepa_cf_migration_154', array('date' => current_time('mysql'), 'bilan' => $bilan), false);
+}

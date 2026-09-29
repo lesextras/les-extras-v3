@@ -81,6 +81,10 @@ function adepa_cf_migrer() {
 		// 1.5.3 : liens réglementaires dans le pied de page de l'accueil.
 		adepa_cf_migration_153();
 	}
+	if (version_compare($enregistree === '' ? '0' : $enregistree, '1.5.4', '<')) {
+		// 1.5.4 : /merci-don/ quitte le gabarit Canvas, il garde le menu du site.
+		adepa_cf_migration_154();
+	}
 
 	update_option('adepa_cf_version', ADEPA_CF_VERSION, true);
 	delete_transient('adepa_cf_migration_en_cours');

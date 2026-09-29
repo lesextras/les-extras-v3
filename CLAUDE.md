@@ -6447,3 +6447,17 @@ deux déploiements de l'API, les fiches d'atelier sont restées en 200.
   en tapant un mot de passe.
 - ⚠ Refusé encore au garde-fou le 29/09 : supprimer le doublon d'extension
   `adepa77-centre-formation` 1.4.7 (inactif). À faire par Siham.
+- **Pilote ne présente plus Toulali comme centre de formation** (7 écrans +
+  `association/outils.ts`) : ADéPA l'est ; `/se-former` n'affiche plus les
+  prix périmés (790 € / 2 200 €), il renvoie au catalogue adepa77.fr qui fait
+  foi. Toulali = « la marque sous laquelle ADéPA publie Piloter ».
+- **adepa77 1.5.4** : `/merci-don/` passe du gabarit Elementor Canvas à
+  « Elementor pleine largeur » : même contenu, avec le menu et le pied du site.
+  Les pages embarquées des fenêtres restent en Canvas.
+- ⚠ Refusés au garde-fou le 29/09, à ne pas retenter : l'enregistrement DNS
+  `api.pilote` (A → 168.231.86.146 ; le domaine est DÉJÀ dans Coolify),
+  vider les noms « — Intervenant », supprimer le doublon d'extension 1.4.7.
+- Non fait exprès : le changement d'URL de l'école Teachizy (il casserait
+  les liens d'inscription tant que le seed ne peut pas tourner) et une seconde
+  app Coolify (copier les variables demande de manipuler des secrets, et une
+  seconde API ferait tourner les planificateurs deux fois).
