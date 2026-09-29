@@ -300,57 +300,57 @@ model Account {
 
   memberships                   Membership[]
   invitations                   Invitation[]
-  reliefMissions                ReliefMission[]        @relation("MissionAccount")
+  reliefMissions                ReliefMission[]         @relation("MissionAccount")
   leaveRequests                 LeaveRequest[]
-  services                      Service[]              @relation("ServiceAccount")
+  services                      Service[]               @relation("ServiceAccount")
   bookings                      Booking[]
   invoices                      Invoice[]
   /// Les factures adressees a ce compte (formation, prestation) sans qu'il en
   /// soit l'emetteur.
-  facturesAPayer                Invoice[]              @relation("InvoicePayer")
+  facturesAPayer                Invoice[]               @relation("InvoicePayer")
   creditLedger                  CreditLedger[]
   shifts                        Shift[]
-  formationsOwned               Formation[]            @relation("FormationOwner")
-  sessionsHosted                FormationSession[]     @relation("SessionHost")
-  inscriptionsPaid              Inscription[]          @relation("InscriptionPayer")
-  qualiopiProofs                QualiopiProof[]        @relation("QualiopiOf")
+  formationsOwned               Formation[]             @relation("FormationOwner")
+  sessionsHosted                FormationSession[]      @relation("SessionHost")
+  inscriptionsPaid              Inscription[]           @relation("InscriptionPayer")
+  qualiopiProofs                QualiopiProof[]         @relation("QualiopiOf")
   complianceDocuments           ComplianceDocument[]
   orgUnits                      OrgUnit[]
-  auditLogs                     AuditLog[]             @relation("AuditAccount")
+  auditLogs                     AuditLog[]              @relation("AuditAccount")
   /// Le vivier de cet etablissement : les intervenants qu'il veut revoir.
-  vivier                        PoolMember[]           @relation("PoolEtablissement")
+  vivier                        PoolMember[]            @relation("PoolEtablissement")
   /// Les etablissements qui ont place cet intervenant dans leur vivier.
-  vivierDe                      PoolMember[]           @relation("PoolIntervenant")
+  vivierDe                      PoolMember[]            @relation("PoolIntervenant")
   /// Les regles de temps de travail lues dans SA convention collective.
   parametresTemps               ParametresTemps?
   /// Demandes de signature electronique emises par ce compte.
-  signatures                    Signature[]            @relation("SignatureCompte")
+  signatures                    Signature[]             @relation("SignatureCompte")
   /// Les missions que ce compte intervenant s'est engage a prendre.
-  engagements                   MissionEngagement[]    @relation("EngagementIntervenant")
+  engagements                   MissionEngagement[]     @relation("EngagementIntervenant")
   /// Les modeles d'ecrits appris dans ce compte.
   tramesMaison                  TrameMaison[]
   lexPreferences                LexPreference[]
   lexMots                       LexMot[]
   lexPseudonymes                LexPseudonyme[]
-  uploadedFiles                 FileAsset[]            @relation("FileAccount")
+  uploadedFiles                 FileAsset[]             @relation("FileAccount")
   creditPurchases               CreditPurchase[]
   subscription                  Subscription?
-  quotesAsClient                Quote[]                @relation("QuoteClient")
-  quotesAsProvider              Quote[]                @relation("QuoteProvider")
+  quotesAsClient                Quote[]                 @relation("QuoteClient")
+  quotesAsProvider              Quote[]                 @relation("QuoteProvider")
   assistantDocuments            AssistantDocument[]
   contratsCDD                   ContratCDD[]
   /// Demandes envoyées par CE compte pour se rattacher à un établissement
   /// (compte individuel « salarié » créé en solo, côté freelance en attendant).
-  attachmentRequestsAsRequester AttachmentRequest[]    @relation("AttachmentRequesterAccount")
+  attachmentRequestsAsRequester AttachmentRequest[]     @relation("AttachmentRequesterAccount")
   /// Demandes de rattachement reçues par CET établissement (à approuver/refuser).
-  attachmentRequestsReceived    AttachmentRequest[]    @relation("AttachmentTarget")
+  attachmentRequestsReceived    AttachmentRequest[]     @relation("AttachmentTarget")
   organisation                  Organisation?
   /// Piloter mon academie : la fiche de l'organisme de formation.
   academie                      Academie?
   /// Les formulaires que le compte compose lui-meme (les deux espaces).
   formulaires                   Formulaire[]
   /// L'ecole en ligne de l'academie : les cours, ce qui se vend, qui apprend.
-  cours                         Cours[]                @relation("CoursCompte")
+  cours                         Cours[]                 @relation("CoursCompte")
   packs                         PackCours[]
   codesPromo                    CodePromo[]
   ventesCours                   VenteCours[]
@@ -362,17 +362,18 @@ model Account {
   produitsBoutique              ProduitBoutique[]
   commandesBoutique             CommandeBoutique[]
   /// Les ateliers payes en ligne sur les fiches de cet intervenant.
-  reservationsAteliers          ReservationAtelier[]   @relation("ReservationVendeur")
+  reservationsAteliers          ReservationAtelier[]    @relation("ReservationVendeur")
   /// Les ateliers que CE compte a payes en ligne (compte ouvert au paiement).
-  ateliersAchetes               ReservationAtelier[]   @relation("ReservationAcheteur")
+  ateliersAchetes               ReservationAtelier[]    @relation("ReservationAcheteur")
   supportTickets                SupportTicket[]
   rendezVous                    RendezVous[]
   /// L'agenda de ce compte, partagé avec d'autres personnes (24/09/2026).
-  partagesDonnes                PartageAgenda[]        @relation("PartageCompte")
-  enveloppesLex                 EnveloppeLex[]         @relation("EnveloppePayeur")
+  partagesDonnes                PartageAgenda[]         @relation("PartageCompte")
+  enveloppesLex                 EnveloppeLex[]          @relation("EnveloppePayeur")
   abonnementFactures            AbonnementFactures?
   facturesFournisseurs          FactureFournisseur[]
   enveloppesFactures            EnveloppeFactures[]
+  previsionnelsEnveloppes       PrevisionnelEnveloppe[]
   fournisseursPilote            FournisseurPilote[]
   relevesBancaires              ReleveBancaire[]
   operationsBancaires           OperationBancaire[]
@@ -5705,13 +5706,13 @@ enum TypeEnveloppe {
 }
 
 model EnveloppeFactures {
-  id                 String               @id @default(cuid())
+  id                 String                 @id @default(cuid())
   accountId          String
-  account            Account              @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account            Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
   nom                String
-  type               TypeEnveloppe        @default(SUBVENTION)
+  type               TypeEnveloppe          @default(SUBVENTION)
   financeur          String?
-  montantAccorde     Decimal?             @db.Decimal(12, 2)
+  montantAccorde     Decimal?               @db.Decimal(12, 2)
   dateDebut          DateTime?
   dateFin            DateTime?
   /// Date limite du compte rendu financier au financeur.
@@ -5726,10 +5727,45 @@ model EnveloppeFactures {
   factures           FactureFournisseur[]
   operations         OperationBancaire[]
   notesDeFrais       NoteDeFrais[]
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  previsionnel       PrevisionnelEnveloppe?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 
   @@index([accountId, type])
+}
+
+/// PRÉVU / RÉALISÉ d'une subvention : ce que le dossier validé engageait
+/// (budget par rubrique, objectifs chiffrés, public visé) et ce qui a été fait.
+/// Le budget réalisé est calculé par Mes factures ; objectifs et publics
+/// réalisés sont saisis. Voir `factures/previsionnel.ts`.
+model PrevisionnelEnveloppe {
+  id           String            @id @default(cuid())
+  accountId    String
+  account      Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  enveloppeId  String            @unique
+  enveloppe    EnveloppeFactures @relation(fields: [enveloppeId], references: [id], onDelete: Cascade)
+  /// Le dossier validé déposé (coffre, jamais public).
+  fileId       String?
+  nomFichier   String?
+  /// moteur | dossier | main
+  origine      String            @default("main")
+  intitule     String?
+  periodeDebut DateTime?
+  periodeFin   DateTime?
+  /// [{ code, libelle, prevu, realiseManuel?, commentaire? }]
+  charges      Json              @default("[]")
+  produits     Json              @default("[]")
+  /// [{ intitule, indicateur, cible, unite, realise?, commentaire? }]
+  objectifs    Json              @default("[]")
+  /// [{ categorie, prevu, realise?, commentaire? }]
+  publics      Json              @default("[]")
+  /// Écart au-delà duquel une rubrique est « à expliquer », en %. Indicatif.
+  seuilEcart   Int               @default(15)
+  remarque     String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([accountId])
 }
 
 /// LA FICHE D'UN FOURNISSEUR, construite au fil des factures : c'est elle qui

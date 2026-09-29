@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsIn, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsIn, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { StatutFactureFournisseur, StatutNoteDeFrais, TypeEnveloppe } from '@prisma/client';
 
@@ -116,4 +116,41 @@ export class ModifierDevisDto {
   @IsOptional() @IsIn(['EN_ATTENTE', 'ANNULE']) statut?: 'EN_ATTENTE' | 'ANNULE';
   @IsOptional() @IsString() @MaxLength(1000) notes?: string | null;
   @IsOptional() @IsString() @MaxLength(40) factureId?: string | null;
+}
+
+/* ─── Prévu / réalisé d'une subvention ─── */
+
+export class LigneBudgetDto {
+  @IsString() @MaxLength(6) code!: string;
+  @IsString() @MaxLength(160) libelle!: string;
+  @IsOptional() @Type(() => Number) @IsNumber() prevu?: number | null;
+  @IsOptional() @Type(() => Number) @IsNumber() realiseManuel?: number | null;
+  @IsOptional() @IsString() @MaxLength(500) commentaire?: string | null;
+}
+
+export class ObjectifDto {
+  @IsString() @MaxLength(300) intitule!: string;
+  @IsOptional() @IsString() @MaxLength(300) indicateur?: string | null;
+  @IsOptional() @Type(() => Number) @IsNumber() cible?: number | null;
+  @IsOptional() @IsString() @MaxLength(40) unite?: string | null;
+  @IsOptional() @Type(() => Number) @IsNumber() realise?: number | null;
+  @IsOptional() @IsString() @MaxLength(500) commentaire?: string | null;
+}
+
+export class PublicDto {
+  @IsString() @MaxLength(200) categorie!: string;
+  @IsOptional() @Type(() => Number) @IsNumber() prevu?: number | null;
+  @IsOptional() @Type(() => Number) @IsNumber() realise?: number | null;
+  @IsOptional() @IsString() @MaxLength(500) commentaire?: string | null;
+}
+
+export class SaisirPrevisionnelDto {
+  @IsOptional() @IsString() @MaxLength(200) intitule?: string | null;
+  @IsOptional() @IsString() @MaxLength(10) periodeDebut?: string | null;
+  @IsOptional() @IsString() @MaxLength(10) periodeFin?: string | null;
+  @IsOptional() @IsArray() @ArrayMaxSize(80) @ValidateNested({ each: true }) @Type(() => LigneBudgetDto) charges?: LigneBudgetDto[];
+  @IsOptional() @IsArray() @ArrayMaxSize(80) @ValidateNested({ each: true }) @Type(() => LigneBudgetDto) produits?: LigneBudgetDto[];
+  @IsOptional() @IsArray() @ArrayMaxSize(40) @ValidateNested({ each: true }) @Type(() => ObjectifDto) objectifs?: ObjectifDto[];
+  @IsOptional() @IsArray() @ArrayMaxSize(30) @ValidateNested({ each: true }) @Type(() => PublicDto) publics?: PublicDto[];
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) seuilEcart?: number;
 }

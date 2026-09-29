@@ -2,12 +2,13 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Barres, Camembert, Courbe, Jauge, PALETTE, euros } from './graphiques';
+import { PrevuRealise } from './PrevuRealise';
 
 /**
  * MES FACTURES : l'outil premium des deux espaces de Pilote.
  *
  * Un seul composant pour l'association et l'académie ; seules les couleurs et
- * l'adresse de retour changent (`theme`). Neuf onglets :
+ * l'adresse de retour changent (`theme`). Neuf onglets (une enveloppe de subvention ou de projet ouvre aussi son prévu / réalisé) :
  *   Tableau de bord · Factures · Devis · Enveloppes · Relevés · Trésorerie ·
  *   Fournisseurs · Notes de frais · Journal
  * et deux exports : le CSV comptable, et le bilan financier de l'exercice en
@@ -168,6 +169,7 @@ interface Enveloppe {
   dateVersementPrevu: string | null;
   notes: string | null;
   alertes: string[];
+  dossierId?: string | null;
 }
 
 interface Releves {
@@ -933,6 +935,7 @@ function EnveloppesVue({ theme, enveloppes, occupe, agir }: { theme: ThemeFactur
   const [v, setV] = useState(ENV_VIDE);
   const champ = 'rounded-lg border px-2 py-1.5 text-[14px]';
   const [edition, setEdition] = useState<string | null>(null);
+  const [prevu, setPrevu] = useState<string | null>(null);
   return (
     <div className="grid gap-5">
       <div className={`${theme.carte} p-5`}>
@@ -978,7 +981,7 @@ function EnveloppesVue({ theme, enveloppes, occupe, agir }: { theme: ThemeFactur
       {enveloppes.length ? (
         <div className="grid gap-4 md:grid-cols-2">
           {enveloppes.map((e, i) => (
-            <div key={e.id} className={`${theme.carte} p-5`}>
+            <div key={e.id} className={`${theme.carte} p-5 ${prevu === e.id ? 'md:col-span-2' : ''}`}>
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="text-[12px] font-bold uppercase tracking-wide opacity-60" style={{ color: theme.encre }}>
@@ -1027,6 +1030,11 @@ function EnveloppesVue({ theme, enveloppes, occupe, agir }: { theme: ThemeFactur
                 <button type="button" className="text-[13px] font-bold underline" style={{ color: theme.primaire }} onClick={() => setEdition(edition === e.id ? null : e.id)}>
                   {edition === e.id ? 'Fermer' : 'Modifier'}
                 </button>
+                {e.type === 'SUBVENTION' || e.type === 'PROJET' ? (
+                  <button type="button" className="text-[13px] font-bold underline" style={{ color: theme.primaire }} onClick={() => setPrevu(prevu === e.id ? null : e.id)}>
+                    Prévu / réalisé
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className="ml-auto text-[13px] font-bold text-[#8A1B3D] underline"
@@ -1038,6 +1046,7 @@ function EnveloppesVue({ theme, enveloppes, occupe, agir }: { theme: ThemeFactur
                 </button>
               </div>
               {edition === e.id ? <EditionEnveloppe theme={theme} e={e} occupe={occupe} agir={agir} onOk={() => setEdition(null)} /> : null}
+              {prevu === e.id ? <PrevuRealise theme={theme} enveloppeId={e.id} onFermer={() => setPrevu(null)} /> : null}
             </div>
           ))}
         </div>

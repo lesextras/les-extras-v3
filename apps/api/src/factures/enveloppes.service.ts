@@ -179,7 +179,7 @@ export class EnveloppesService {
   }
 
   /** Le compte rendu financier d'une enveloppe : un classeur avec la synthèse par rubrique Cerfa et le détail des pièces. */
-  async compteRendu(accountId: string, id: string): Promise<{ nom: string; fichier: Buffer }> {
+  async compteRendu(accountId: string, id: string, supplementaires: Feuille[] = []): Promise<{ nom: string; fichier: Buffer }> {
     const e = await this.prisma.enveloppeFactures.findFirst({ where: { id, accountId } });
     if (!e) throw new NotFoundException('Enveloppe introuvable.');
     const [factures, frais, compte] = await Promise.all([
@@ -230,6 +230,6 @@ export class EnveloppesService {
         ['Total', '', '', '', '', '', '', { f: `SUM(H2:H${factures.length + frais.length + 1})` }, ''],
       ],
     };
-    return { nom: `compte-rendu-${e.nom.normalize('NFD').replace(/[^\w]+/g, '-').toLowerCase()}.xlsx`, fichier: classeur([synthese, pieces]) };
+    return { nom: `compte-rendu-${e.nom.normalize('NFD').replace(/[^\w]+/g, '-').toLowerCase()}.xlsx`, fichier: classeur([synthese, ...supplementaires, pieces]) };
   }
 }

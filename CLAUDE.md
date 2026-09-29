@@ -6461,3 +6461,31 @@ deux déploiements de l'API, les fiches d'atelier sont restées en 200.
   les liens d'inscription tant que le seed ne peut pas tourner) et une seconde
   app Coolify (copier les variables demande de manipuler des secrets, et une
   seconde API ferait tourner les planificateurs deux fois).
+
+### 29/09/2026 — Mes factures : le prévu / réalisé d'une subvention
+
+Demande de Siham : déposer le dossier de subvention VALIDÉ et comparer le
+prévisionnel au réalisé, pour le budget, les objectifs et le public visé.
+
+- Bouton « Prévu / réalisé » sur chaque enveloppe SUBVENTION ou PROJET
+  (`_shared/pilote/PrevuRealise.tsx`). Trois entrées : déposer le dossier
+  (PDF, Word, image : `POST /factures/enveloppes/:id/previsionnel`, multipart
+  `file`, lu par le moteur, fichier au coffre), reprendre le budget du dossier
+  Pilote (`…/depuis-dossier`, `DossierFinancement.budgetPrevu`), ou saisir à la
+  main (`PUT`). Modèle `PrevisionnelEnveloppe` (un par enveloppe), migration
+  `20260929220000_previsionnel_subvention`, zéro dérive sur PG16.
+- Logique pure dans `factures/previsionnel.ts` (11 tests) : lecture JSON
+  stricte (comptes 60 à 68 et 86 en charges, 70 à 75 et 87 en produits, lignes
+  de total écartées), comparaison à DEUX chiffres (le détail 606/604 du dossier
+  se regroupe en 60), réalisé = factures + notes de frais validées + sorties du
+  relevé SANS facture (une sortie rapprochée est déjà comptée par sa facture) +
+  « réalisé à ajouter » saisi à la main (bénévolat valorisé, dépense réglée par
+  un partenaire). Écart signalé au-delà du seuil (15 % par défaut, réglable),
+  et toute rubrique dépensée sans avoir été prévue.
+- ⚠ Objectifs et public touché se SAISISSENT : aucune pièce comptable ne les
+  connaît. Le moteur ne relit que les cibles écrites dans le dossier ; rien
+  n'est inventé, une ligne absente reste vide.
+- ⚠ Relire un nouveau dossier GARDE le réalisé déjà saisi (`fusionnerRealise`,
+  par code de compte, intitulé d'objectif, catégorie de public).
+- Le compte rendu Excel de l'enveloppe gagne trois feuilles : budget prévu et
+  réalisé, objectifs, public (`compteRendu(…, supplementaires)`).

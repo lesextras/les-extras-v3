@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Res,
   UploadedFile,
@@ -50,8 +51,10 @@ import {
   NoteDeFraisDto,
   ReglagesDto,
   SaisirFactureDto,
+  SaisirPrevisionnelDto,
   StatutNoteDto,
 } from './dto/factures.dto';
+import { PrevisionnelService } from './previsionnel.service';
 
 /**
  * MES FACTURES : réservé aux deux espaces de Pilote (ASSOCIATION, ACADEMIE).
@@ -75,6 +78,7 @@ export class FacturesController {
     private readonly tresorerie: TresorerieService,
     private readonly sessions: SessionsService,
     private readonly ingestion: IngestionService,
+    private readonly previsionnel: PrevisionnelService,
   ) {}
 
   /** Tout ce qui suit l'abonnement : le service refuse sans abonnement actif, on le vérifie ici une fois. */
@@ -187,10 +191,45 @@ export class FacturesController {
   @Get('enveloppes/:id/compte-rendu.xlsx')
   async compteRendu(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Res() res: Response) {
     await this.actif(account);
-    const { nom, fichier } = await this.enveloppes.compteRendu(account.id, id);
+    // Le prévu / réalisé (budget, objectifs, public) rejoint le compte rendu quand il existe.
+    const { nom, fichier } = await this.enveloppes.compteRendu(account.id, id, await this.previsionnel.feuilles(account.id, id));
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${nom}"`);
     res.send(fichier);
+  }
+
+  // ─── Prévu / réalisé d'une subvention (dossier validé) ────────────────────
+
+  @Get('enveloppes/:id/previsionnel')
+  async previsionnelLire(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
+    await this.actif(account);
+    return this.previsionnel.analyse(account.id, id);
+  }
+
+  @Post('enveloppes/:id/previsionnel')
+  @Throttle({ default: { limit: 30, ttl: 3_600_000 } })
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: TAILLE_MAX_GLOBALE, files: 1 } }))
+  async previsionnelDeposer(
+    @CurrentAccount() account: RequestAccount,
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @UploadedFile() fichier: FichierRecu | undefined,
+  ) {
+    await this.actif(account);
+    if (!fichier) throw new BadRequestException('Aucun fichier reçu.');
+    return this.previsionnel.lireDossier(account.id, user.id, id, fichier);
+  }
+
+  @Post('enveloppes/:id/previsionnel/depuis-dossier')
+  async previsionnelDepuisDossier(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string) {
+    await this.actif(account);
+    return this.previsionnel.depuisDossierPilote(account.id, user.id, id);
+  }
+
+  @Put('enveloppes/:id/previsionnel')
+  async previsionnelSaisir(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: SaisirPrevisionnelDto) {
+    await this.actif(account);
+    return this.previsionnel.saisir(account.id, user.id, id, dto);
   }
 
   // ─── Fournisseurs ─────────────────────────────────────────────────────────

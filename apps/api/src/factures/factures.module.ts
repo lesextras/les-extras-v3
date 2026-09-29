@@ -15,11 +15,12 @@ import { DevisService } from './devis.service';
 import { TresorerieService } from './tresorerie.service';
 import { SessionsService } from './sessions.service';
 import { IngestionService } from './ingestion.service';
+import { PrevisionnelService } from './previsionnel.service';
 
 /** MES FACTURES : l'outil premium des deux espaces de Pilote. */
 @Module({
   imports: [BillingModule],
   controllers: [FacturesController],
-  providers: [FacturesService, EnveloppesService, FournisseursService, RelevesService, FraisService, BilanService, DevisService, TresorerieService, SessionsService, IngestionService, ExtractionService, MoteurService, ClaudeService, MistralService],
+  providers: [FacturesService, EnveloppesService, FournisseursService, RelevesService, FraisService, BilanService, DevisService, TresorerieService, SessionsService, IngestionService, PrevisionnelService, ExtractionService, MoteurService, ClaudeService, MistralService],
 })
 export class FacturesModule {}
