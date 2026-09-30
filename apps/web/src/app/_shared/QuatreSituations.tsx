@@ -60,199 +60,217 @@
  * écrits puis 19 €. Ce qui a sauté, ce sont les redites. Un resserrage qui
  * emporte un chiffre fait mentir la page au lieu de l'alléger. (Les « 14
  * parcours » sont partis le 28/09 avec la situation « Formations ».)
+ *
+ * ⚠⚠ REFAIT EN « CHIFFRES D'ABORD » LE 30/09/2026, demande de Siham, capture à
+ * l'appui : « trop de textes, pas assez clair, pas assez percutant ». Chaque
+ * section portait encore un paragraphe, trois puces, une ligne de prix, un
+ * encadré et un chiffre : cinq blocs de texte pour un seul service. Elle porte
+ * désormais le titre (la phrase du couloir), TROIS POINTS COURTS à icône (pas
+ * des phrases, demande explicite), TROIS repères chiffrés en cartes, l'image
+ * gardée et animée, et un bouton. Ce que disaient les puces et la
+ * ligne « Combien ça coûte » vit dans les repères : 48 h, 15 %, les métiers,
+ * 0 %, devis sans compte, 15 écrits puis 19 € ou un pack dès 9 €. AUCUN
+ * chiffre n'est tombé ; si l'un bouge, il bouge ici ET sur la page du service.
+ * ⚠ NE PAS REMETTRE DE PARAGRAPHE SOUS LE TITRE : c'est exactement ce qui a
+ * été retiré, deux fois (21/09, puis 30/09).
+ *
+ * ⚠ LES ANIMATIONS PASSENT TOUTES PAR LES CLASSES EXISTANTES de globals.css
+ * (`reveal`, `animate-panoramique`, `animate-derive`, `animate-anneau`), qui
+ * sont déjà coupées par `prefers-reduced-motion`. Une animation ajoutée en
+ * dehors de cette liste continuerait de bouger pour qui a demandé le calme.
  */
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Check } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  ArrowRight,
+  BadgePercent,
+  ClipboardList,
+  Clock,
+  FileCheck,
+  Gift,
+  GraduationCap,
+  HeartHandshake,
+  ListChecks,
+  NotebookPen,
+  Package,
+  Palette,
+  PenLine,
+  Percent,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Tag,
+  UserRoundCheck,
+} from 'lucide-react';
 import { wp } from '@/lib/media';
 import { visioconsultationVisible } from '@/lib/offre';
 import { Reveal } from './Reveal';
-import { Button } from '@/components/ui/button';
 
 /**
  * ⚠ LU UNE SEULE FOIS, EN TÊTE DE MODULE. `NEXT_PUBLIC_VISIOCONSULTATION` est
- * figée à la construction : l'appeler à chaque rendu ne change rien, et deux
- * lectures dans le même fichier finiraient par diverger si l'une est oubliée.
+ * figée à la construction : l'appeler à chaque rendu ne change rien.
  */
 const VISIO = visioconsultationVisible();
 
+type Point = { icone: LucideIcon; texte: string };
+/** Un repère : un chiffre (ou un mot) en gros, ce qu'il désigne en petit. */
+type Repere = { icone: LucideIcon; valeur: string; quoi: string };
+
 type Situation = {
   service: string;
+  /**
+   * Ce que le nom veut dire, en une ligne, sous le nom du service. Demande de
+   * Siham le 30/09 : « RenforTeam, c'est la team en renfort pour le
+   * médico-social ». Un nom de marque seul ne dit pas ce qu'on achète.
+   */
+  accroche?: string;
+  icone: LucideIcon;
   /** La phrase du couloir. C'est le titre, et c'est le problème. */
   probleme: string;
-  /** UNE ou deux phrases qui déroulent la situation, sans vendre. */
-  situation: string[];
-  /** Ce que la plateforme fait, concrètement. Trois lignes, pas quatre. */
-  reponse: string[];
+  /** TROIS points, quelques mots chacun. Jamais une phrase entière. */
+  points: [Point, Point, Point];
   /**
-   * La ligne mise en avant sous les puces — QUI intervient, et comment.
-   *
-   * ⚠ ELLE N'EXISTE QUE SUR RENFORTEAM, et c'est une demande de Siham du
-   * 21/09/2026 : « met en avant les éducateurs renforts en présentiel ou
-   * visioconférence ». Les métiers étaient noyés au milieu d'une puce, entre
-   * une durée et un devis, alors que c'est la seule chose qu'un directeur
-   * cherche vraiment sur cette section. La poser partout en ferait un gabarit,
-   * donc du bruit.
+   * TROIS repères, jamais plus. Chaque chiffre est relu dans le code ou sur
+   * la page du service, jamais inventé (voir l'en-tête).
    */
-  accent?: string;
-  /** Le chiffre vrai, et ce qu'il désigne. */
-  chiffre: { valeur: string; quoi: string };
-  /**
-   * COMBIEN ÇA COÛTE, ET COMMENT ON PAIE (audit du 28/09/2026, point 15 :
-   * « le prix ou le mode de vente de chaque service, aujourd'hui il faut
-   * cliquer »). Une phrase, lue dans le code et jamais inventée :
-   * `COMMISSION_RENFORT` (billing/commission.ts), le 0 % des ateliers,
-   * `FREE_MONTHLY_CREDITS`, `SUBSCRIPTION_PLANS` et `CREDIT_PACKS`
-   * (billing.service.ts). Si l'un bouge, cette ligne bouge avec.
-   */
-  tarif: string;
+  reperes: [Repere, Repere, Repere];
+  /** La pastille qui flotte sur l'image. Un fait, pas un slogan. */
+  badge: string;
   lien: { href: string; libelle: string };
   /** Une photo, OU `visuel: 'lex'` pour le rendu maison. Jamais les deux. */
   image?: string;
   alt?: string;
   visuel?: 'lex';
+  /*
+    ⚠ CLASSES ÉCRITES EN TOUTES LETTRES, JAMAIS CALCULÉES : Tailwind ne génère
+    que les classes littérales des sources (défaut du 21/09 sur le filet).
+  */
   teinte: string;
   trait: string;
-  puce: string;
-  /**
-   * Le filet de gauche de la ligne mise en avant.
-   *
-   * ⚠⚠ ÉCRIT EN TOUTES LETTRES, JAMAIS CALCULÉ. La première version faisait
-   * `trait.replace('bg-', 'border-')` — c'est juste en JavaScript et FAUX en
-   * Tailwind : le compilateur ne lit que des classes littérales dans les
-   * sources. Une classe fabriquée à l'exécution n'est jamais générée, le filet
-   * retombe sur la bordure grise par défaut, rien ne casse et aucun test ne
-   * tombe. C'est le genre de défaut qu'on ne voit qu'en regardant la page.
-   */
-  bordure: string;
+  tuile: string;
+  carte: string;
+  point: string;
 };
 
 const SITUATIONS: Situation[] = [
   {
     service: 'RenforTeam',
-    /*
-      ⚠ LA TEAM D'ÉDUCATEURS EN RENFORT (audit du 28/09/2026, stratégie de
-      Siham). Cette section racontait l'attente d'une orthophoniste ou d'une
-      psychomotricienne : RenforTeam ne porte plus aucun métier paramédical.
-      Elle parle désormais d'éducateurs (éducateurs spécialisés,
-      moniteurs-éducateurs, AES), en Seine-et-Marne puis en Île-de-France, et
-      chaque mission y est une prestation aux objectifs écrits.
-    */
-    probleme: 'Il faudrait un éducateur de plus, quelques heures par semaine. Personne ne viendra pour si peu.',
-    situation: [
-      'Un jeune qui décroche, un groupe qui déborde, une famille à épauler. Recruter pour quelques heures, personne ne sait le faire, et la situation n’attend pas.',
+    accroche: 'La team en renfort pour le médico-social',
+    icone: HeartHandshake,
+    probleme: 'Il faudrait un éducateur de plus. Personne ne vient pour quelques heures.',
+    points: [
+      { icone: ClipboardList, texte: 'Besoin décrit en 5 minutes' },
+      { icone: UserRoundCheck, texte: 'Vous choisissez qui vient' },
+      { icone: FileCheck, texte: 'Devis écrit avant l’intervention' },
     ],
-    reponse: [
-      'Vous décrivez le besoin et ses objectifs en cinq minutes, le soir même',
-      'Le réseau est prévenu, vous choisissez qui vient',
-      'Devis écrit avant l’intervention, jamais après',
+    reperes: [
+      { icone: Clock, valeur: '48 h', quoi: 'pour le devis' },
+      {
+        icone: GraduationCap,
+        valeur: 'ES · ME · AES',
+        // ⚠ La visio reste conditionnée : sans la variable, /visio redirige.
+        quoi: VISIO ? 'présentiel ou visio' : 'sur place ou à domicile',
+      },
+      // COMMISSION_RENFORT (billing/commission.ts), payée par le demandeur.
+      { icone: Percent, valeur: '+15 %', quoi: 'de frais, payés par le demandeur' },
     ],
-    /*
-      ⚠ LA MOITIÉ « VISIOCONFÉRENCE » EST CONDITIONNÉE, ET ELLE DOIT LE RESTER.
-      Tant que `NEXT_PUBLIC_VISIOCONSULTATION` n'est pas posée, `/visio/:jeton`
-      redirige : l'annoncer alors promettrait un service que le site ne peut pas
-      rendre. C'est le défaut exact de l'ancienne carte « Renfort ».
-
-      ⚠ « VISIOCONFÉRENCE » EST LE MOT DE SIHAM (21/09). Le reste du site dit
-      « visioconsultation » et le menu dit « rendez-vous à distance » ; aucun ne
-      dit « téléconsultation », qui désigne un acte médical alors qu'il s'agit
-      ici de rééducation et d'éducation spécialisée. Si l'on aligne un jour les
-      trois, c'est partout en même temps, pas ici seulement.
-    */
-    accent: VISIO
-      ? 'Éducateurs spécialisés, moniteurs-éducateurs, AES. La team d’éducateurs en renfort intervient en Seine-et-Marne puis en Île-de-France, en présentiel ou en visioconférence quand personne n’est disponible près de chez vous.'
-      : 'Éducateurs spécialisés, moniteurs-éducateurs, AES. La team d’éducateurs en renfort intervient dans votre établissement ou au domicile, en Seine-et-Marne puis en Île-de-France.',
-    chiffre: { valeur: '48 h', quoi: 'pour recevoir un devis' },
-    tarif: 'Sur devis : le tarif de l’intervenant, plus 15 % de frais de gestion payés par le demandeur. Rien n’est prélevé sur l’intervenant.',
+    badge: 'Éducateurs en renfort',
     lien: { href: '/renforteam', libelle: 'Comment ça se passe' },
     image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
     alt: 'Un professionnel accompagne un enfant lors d’une séance individuelle',
     teinte: 'text-primary',
     trait: 'bg-primary',
-    puce: 'text-primary',
-    bordure: 'border-primary',
+    tuile: 'bg-primary/10 text-primary ring-primary/20',
+    carte: 'border-primary/20 bg-primary/[0.06] hover:border-primary/50',
+    point: 'bg-primary',
   },
   {
     service: 'Ateliers',
-    probleme: 'Il faut « faire quelque chose » avec le groupe, et personne n’a le temps de le monter.',
-    situation: [
-      'Musicothérapie, théâtre, psycho-boxe, slam, socio-esthétique. Les intervenants existent, mais on ne les trouve que par le bouche-à-oreille, alors on refait ce qu’on a fait l’an dernier.',
+    icone: Palette,
+    probleme: 'Il faut « faire quelque chose » avec le groupe, et personne n’a le temps de le monter.',
+    points: [
+      { icone: Sparkles, texte: 'Musicothérapie, théâtre, boxe, slam' },
+      { icone: ListChecks, texte: 'Public, durée, matériel et tarif affichés' },
+      // Audit du 28/09 : le paiement en ligne n'est actif sur aucune fiche.
+      { icone: Send, texte: 'Devis sans créer de compte' },
     ],
-    reponse: [
-      'Le catalogue affiche le public visé, la durée, le matériel et le tarif',
-      // Audit du 28/09/2026 : « Vous réservez » menait à la connexion tant que
-      // le paiement en ligne n'est actif sur aucune fiche.
-      'Vous demandez un devis sans créer de compte',
-      'Le tarif affiché est le tarif payé, l’association ne prend rien dessus',
+    reperes: [
+      { icone: BadgePercent, valeur: '0 %', quoi: 'de commission' },
+      { icone: Clock, valeur: '48 h', quoi: 'pour le devis' },
+      { icone: Tag, valeur: 'Prix affiché', quoi: 'c’est le prix payé' },
     ],
-    chiffre: { valeur: '0 %', quoi: 'de commission sur les ateliers' },
-    tarif: 'Le tarif affiché sur chaque fiche, confirmé par un devis. Vous payez l’intervenant, sans frais ajoutés.',
+    badge: '0 % de commission',
     lien: { href: '/ateliers', libelle: 'Parcourir le catalogue' },
     image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
     alt: 'Des enfants en activité collective en extérieur',
     teinte: 'text-secondary',
     trait: 'bg-secondary',
-    puce: 'text-secondary',
-    bordure: 'border-secondary',
+    tuile: 'bg-secondary/10 text-secondary ring-secondary/20',
+    carte: 'border-secondary/20 bg-secondary/[0.06] hover:border-secondary/50',
+    point: 'bg-secondary',
   },
   {
     service: 'LEX',
+    icone: PenLine,
     probleme: 'Il est 21 h, le rapport est pour demain, et la page est blanche.',
-    situation: [
-      'Personne n’a appris à écrire un rapport de situation. On l’apprend en le ratant, avec la peur de mettre un mot de travers dans un document qu’un juge lira peut-être.',
+    points: [
+      { icone: NotebookPen, texte: 'Vos notes, telles quelles' },
+      { icone: ShieldCheck, texte: 'Noms masqués avant l’envoi' },
+      { icone: PenLine, texte: 'Vous relisez, vous signez' },
     ],
-    reponse: [
-      'Vous donnez vos notes, les noms sont remplacés avant que le modèle les voie',
-      'Le texte revient structuré, avec les vrais noms rétablis chez vous',
-      'Vous relisez, vous corrigez, vous signez. La plume reste la vôtre',
+    reperes: [
+      // FREE_MONTHLY_CREDITS (credits.constants.ts).
+      { icone: Gift, valeur: '15', quoi: 'écrits offerts par mois' },
+      // SUBSCRIPTION_PLANS et CREDIT_PACKS (billing.service.ts).
+      { icone: Sparkles, valeur: '19 €', quoi: 'par mois pour 200 écrits' },
+      { icone: Package, valeur: '9 €', quoi: 'le pack, sans abonnement' },
     ],
-    chiffre: { valeur: '15', quoi: 'écrits offerts chaque mois, puis 19 €' },
-    tarif: 'Gratuit jusqu’à 15 écrits par mois, sans carte bancaire. Ensuite 19 € par mois pour 200 écrits, ou un pack dès 9 €.',
+    badge: 'le nom part ici',
     lien: { href: '/lex', libelle: 'Ce que LEX fait, et ne fait pas' },
-    // ⚠ PAS DE PHOTO ICI, ET C'EST UN CHOIX. Une photo de bureau n'explique
-    // rien d'un assistant d'écriture, alors que le AVANT / APRÈS ci-dessous
-    // montre en trois secondes ce que le produit fait ET que les noms sont
-    // remplacés — c'est-à-dire l'argument qui le sépare d'un assistant
-    // générique. (`ecrire-400x400.jpeg` répond par ailleurs 404 sur
-    // WordPress : ne pas la remettre.)
+    // ⚠ PAS DE PHOTO : le avant / après montre en trois secondes que les noms
+    // sont remplacés, ce qu'aucune photo de bureau ne dit.
     visuel: 'lex',
     teinte: 'text-primary',
     trait: 'bg-primary',
-    puce: 'text-primary',
-    bordure: 'border-primary',
+    tuile: 'bg-primary/10 text-primary ring-primary/20',
+    carte: 'border-primary/20 bg-primary/[0.06] hover:border-primary/50',
+    point: 'bg-primary',
   },
 ];
 
-/**
- * LE AVANT / APRÈS DE LEX.
- *
- * ⚠ IL MONTRE LE JETON `[LE JEUNE]`, ET C'EST TOUT L'INTÉRÊT. Le seul
- * argument qui sépare LEX d'un assistant générique est que les noms ne
- * sortent pas — et une phrase qui l'affirme convainc moins qu'une capture où
- * on voit le nom disparaître. Le jeton affiché est un jeton PARLANT, comme
- * ceux que le pseudonymiseur produit réellement (voir `pseudonymiseur.service`).
- *
- * ⚠ LE TEXTE EST FICTIF ET NE DÉSIGNE PERSONNE. Un prénom seul, aucun nom de
- * famille, aucune structure, aucune date : c'est une illustration, pas un
- * extrait de dossier.
- */
-function VisuelLex() {
+/** Pastille « vivante » : un point qui pulse, puis le texte. */
+function Pastille({ texte, point }: { texte: string; point: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-muted/30 p-4 shadow-card sm:p-5">
+    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-1.5 text-xs font-bold text-foreground shadow-card backdrop-blur">
+      <span className="relative flex size-2">
+        <span className={`absolute inset-0 rounded-full ${point} animate-anneau`} aria-hidden />
+        <span className={`relative size-2 rounded-full ${point}`} aria-hidden />
+      </span>
+      {texte}
+    </span>
+  );
+}
+
+/**
+ * LE AVANT / APRÈS DE LEX. ⚠ Il montre le jeton `[LE JEUNE]`, et c'est tout
+ * l'intérêt : on voit le nom disparaître. Texte fictif, prénom seul.
+ */
+function VisuelLex({ badge, point }: { badge: string; point: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-muted/30 p-4 shadow-card transition duration-500 hover:shadow-lg sm:p-5">
       <div className="rounded-xl border border-border bg-background p-4">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-          Vos notes, telles quelles
-        </p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Vos notes</p>
         <p className="mt-2 text-sm leading-relaxed text-foreground">
-          «&nbsp;Kevin a encore quitté la table hier soir, 3<sup>e</sup> fois cette semaine. Il est
-          revenu tout seul au bout de 10 min. Sa mère doit appeler vendredi.&nbsp;»
+          «&nbsp;<span className="font-semibold">Kevin</span> a encore quitté la table hier soir, 3<sup>e</sup> fois
+          cette semaine.&nbsp;»
         </p>
       </div>
 
       <div className="flex items-center gap-3 py-3">
         <span className="h-px flex-1 bg-border" aria-hidden />
-        <span className="rounded-full border border-primary/30 bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary">
-          les noms partent ici
+        <span className="animate-derive">
+          <Pastille texte={badge} point={point} />
         </span>
         <span className="h-px flex-1 bg-border" aria-hidden />
       </div>
@@ -262,17 +280,8 @@ function VisuelLex() {
           Ce que le modèle reçoit
         </p>
         <p className="mt-2 text-sm leading-relaxed text-foreground">
-          «&nbsp;<mark className="rounded bg-primary-soft px-1 font-semibold text-primary">
-            [LE JEUNE]
-          </mark>{' '}
-          a quitté la table à trois reprises cette semaine, revenant seul après une dizaine de
-          minutes. Un échange est prévu avec{' '}
-          <mark className="rounded bg-primary-soft px-1 font-semibold text-primary">[LA MÈRE]</mark>
-          .&nbsp;»
-        </p>
-        <p className="mt-3 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground">
-          Les vrais prénoms sont rétablis chez vous, dans le document rendu. Ils ne quittent jamais
-          la plateforme.
+          «&nbsp;<mark className="rounded bg-primary-soft px-1 font-semibold text-primary">[LE JEUNE]</mark> a quitté
+          la table à trois reprises cette semaine.&nbsp;»
         </p>
       </div>
     </div>
@@ -288,129 +297,132 @@ export function QuatreSituations() {
           <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
             Trois situations qu’on connaît tous. Trois réponses.
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-            {/* ⚠ « LA FEUILLE DE MISSION », PAS « LE CONTRAT » (21/09/2026).
-                Le logiciel édite un devis, une feuille de mission et une
-                facture ; le contrat de travail, lui, reste rédigé par
-                l'établissement. Écrire « contrat » ici promettait de l'intérim
-                qu'on ne fait pas — et contredisait le premier écran, qui dit
-                la bonne chose. Les deux phrases doivent rester identiques. */}
-            Les Extras n’est pas un annuaire de plus. Trois services, et un seul endroit où le
-            devis, la feuille de mission et la facture sont édités.
-          </p>
         </Reveal>
 
-        <div className="mt-14 space-y-16 md:space-y-24">
-          {SITUATIONS.map((s, i) => (
-            <Reveal key={s.service}>
-              {/*
+        <div className="mt-12 space-y-20 md:space-y-28">
+          {SITUATIONS.map((s, i) => {
+            const Icone = s.icone;
+            return (
+              /*
                 ⚠ L'ALTERNANCE SE FAIT PAR `order`, PAS PAR `flex-row-reverse` :
-                sur mobile la grille se replie en une colonne, et l'image doit
-                alors TOUJOURS passer après le texte. Un `row-reverse` remonte
-                l'image au-dessus du titre une fois sur deux, et on lit une
-                photo sans savoir de quoi on parle.
-              */}
-              <div className="grid items-center gap-8 md:grid-cols-2 md:gap-14">
+                sur mobile l'image doit TOUJOURS passer après le texte.
+              */
+              <div key={s.service} className="grid items-center gap-10 md:grid-cols-2 md:gap-14">
                 <div className={i % 2 === 1 ? 'md:order-2' : ''}>
-                  <div className="flex items-center gap-3">
-                    <span className={`h-px w-8 ${s.trait}`} aria-hidden />
-                    <span
-                      className={`text-xs font-bold uppercase tracking-[0.18em] ${s.teinte}`}
-                    >
-                      {s.service}
-                    </span>
-                  </div>
+                  <Reveal>
+                    {/*
+                      ⚠ LE NOM DU SERVICE EST EN GRAND (30/09, demande de Siham :
+                      « met en avant RENFORTEAM et ATELIER »). Il était en
+                      sur-titre de 12 px, plus petit que les points en dessous.
+                    */}
+                    <div className="flex items-center gap-3.5">
+                      <span className={`grid size-12 shrink-0 place-items-center rounded-2xl ring-1 ${s.tuile}`}>
+                        <Icone className="size-6" aria-hidden />
+                      </span>
+                      <div>
+                        <p className={`text-3xl font-extrabold uppercase leading-none tracking-tight md:text-4xl ${s.teinte}`}>
+                          {s.service}
+                        </p>
+                        {s.accroche ? (
+                          <p className="mt-1.5 text-sm font-semibold text-foreground/80 md:text-base">{s.accroche}</p>
+                        ) : null}
+                      </div>
+                    </div>
 
-                  <h3 className="mt-4 text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl text-balance">
-                    {s.probleme}
-                  </h3>
+                    <span className={`mt-5 block h-px w-12 ${s.trait}`} aria-hidden />
+                    <h3 className="mt-5 text-xl font-bold leading-tight tracking-tight text-foreground md:text-2xl text-balance">
+                      {s.probleme}
+                    </h3>
+                  </Reveal>
 
-                  {s.situation.map((p) => (
-                    <p key={p.slice(0, 28)} className="mt-4 leading-relaxed text-muted-foreground">
-                      {p}
-                    </p>
-                  ))}
-
-                  <ul className="mt-6 space-y-2.5">
-                    {s.reponse.map((r) => (
-                      <li key={r.slice(0, 28)} className="flex gap-2.5 text-sm leading-relaxed">
-                        <Check className={`mt-0.5 size-4 shrink-0 ${s.puce}`} aria-hidden />
-                        <span className="text-foreground">{r}</span>
-                      </li>
-                    ))}
+                  <ul className="mt-6 space-y-3">
+                    {s.points.map((p, k) => {
+                      const I = p.icone;
+                      return (
+                        <li key={p.texte}>
+                          <Reveal delay={120 + k * 110} className="flex items-center gap-3">
+                            <span className={`grid size-8 shrink-0 place-items-center rounded-lg ring-1 ${s.tuile}`}>
+                              <I className="size-4" aria-hidden />
+                            </span>
+                            <span className="text-[15px] font-semibold text-foreground">{p.texte}</span>
+                          </Reveal>
+                        </li>
+                      );
+                    })}
                   </ul>
 
-                  {/*
-                    LES MÉTIERS, MIS EN AVANT — voir `accent` dans le type.
+                  <dl className="mt-7 grid grid-cols-3 gap-2.5 sm:gap-3">
+                    {s.reperes.map((r, k) => {
+                      const I = r.icone;
+                      return (
+                        <Reveal key={r.valeur} delay={400 + k * 110}>
+                          <div
+                            className={`group h-full rounded-2xl border p-3 transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-4 ${s.carte}`}
+                          >
+                            <I
+                              className={`size-4 transition duration-300 group-hover:scale-125 ${s.teinte}`}
+                              aria-hidden
+                            />
+                            <dt
+                              className={`mt-2 text-base font-extrabold leading-tight tracking-tight sm:text-2xl ${s.teinte}`}
+                            >
+                              {r.valeur}
+                            </dt>
+                            <dd className="mt-1 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+                              {r.quoi}
+                            </dd>
+                          </div>
+                        </Reveal>
+                      );
+                    })}
+                  </dl>
 
-                    ⚠ LE CONTOUR PORTE LA TEINTE DE LA SECTION, L'INTÉRIEUR
-                    RESTE SOBRE. Un aplat teinté de plus, juste sous trois
-                    puces déjà colorées, ferait un troisième niveau de fond sur
-                    la même colonne — c'est le défaut corrigé le 3/09 sur les
-                    encarts de la fiche formation, et il se reproduit à
-                    l'identique dès qu'on empile deux surfaces voisines.
-                  */}
-                  <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-                    <span className={`font-bold ${s.teinte}`}>Combien ça coûte.</span> {s.tarif}
-                  </p>
-
-                  {s.accent ? (
-                    <p
-                      className={`mt-5 rounded-xl border-l-2 bg-muted/30 py-3 pl-4 pr-3 text-sm font-medium leading-relaxed text-foreground ${s.bordure}`}
+                  <Reveal delay={700}>
+                    {/*
+                      ⚠ UN <Link> AUX CLASSES DU BOUTON « outline », PAS `Button asChild`
+                      (et pas `buttonVariants` : button.tsx est un module client).
+                      Le bouton du milieu arrivait dans un segment de rendu en
+                      flux, et `Slot` y perdait toutes ses classes : un lien nu,
+                      le texte et la flèche sur deux lignes (vu le 30/09).
+                    */}
+                    <Link
+                      href={s.lien.href}
+                      className="group mt-7 inline-flex h-11 w-fit items-center gap-2 whitespace-nowrap rounded-lg border border-input bg-card px-5 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
-                      {s.accent}
-                    </p>
-                  ) : null}
-
-                  <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
-                    <Button asChild variant="outline">
-                      <Link href={s.lien.href}>
-                        {s.lien.libelle}
-                        <ArrowRight className="size-4" />
-                      </Link>
-                    </Button>
-                    <p className="text-sm text-muted-foreground">
-                      <strong className={`text-base font-bold ${s.teinte}`}>
-                        {s.chiffre.valeur}
-                      </strong>{' '}
-                      {s.chiffre.quoi}
-                    </p>
-                  </div>
+                      {s.lien.libelle}
+                      <ArrowRight className="size-4 transition group-hover:translate-x-1" />
+                    </Link>
+                  </Reveal>
                 </div>
 
-                <div className={i % 2 === 1 ? 'md:order-1' : ''}>
+                <Reveal delay={150} className={i % 2 === 1 ? 'md:order-1' : ''}>
                   {s.visuel === 'lex' ? (
-                    <VisuelLex />
+                    <VisuelLex badge={s.badge} point={s.point} />
                   ) : (
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border shadow-card">
-                      <Image
-                        src={s.image as string}
-                        alt={s.alt as string}
-                        fill
-                        sizes="(min-width: 768px) 46vw, 100vw"
-                        className="object-cover"
+                    <div className="group relative aspect-[4/3] overflow-hidden rounded-3xl border border-border shadow-card">
+                      <div className="absolute inset-0 animate-panoramique">
+                        <Image
+                          src={s.image as string}
+                          alt={s.alt as string}
+                          fill
+                          sizes="(min-width: 768px) 46vw, 100vw"
+                          className="object-cover transition duration-700 group-hover:scale-105"
+                        />
+                      </div>
+                      <div
+                        className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent"
+                        aria-hidden
                       />
+                      <div className="absolute bottom-4 left-4 animate-derive">
+                        <Pastille texte={s.badge} point={s.point} />
+                      </div>
                     </div>
                   )}
-                </div>
+                </Reveal>
               </div>
-            </Reveal>
-          ))}
+            );
+          })}
         </div>
-
-        {/*
-          ⚠ LA NOTE DE VISIO A QUITTÉ LE PIED DE SECTION LE 21/09/2026.
-
-          Elle y était en dernier, après les quatre situations, en gris et en
-          petit — c'est-à-dire à l'endroit exact où l'on ne lit plus. Siham a
-          demandé de mettre en avant les éducateurs « en présentiel ou
-          visioconférence » : la mention est donc remontée DANS la section
-          RenforTeam (champ `accent`), juste sous les puces, là où le directeur
-          se demande précisément qui va venir et comment.
-
-          ⚠ NE PAS LA REMETTRE ICI EN PLUS. Deux fois la même chose sur une
-          page qu'on vient de resserrer, c'est ce qui fait sauter les deux.
-        */}
       </div>
     </section>
   );
