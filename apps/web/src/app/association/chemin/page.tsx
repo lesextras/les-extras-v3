@@ -5,7 +5,7 @@ import { chargerChemin, TEINTES_PARTIE } from '../_chemin';
 import { etapesFaitesSiConnecte } from '../_session';
 import { AVANTAGES, FAMILLES_AVANTAGES, VERIFIE_LE } from '../_avantages';
 import { CarteAvantage } from '../CarteAvantage';
-import { GrilleAvantages } from '../GrilleAvantages';
+import { FamillesAvantages } from '../FamillesAvantages';
 import { LIBELLES_COUT } from '../_avantages';
 
 export const metadata: Metadata = {
@@ -159,36 +159,15 @@ export default async function CheminPage() {
           <p className="mt-2 text-[#1D1B5C]">{AVANTAGES.length} avantages · il te faut le récépissé, les statuts et le RIB.</p>
         </div>
 
-        {/* Les trois familles, en portes comme dans « Mon association ». */}
-        <nav className="mt-4 grid gap-4 md:grid-cols-3" aria-label="Aller à une famille">
-          {FAMILLES_AVANTAGES.map((f) => {
+        {/* Les trois familles : un clic déplie leurs avantages (FamillesAvantages). */}
+        <FamillesAvantages
+          familles={FAMILLES_AVANTAGES.map((f) => {
             const st = STYLE_FAMILLE[f.code] ?? STYLE_FAMILLE.BRAS;
-            return (
-              <a
-                key={f.code}
-                href={`#${f.code.toLowerCase()}`}
-                className={`group flex flex-col rounded-2xl border-2 ${st.bordure} ${st.fond} p-5 no-underline transition duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_16px_34px_-18px_rgba(29,27,92,0.55)] motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
-              >
-                <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${st.pastille} text-white`} aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d={st.icone} />
-                  </svg>
-                </span>
-                <span className="mt-3 block text-lg font-extrabold text-[#1D1B5C]">{f.titre}</span>
-                <span className="mt-1 block text-sm leading-relaxed text-[#3B3A66]">{st.detail}</span>
-                <span className={`mt-auto pt-4 text-sm font-bold ${st.texte}`}>
-                  {f.avantages.length} avantages <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
-                </span>
-              </a>
-            );
-          })}
-        </nav>
-
-        {FAMILLES_AVANTAGES.map((f) => (
-          <section key={f.code} id={f.code.toLowerCase()} className="mt-10 scroll-mt-24">
-            <SousTitre>{f.titre}</SousTitre>
-            <GrilleAvantages
-              cartes={f.avantages.map((a) => ({
+            return {
+              code: f.code,
+              titre: f.titre,
+              ...st,
+              cartes: f.avantages.map((a) => ({
                 code: a.code,
                 nom: a.nom,
                 par: a.par,
@@ -196,10 +175,10 @@ export default async function CheminPage() {
                 cout: LIBELLES_COUT[a.cout],
                 ton: a.cout === 'PUBLIC' ? 'bg-[#ECEBFC] text-[#4338CA]' : a.cout === 'REMISE' ? 'bg-[#FEF3E2] text-[#7C3E06]' : 'bg-[#E3F5EC] text-[#0F5F3E]',
                 fiche: <CarteAvantage avantage={a} ouvert />,
-              }))}
-            />
-          </section>
-        ))}
+              })),
+            };
+          })}
+        />
 
         <section className="mt-10 grid gap-4 md:grid-cols-2">
           <Encart ton="info">
