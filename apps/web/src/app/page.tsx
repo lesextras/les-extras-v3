@@ -320,6 +320,12 @@ export default async function LandingPage() {
                      normale, pas une incohérence.
                   4. Retour au n° 2, enrichi du seul élément qui lui manquait
                      vraiment : les établissements nommés.
+                  5. 01/10/2026, choix de Siham : « Accompagnement éducatif,
+                     ateliers, renforts. Tout commence par votre besoin. »
+                     Le héros part du besoin de la personne (enfant, proche,
+                     soi-même, structure). Pas de deux-points : un point.
+                     Ne pas écrire « à domicile » ni « crédit d'impôt » tant
+                     que l'agrément services à la personne n'est pas obtenu.
 
                   ⚠ CE CHOIX EST ADOSSÉ AUX CONCURRENTS, RELEVÉS LE 21/09 :
                   Hublo joue l'émotion (« Préserver ce qui vous a fait choisir
@@ -330,8 +336,8 @@ export default async function LandingPage() {
                   (« IME · ITEP · SESSAD · MECS · ESAT »). Sans notoriété ni
                   chiffres à afficher, c'est la voie concrète qui paie. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Renforts et ateliers&nbsp;:{' '}
-                <span className="text-secondary">le bon réseau dans un seul logiciel.</span>
+                Accompagnement éducatif, ateliers, renforts.{' '}
+                <span className="text-secondary">Tout commence par votre besoin.</span>
               </h1>
               {/* LE SOUS-TITRE NOMME LES PUBLICS, ce qui manquait au titre n° 2
                   et ce que NotaSuivi fait mieux que nous depuis le début : les
@@ -356,9 +362,9 @@ export default async function LandingPage() {
                   l'intérim qu'on ne fait pas. La même phrase est dans
                   `QuatreSituations` : les deux bougent ensemble. */}
               <p className="animate-fade-in-up stagger-2 mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Pour les IME, ITEP, SESSAD, MECS, ESAT, les écoles et les familles. Vous décrivez
-                le besoin, le réseau répond, et le devis, la feuille de mission et la facture sont
-                édités ici.
+                Pour votre enfant, un proche, vous-même ou votre structure (IME, SESSAD, MECS,
+                école…). Décrivez ce que vous recherchez, choisissez votre intervenant et retrouvez
+                devis, feuille de mission et facture au même endroit.
               </p>
 
               {/* LA BARRE DE RECHERCHE A QUITTÉ LE HÉROS.
