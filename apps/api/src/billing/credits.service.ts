@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
-import { SUBSCRIPTION_PLANS, ESTABLISHMENT_PLAN } from './billing.service';
+import { SUBSCRIPTION_PLANS, ANCIENS_PLANS, ESTABLISHMENT_PLAN } from './billing.service';
 import {
   FREE_MONTHLY_CREDITS,
   ROLLOVER_MONTHS,
@@ -307,7 +307,8 @@ export class CreditsService {
     for (const compte of comptes) allocations.set(compte.id, FREE_MONTHLY_CREDITS);
     for (const abo of abonnements) {
       const plan =
-        SUBSCRIPTION_PLANS.find((p) => p.id === abo.planId) ??
+        // Un abonné à l'ancienne grille garde sa dotation (01/10/2026).
+        [...SUBSCRIPTION_PLANS, ...ANCIENS_PLANS].find((p) => p.id === abo.planId) ??
         (abo.planId === ESTABLISHMENT_PLAN.id ? ESTABLISHMENT_PLAN : null);
       if (!plan) continue;
       allocations.set(

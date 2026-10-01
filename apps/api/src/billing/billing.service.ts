@@ -52,25 +52,59 @@ import { rolesActifs } from '../common/roles';
 export { FREE_MONTHLY_CREDITS, ROLLOVER_MONTHS } from './credits.constants';
 
 /**
- * Packs de crédits (Stripe Checkout mode=payment), pour qui ne veut pas
- * d'abonnement. Réalignés sur le tarif de l'abonnement : le crédit y reste
- * plus cher (c'est le prix du sans-engagement) mais dans un rapport de 3 à 4,
- * et non de 40 comme dans la grille historique — un écart que le premier
- * prospect faisant la division n'aurait pas pardonné.
+ * ── GRILLE DU 1er OCTOBRE 2026, DÉCIDÉE PAR SIHAM ────────────────────────
+ *
+ * LEX devient l'outil du quotidien acheté par la personne elle-même
+ * (éducation, animation, protection de l'enfance, handicap, social,
+ * associations). Les outils français payés par la personne se vendent entre
+ * 8 et 10 € par mois (EduquIA 9,99 €, Prépare Mes Cours 9,90 €) : à 19 €,
+ * LEX coûtait le prix de ChatGPT. Deux choix personnels seulement, mêmes
+ * fonctions, seule la quantité change :
+ *   - « J'en ai besoin parfois » : un pack de 20 résultats à 4,90 € ;
+ *   - « Je l'utilise régulièrement » : 60 résultats par mois à 9,90 €.
+ * L'offre équipe (ESTABLISHMENT_PLAN) ne change pas. La dotation gratuite de
+ * 15 par mois ne change pas non plus : on mesure d'abord combien de personnes
+ * l'atteignent avant d'y toucher.
+ *
+ * ⚠ LES ANCIENNES FORMULES NE SONT PLUS VENDUES MAIS RESTENT RECONNUES
+ * (`ANCIENS_PLANS`, `ANCIENS_PACKS`) : un abonné à l'ancienne grille garde
+ * sa dotation au renouvellement, et l'historique d'achats garde ses libellés.
+ * Aucun compte existant ne perd de crédit.
  */
+
+/** Pack de crédits (Stripe Checkout mode=payment), pour qui ne veut pas d'abonnement. */
 export const CREDIT_PACKS = [
+  { id: 'pack-20', label: 'Pack 20 résultats', credits: 20, amountCents: 490 },
+] as const;
+
+/** Packs de l'ancienne grille : plus vendus, gardés pour les libellés de l'historique. */
+export const ANCIENS_PACKS = [
   { id: 'pack-25', label: 'Pack 25 générations', credits: 25, amountCents: 900 },
   { id: 'pack-60', label: 'Pack 60 générations', credits: 60, amountCents: 1900 },
   { id: 'pack-150', label: 'Pack 150 générations', credits: 150, amountCents: 3900 },
 ] as const;
 
 /**
- * Abonnements LEX individuels (Stripe Checkout mode=subscription).
+ * Abonnement LEX individuel (Stripe Checkout mode=subscription).
  * `monthlyCredits` est crédité au compte chaque mois et REPORTABLE : le
  * solde s'accumule jusqu'à ROLLOVER_MONTHS fois l'allocation, ce qui couvre
- * exactement les pics de bilans sans transformer le quota en tirelire.
+ * les pics de bilans sans transformer le quota en tirelire.
  */
 export const SUBSCRIPTION_PLANS = [
+  {
+    id: 'plan-lex',
+    label: 'LEX régulier',
+    amountCents: 990,
+    monthlyCredits: 60,
+    perks: '60 résultats par mois, reportables : activités, écrits améliorés, comptes rendus',
+  },
+] as const;
+
+/**
+ * Abonnements de l'ancienne grille (19 € / 200, 49 € / 600). Plus proposés à
+ * la souscription, mais un abonnement en cours reste doté à son niveau.
+ */
+export const ANCIENS_PLANS = [
   {
     id: 'plan-essentiel',
     label: 'LEX',
@@ -284,7 +318,7 @@ export class BillingService {
       })
     ).map((a) => ({
       ...a,
-      label: CREDIT_PACKS.find((p) => p.id === a.packId)?.label ?? a.packId,
+      label: [...CREDIT_PACKS, ...ANCIENS_PACKS].find((p) => p.id === a.packId)?.label ?? a.packId,
     }));
     return {
       credits: account.credits,
@@ -768,7 +802,9 @@ export class BillingService {
         // mois quelqu'un qui vient de payer. La dotation est idempotente,
         // le cron mensuel ne la servira donc pas deux fois.
         const planId = session.metadata?.planId;
-        const plan = this.tousLesPlans().find((p) => p.id === planId);
+        // Les anciennes formules restent reconnues : une session ouverte
+        // avant le changement de grille doit doter au niveau payé.
+        const plan = [...this.tousLesPlans(), ...ANCIENS_PLANS].find((p) => p.id === planId);
         if (plan) {
           await this.credits
             .amorcerDotation(accountId, plan.monthlyCredits)

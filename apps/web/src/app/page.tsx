@@ -78,8 +78,8 @@ import {
   ArrowRight,
   Sparkles,
   FileCheck,
-  Clock,
   Euro,
+  ShieldCheck,
   Handshake,
   HeartHandshake,
 } from 'lucide-react';
@@ -336,9 +336,9 @@ export default async function LandingPage() {
                   sigles sont exactement ce que les gens tapent, et c'est à eux
                   qu'un directeur se reconnaît.
 
-                  ⚠ IL NE RÉPÈTE PAS LES PASTILLES qui le suivent (0 %, 48 h).
-                  Elles disent déjà le prix et le délai ; les réécrire ici
-                  ferait lire deux fois la même ligne.
+                  ⚠ IL NE RÉPÈTE PAS LES PASTILLES qui le suivent (renforts
+                  vérifiés, devis avant intervention). Depuis le 01/10/2026,
+                  aucun prix ni délai sur l'accueil.
 
                   ⚠⚠ ET SURTOUT : PAS DE « MISE EN RELATION GRATUITE » TOUT
                   COURT. Depuis le 21/09, RenforTeam prend 15 % de frais de
@@ -389,13 +389,19 @@ export default async function LandingPage() {
                     28/09/2026 : elle parlait des formations, qui ont quitté
                     Les Extras. Le centre de formation ADéPA a son bloc plus
                     bas (`CentreFormationAdepa`), et un seul. */}
+                {/* ⚠⚠ PLUS AUCUN CHIFFRE NI PRIX ICI (01/10/2026, décision de Siham,
+                    « les autres ne mettent pas leur prix », méthode Airbnb).
+                    « 0 % sur les ateliers » et « 48 h pour un devis » sont
+                    retirés : l'accueil donne envie et rassure, le prix se lit
+                    sur la fiche et, frais compris, au moment du devis.
+                    « Vérifiés » est vrai pour RenforTeam (29/09/2026). */}
                 <span className="inline-flex items-center gap-1.5">
-                  <Euro className="size-4 text-primary" />
-                  <strong className="font-semibold text-foreground">0 %</strong> sur les ateliers
+                  <ShieldCheck className="size-4 text-primary" />
+                  Renforts <strong className="font-semibold text-foreground">vérifiés</strong> par l’association
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Clock className="size-4 text-primary" />
-                  <strong className="font-semibold text-foreground">48 h</strong> pour un devis
+                  <FileCheck className="size-4 text-primary" />
+                  <strong className="font-semibold text-foreground">Devis</strong> avant toute intervention
                 </span>
               </div>
             </div>
@@ -428,7 +434,9 @@ export default async function LandingPage() {
                     <FileCheck className="size-5" />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Devis sous 48 h</p>
+                    {/* « Devis sous 48 h » retiré le 01/10/2026 : pas de délai
+                        ni de prix sur l'accueil (méthode Airbnb). */}
+                    <p className="text-sm font-semibold text-foreground">Devis édité ici</p>
                     {/* ⚠ PLUS DE « CONTRAT AUTOMATIQUE ». Le logiciel édite un
                         DEVIS et une FEUILLE DE MISSION ; le contrat de travail
                         reste rédigé par l'établissement. « Contrat généré »

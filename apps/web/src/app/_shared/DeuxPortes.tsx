@@ -30,13 +30,13 @@ const PORTES = [
           titre: "Trouver un intervenant et gérer vos remplacements",
           texte:
             "MECS, IME, ITEP, EHPAD, SESSAD. Un renfort ce soir, un atelier au trimestre.",
-          reperes: ["Renfort en cascade", "Ateliers clés en main", "Devis sous 48 h"],
+          reperes: ["Renfort en cascade", "Ateliers clés en main", "Devis avant toute intervention"],
         }
       : {
           titre: "Faire intervenir un spécialiste et programmer vos ateliers",
           texte:
             "Pour votre enfant, votre proche ou vous-même. Pour votre école, votre mairie, votre établissement. Un renfort sur une situation, un atelier au trimestre.",
-          reperes: ["Renfort par des indépendants", "Ateliers clés en main", "Devis sous 48 h"],
+          reperes: ["Renfort par des indépendants", "Ateliers clés en main", "Devis avant toute intervention"],
         }),
     href: "/renforteam",
     secondaire: { libelle: "Voir le catalogue", href: "/ateliers" },

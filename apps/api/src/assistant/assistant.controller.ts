@@ -19,7 +19,7 @@ import { ExtractionService } from './extraction.service';
 import { CreditsService } from '../billing/credits.service';
 import { catalogueChoix } from './options';
 import type { FichierRecu } from '../storage/files.service';
-import { ActiviteDto, ApercuMasquageDto, AppuiScolaireDto, ChatDto, EnregistrerDocumentDto, EnvoyerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto } from './dto/assistant.dto';
+import { ActiviteDto, AmeliorerDto, ApercuMasquageDto, AppuiScolaireDto, ChatDto, EnregistrerDocumentDto, EnvoyerDocumentDto, ExporterDto, FeedbackDto, FicheDto, GenererDto, ImporterTrameDto, ModifierDocumentDto, ModifierTrameDto } from './dto/assistant.dto';
 
 /**
  * Assistant d'écriture professionnelle.
@@ -270,6 +270,27 @@ export class AssistantController {
   ) {
     return this.payer(user, account, 'LEX_ACTIVITE', () =>
       this.assistant.genererActivite(dto),
+    );
+  }
+
+  /**
+   * AMÉLIORER UN ÉCRIT (01/10/2026) : plus clair, plus factuel, plus court ou
+   * objectifs observables. Un crédit, remboursé si la génération échoue.
+   */
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
+  @UseGuards(MemberGuard)
+  @Post('ameliorer')
+  ameliorer(
+    @CurrentUser() user: RequestUser,
+    @CurrentAccount() account: RequestAccount,
+    @Body() dto: AmeliorerDto,
+  ) {
+    return this.payer(
+      user,
+      account,
+      'LEX_ECRIT',
+      () => this.assistant.ameliorer(dto),
+      `Écrit amélioré (${dto.but})`,
     );
   }
 

@@ -50,6 +50,25 @@ export class GenererDto {
 }
 
 /**
+ * AMÉLIORER UN ÉCRIT (01/10/2026) : la deuxième des trois tâches de LEX.
+ * Le texte est celui que le professionnel a déjà écrit ; LEX le reprend selon
+ * UN but choisi, sans rien y ajouter. Le texte n'est jamais persisté.
+ */
+export class AmeliorerDto {
+  @IsString()
+  @MinLength(20, { message: 'Collez un texte d’au moins quelques phrases.' })
+  @MaxLength(8000)
+  texte!: string;
+
+  @IsIn(['clair', 'factuel', 'court', 'objectifs'])
+  but!: 'clair' | 'factuel' | 'court' | 'objectifs';
+
+  /** Le métier choisi à l'écran : il oriente le vocabulaire, rien d'autre. */
+  @IsOptional() @IsString() @MaxLength(60)
+  metier?: string;
+}
+
+/**
  * Aperçu du masquage : le texte tel que le moteur le lira, montré AVANT
  * l'envoi. Aucun appel au modèle, aucune persistance, aucun crédit.
  */

@@ -84,19 +84,15 @@ import Image from 'next/image';
 import type { LucideIcon } from 'lucide-react';
 import {
   ArrowRight,
-  BadgePercent,
   ClipboardList,
-  Clock,
   FileCheck,
   Gift,
   GraduationCap,
   HeartHandshake,
   ListChecks,
   NotebookPen,
-  Package,
   Palette,
   PenLine,
-  Percent,
   Send,
   ShieldCheck,
   Sparkles,
@@ -165,15 +161,17 @@ const SITUATIONS: Situation[] = [
       { icone: FileCheck, texte: 'Devis écrit avant l’intervention' },
     ],
     reperes: [
-      { icone: Clock, valeur: '48 h', quoi: 'pour le devis' },
+      // ⚠ PLUS DE PRIX NI DE DÉLAI SUR L'ACCUEIL (01/10/2026, méthode Airbnb) :
+      // « 48 h » et « +15 % » sont retirés. Les frais restent écrits sur
+      // /renforteam, /frais-de-service et au moment du devis.
+      { icone: UserRoundCheck, valeur: 'Vérifiés', quoi: 'par l’association' },
       {
         icone: GraduationCap,
         valeur: 'ES · ME · AES',
         // ⚠ La visio reste conditionnée : sans la variable, /visio redirige.
         quoi: VISIO ? 'présentiel ou visio' : 'sur place ou à domicile',
       },
-      // COMMISSION_RENFORT (billing/commission.ts), payée par le demandeur.
-      { icone: Percent, valeur: '+15 %', quoi: 'de frais, payés par le demandeur' },
+      { icone: FileCheck, valeur: 'Devis', quoi: 'avant l’intervention' },
     ],
     badge: 'Éducateurs en renfort',
     lien: { href: '/renforteam', libelle: 'Comment ça se passe' },
@@ -196,11 +194,13 @@ const SITUATIONS: Situation[] = [
       { icone: Send, texte: 'Devis sans créer de compte' },
     ],
     reperes: [
-      { icone: BadgePercent, valeur: '0 %', quoi: 'de commission' },
-      { icone: Clock, valeur: '48 h', quoi: 'pour le devis' },
-      { icone: Tag, valeur: 'Prix affiché', quoi: 'c’est le prix payé' },
+      // Pas de chiffre ni de prix sur l'accueil (01/10/2026) : le tarif se
+      // lit sur chaque fiche.
+      { icone: ListChecks, valeur: 'Public', quoi: 'durée et matériel indiqués' },
+      { icone: Send, valeur: 'Sans compte', quoi: 'pour demander un devis' },
+      { icone: Tag, valeur: 'Tarif', quoi: 'écrit sur chaque fiche' },
     ],
-    badge: '0 % de commission',
+    badge: 'Ateliers clés en main',
     lien: { href: '/ateliers', libelle: 'Parcourir le catalogue' },
     image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
     alt: 'Des enfants en activité collective en extérieur',
@@ -213,18 +213,21 @@ const SITUATIONS: Situation[] = [
   {
     service: 'LEX',
     icone: PenLine,
-    probleme: 'Il est 21 h, le rapport est pour demain, et la page est blanche.',
+    // ⚠ LEX EN TROIS TÂCHES (01/10/2026, décision de Siham) : préparer une
+    // activité, améliorer un écrit, transformer des notes en compte rendu.
+    // Aucun prix ici ; ils sont sur /lex.
+    accroche: 'Vos activités et vos écrits du quotidien',
+    probleme: 'Une activité à préparer, un compte rendu à écrire, et pas le temps.',
     points: [
-      { icone: NotebookPen, texte: 'Vos notes, telles quelles' },
-      { icone: ShieldCheck, texte: 'Noms masqués avant l’envoi' },
-      { icone: PenLine, texte: 'Vous relisez, vous signez' },
+      { icone: Sparkles, texte: 'Préparer une activité' },
+      { icone: PenLine, texte: 'Améliorer un écrit' },
+      { icone: NotebookPen, texte: 'Vos notes en compte rendu' },
     ],
     reperes: [
-      // FREE_MONTHLY_CREDITS (credits.constants.ts).
-      { icone: Gift, valeur: '15', quoi: 'écrits offerts par mois' },
-      // SUBSCRIPTION_PLANS et CREDIT_PACKS (billing.service.ts).
-      { icone: Sparkles, valeur: '19 €', quoi: 'par mois pour 200 écrits' },
-      { icone: Package, valeur: '9 €', quoi: 'le pack, sans abonnement' },
+      { icone: ListChecks, valeur: '3', quoi: 'tâches, un seul outil' },
+      { icone: ShieldCheck, valeur: 'Noms', quoi: 'retirés avant l’envoi' },
+      // FREE_MONTHLY_CREDITS (credits.constants.ts) : une gratuité, pas un prix.
+      { icone: Gift, valeur: 'Gratuit', quoi: 'pour commencer' },
     ],
     badge: 'le nom part ici',
     lien: { href: '/lex', libelle: 'Ce que LEX fait, et ne fait pas' },

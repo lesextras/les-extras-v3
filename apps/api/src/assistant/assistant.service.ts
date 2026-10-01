@@ -412,6 +412,56 @@ Termine par : « Proposition générée par IA, à valider en équipe pluridisci
   }
 
 
+  // ── Améliorer un écrit (01/10/2026) ─────────────────────────────────────
+
+  /**
+   * Les quatre buts proposés à l'écran. Chacun dit CE QUI CHANGE ; le socle
+   * (`CADRE_AMELIORER`) dit ce qui ne change jamais : le sens, les faits, et
+   * l'absence de toute information ajoutée.
+   */
+  private static readonly BUTS_AMELIORER: Record<'clair' | 'factuel' | 'court' | 'objectifs', string> = {
+    clair:
+      'Rends ce texte plus clair : phrases plus courtes, un seul sujet par phrase, ordre logique. Le sens ne change pas.',
+    factuel:
+      "Rends ce texte plus factuel : repère chaque jugement ou appréciation (« agressif », « ne fait aucun effort », « famille défaillante »…), et propose à la place une formulation descriptive SI le texte contient les faits observés, sinon une hypothèse présentée comme telle. Ne transforme JAMAIS une appréciation en fait observé : si le fait manque, pose la question.",
+    court:
+      "Raccourcis ce texte d'au moins un tiers sans perdre d'information importante : supprime les redites et les formules creuses.",
+    objectifs:
+      "Reformule chaque objectif avec un verbe d'action et un critère observable. Tout critère chiffré ou toute échéance que le texte ne donne pas est marqué « à confirmer par l'équipe » : ce n'est jamais présenté comme une décision prise.",
+  };
+
+  private static readonly CADRE_AMELIORER = `Tu relis l'écrit d'un professionnel français de l'éducation, de l'animation, de la protection de l'enfance, du handicap, du social ou d'une association.
+
+Règles absolues :
+1. Tu n'ajoutes AUCUN fait, nom, date, chiffre ou événement absent du texte. Ce qui manque devient une question.
+2. Aucun diagnostic, aucune interprétation clinique, aucune décision à la place de l'équipe.
+3. Le texte contient des jetons comme [PERSONNE-A] ou [DATE-1] : conserve-les EXACTEMENT tels quels.
+4. Français professionnel, simple, respectueux de la personne et de sa famille, qui peuvent lire le document.
+5. N'utilise jamais le tiret cadratin ni le demi-cadratin. Aucun astérisque, aucun dièse.
+
+Réponds UNIQUEMENT avec ces trois parties, titres en majuscules seuls sur leur ligne :
+VERSION PROPOSÉE
+(le texte repris, prêt à copier)
+FORMULATIONS À VÉRIFIER
+(au plus cinq lignes commençant par « • » : le passage d'origine entre guillemets, puis pourquoi ; écris « Aucune. » s'il n'y en a pas)
+QUESTIONS
+(au plus trois lignes commençant par « • », seulement si une information manque ; sinon écris « Aucune. »)`;
+
+  async ameliorer(dto: { texte: string; but: 'clair' | 'factuel' | 'court' | 'objectifs'; metier?: string }) {
+    const consigne = AssistantService.BUTS_AMELIORER[dto.but];
+    if (!consigne) throw new BadRequestException('Choisissez ce que vous voulez améliorer.');
+    const { texte: masque, table } = this.pseudo.masquer(dto.texte);
+    const metier = dto.metier?.trim() ? `Métier de la personne : ${dto.metier.trim().slice(0, 60)}.\n` : '';
+    const reponseMasquee = await this.moteur.completer({
+      system: AssistantService.CADRE_AMELIORER,
+      user: `${metier}Ce qui est demandé : ${consigne}\n\nTexte à reprendre :\n\n${masque}`,
+      maxTokens: 1600,
+    });
+    let resultat = this.pseudo.restaurer(reponseMasquee, table);
+    resultat = sansBalisage(nettoyerJetonsResiduels(resultat));
+    return { resultat, protection: this.pseudo.resume(table) };
+  }
+
   // ── Appui scolaire ───────────────────────────────────────────────────────
 
   private static readonly CADRE_APPUI = `Tu conçois des supports d'appui scolaire pour des professionnels

@@ -273,7 +273,7 @@ describe("CreditsService : s'abonner en cours de mois", () => {
   });
 
   it("d'un plan à l'autre, ne verse que l'écart", async () => {
-    const superieur = SUBSCRIPTION_PLANS[1] ?? ESTABLISHMENT_PLAN;
+    const superieur = ESTABLISHMENT_PLAN;
     const { credits, etat } = fabrique(0);
     await credits.amorcerDotation('acc1', plan.monthlyCredits);
     await credits.amorcerDotation('acc1', superieur.monthlyCredits);

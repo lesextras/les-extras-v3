@@ -1,6 +1,6 @@
 import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { createHmac } from 'crypto';
-import { BillingService, SUBSCRIPTION_PLANS, ESTABLISHMENT_PLAN } from './billing.service';
+import { BillingService, SUBSCRIPTION_PLANS, ANCIENS_PLANS, ESTABLISHMENT_PLAN } from './billing.service';
 
 /**
  * LA FACTURATION EST LE SEUL MODULE QUI MANIPULE DE L'ARGENT RÉEL,
@@ -287,10 +287,19 @@ describe('BillingService : dotation à la souscription', () => {
   it("crédite l'allocation du plan dès l'activation de l'abonnement", async () => {
     const { billing, credits } = service();
     const { brut, entete } = signe(
-      sessionAbonnement({ kind: 'subscription', accountId: 'acc_1', planId: 'plan-essentiel' }),
+      sessionAbonnement({ kind: 'subscription', accountId: 'acc_1', planId: SUBSCRIPTION_PLANS[0].id }),
     );
     await billing.handleWebhook(brut, entete);
     expect(credits.amorcerDotation).toHaveBeenCalledWith('acc_1', SUBSCRIPTION_PLANS[0].monthlyCredits);
+  });
+
+  it("dote encore une formule de l'ancienne grille (01/10/2026)", async () => {
+    const { billing, credits } = service();
+    const { brut, entete } = signe(
+      sessionAbonnement({ kind: 'subscription', accountId: 'acc_1', planId: 'plan-essentiel' }),
+    );
+    await billing.handleWebhook(brut, entete);
+    expect(credits.amorcerDotation).toHaveBeenCalledWith('acc_1', ANCIENS_PLANS[0].monthlyCredits);
   });
 
   it("dote l'établissement au niveau de l'allocation d'équipe", async () => {
