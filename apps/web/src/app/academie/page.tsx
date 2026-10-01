@@ -1,10 +1,11 @@
 import Link from 'next/link';
+import { BadgeCheck, Building2, CalendarDays, Check, ClipboardCheck, GraduationCap, ListChecks, PenLine, Sparkles, Users, Wallet, type LucideIcon } from 'lucide-react';
 import type { Metadata } from 'next';
 import { academieConnectee, apiAcademie, sessionAcademie } from './_session';
 import { chargerChemin, tempsDe, TEINTES } from './_chemin';
 
 export const metadata: Metadata = { alternates: { canonical: '/academie' } };
-import { Accent, Barre, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, Encart, Pastille, SousTitre, Titre, Tuile, formaterDate } from './_ui';
+import { Accent, Barre, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, Encart, Pastille, SousTitre, Tuile, formaterDate } from './_ui';
 import { LIBELLES_QUALIOPI, type EspaceAcademie } from './_types';
 import { BlocStatistiques } from './_stats';
 import { BlocInstaller } from '../_shared/BlocInstaller';
@@ -28,65 +29,92 @@ export default async function AccueilAcademiePage() {
 async function Presentation() {
   const chemin = await chargerChemin();
 
+  /*
+   * ⚠ LA VITRINE DE L'ACADÉMIE (01/10/2026, demande de Siham) : « le moins
+   * possible de long texte, des points, des cartes, des icônes ». Tout ce qui
+   * est montré ici est codé et en service ; rien n'est annoncé qui n'existe pas.
+   * Deux portes d'entrée (je crée / je gère déjà), puis les modules en cartes.
+   */
   return (
     <>
-      <Titre
-        surtitre="Par Toulali"
-        sousTitre="Ton organisme, tes preuves Qualiopi, tes financements : le chemin est balisé."
-      >
-        Piloter mon <Accent>académie</Accent>
-      </Titre>
+      <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#0F5F3E] via-[#1E9E6A] to-[#3EB884] px-6 py-12 text-center text-white sm:px-10 sm:py-16">
+        <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-white/75">Par Toulali · gratuit pour démarrer</p>
+        <h1 className="mx-auto mt-3 max-w-[18ch] text-4xl font-extrabold leading-[1.05] tracking-tight [text-wrap:balance] sm:text-6xl">
+          Crée ton organisme. Pilote tes formations.
+        </h1>
+        <ul className="mx-auto mt-6 flex max-w-2xl flex-wrap justify-center gap-2">
+          {['Cours en ligne', 'Sessions', 'Émargement', 'Documents', 'Factures', 'Qualiopi', 'BPF'].map((m) => (
+            <li key={m} className="rounded-full bg-white/15 px-3 py-1.5 text-sm font-bold backdrop-blur-sm">
+              {m}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link href="/academie/inscription" className="rounded-xl bg-white px-6 py-3.5 text-base font-extrabold text-[#0F5F3E] no-underline transition hover:bg-[#E3F5EC]">
+            Ouvrir mon espace
+          </Link>
+          <Link href="/academie/connexion" className="rounded-xl border-2 border-white/60 px-6 py-3 text-base font-extrabold text-white no-underline transition hover:bg-white/10">
+            J&apos;ai déjà un espace
+          </Link>
+        </div>
+      </section>
 
-      <div className="mb-10 flex flex-wrap gap-3">
-        <Link href="/academie/inscription" className={BTN_PRIMAIRE}>
-          Ouvrir mon espace, gratuit
-        </Link>
-        <Link href="/academie/chemin" className={BTN_SECONDAIRE}>
-          Voir le chemin
-        </Link>
-      </div>
-
-      <section className="mb-10 grid gap-4 md:grid-cols-3">
-        {[
-          {
-            titre: 'Le chemin, pas la paperasse',
-            detail:
-              "Douze étapes dans l'ordre où elles se posent vraiment, y compris celle que personne ne voit venir : il faut une première convention signée AVANT de pouvoir déclarer son activité.",
-          },
-          {
-            titre: 'Qualiopi tenu à jour',
-            detail:
-              "Sept critères, trente-deux indicateurs, une preuve pour chacun. L'espace montre ce qui manque, garde les fichiers, et te dit où tu en es en un pourcentage.",
-          },
-          {
-            titre: 'Ce que l\'auditeur oublie de te dire',
-            detail:
-              "Le journal de veille et le registre des réclamations sont les deux motifs de non-conformité les plus fréquents. Ils ont chacun leur écran, daté, prêt à montrer.",
-          },
-        ].map((c) => (
-          <div key={c.titre} className={`${CARTE} p-5`}>
-            <h2 className="text-lg font-extrabold text-[#12312A]">{c.titre}</h2>
-            <p className="mt-2 text-sm leading-relaxed">{c.detail}</p>
-          </div>
+      <section className="mt-6 grid gap-4 md:grid-cols-2">
+        {PORTES_ACADEMIE.map((p) => (
+          <Link key={p.titre} href={p.href} className={`${CARTE_VIVE} group flex h-full flex-col p-6 no-underline sm:p-7`}>
+            <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ${p.pastille} text-white`} aria-hidden="true">
+              <p.Icone className="size-7" />
+            </span>
+            <span className="mt-4 text-2xl font-extrabold text-[#12312A]">{p.titre}</span>
+            <ul className="mt-3 space-y-1.5">
+              {p.points.map((pt) => (
+                <li key={pt} className="flex items-center gap-2 text-[15px] text-[#334A42]">
+                  <Check className="size-4 shrink-0 text-[#1E9E6A]" aria-hidden="true" />
+                  {pt}
+                </li>
+              ))}
+            </ul>
+            <span className="mt-auto pt-5 text-base font-extrabold text-[#0F5F3E]">
+              {p.action} <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </span>
+          </Link>
         ))}
       </section>
 
+      <section className="mt-10">
+        <SousTitre>Tout ce qu&apos;il y a dedans</SousTitre>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {MODULES.map((m) => (
+            <li key={m.titre} className={`${CARTE} p-5`}>
+              <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${m.fond}`} aria-hidden="true">
+                <m.Icone className={`size-6 ${m.encre}`} />
+              </span>
+              <h2 className="mt-3 text-lg font-extrabold text-[#12312A]">{m.titre}</h2>
+              <ul className="mt-2 space-y-1">
+                {m.points.map((pt) => (
+                  <li key={pt} className="text-sm leading-snug text-[#334A42]">
+                    · {pt}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {chemin ? (
-        <section>
-          <SousTitre>Les douze étapes</SousTitre>
-          <ol className="grid gap-3 sm:grid-cols-2">
+        <section className="mt-10">
+          <SousTitre>Le chemin en {chemin.etapes.length} étapes</SousTitre>
+          <ol className="flex flex-wrap gap-2">
             {chemin.etapes.map((e) => {
               const t = TEINTES[tempsDe(e.numero).titre];
               return (
                 <li key={e.slug}>
-                  <Link href={`/academie/chemin/${e.slug}`} className={`${CARTE_VIVE} flex h-full items-start gap-3 p-4 no-underline`}>
-                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${t.pastille} text-sm font-extrabold text-white`}>
+                  <Link href={`/academie/chemin/${e.slug}`} className={`${CARTE_VIVE} flex items-center gap-2 py-2 pl-2 pr-4 no-underline`}>
+                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${t.pastille} text-xs font-extrabold text-white`}>
                       {e.numero}
                     </span>
-                    <span className="min-w-0">
-                      <span className="block font-extrabold text-[#12312A]">{e.titre}</span>
-                      <span className="mt-1 block text-sm leading-relaxed text-[#5E7A6E]">{e.pourPasser}</span>
-                    </span>
+                    <span className="text-sm font-bold text-[#12312A]">{e.titre}</span>
                   </Link>
                 </li>
               );
@@ -94,11 +122,57 @@ async function Presentation() {
           </ol>
         </section>
       ) : (
-        <Encart ton="attention">Le chemin ne se charge pas pour le moment. Réessaie dans un instant.</Encart>
+        <div className="mt-10">
+          <Encart ton="attention">Le chemin ne se charge pas pour le moment. Réessaie dans un instant.</Encart>
+        </div>
       )}
+
+      <section className="mt-10 rounded-[24px] border-2 border-[#B7E4CE] bg-[#E3F5EC] p-7 text-center sm:p-9">
+        <h2 className="text-2xl font-extrabold tracking-tight text-[#12312A] sm:text-3xl">
+          Un espace. <Accent>Toute ton activité</Accent>.
+        </h2>
+        <ul className="mx-auto mt-4 flex max-w-xl flex-wrap justify-center gap-x-5 gap-y-1.5 text-sm font-bold text-[#0F5F3E]">
+          <li>✓ Sans carte bancaire</li>
+          <li>✓ Tes documents restent les tiens</li>
+          <li>✓ Option Premium au prix affiché</li>
+        </ul>
+        <Link href="/academie/inscription" className={`${BTN_PRIMAIRE} mt-6`}>
+          Ouvrir mon espace
+        </Link>
+      </section>
     </>
   );
 }
+
+const PORTES_ACADEMIE: { titre: string; href: string; action: string; Icone: LucideIcon; pastille: string; points: string[] }[] = [
+  {
+    titre: 'Je crée mon organisme',
+    href: '/academie/chemin',
+    action: 'Suivre le chemin',
+    Icone: Building2,
+    pastille: 'bg-[#F5B400]',
+    points: ["Déclaration d'activité", 'Qualiopi, indicateur par indicateur', 'Référent handicap, veille, réclamations'],
+  },
+  {
+    titre: 'Je gère déjà mes formations',
+    href: '/academie/inscription',
+    action: 'Ouvrir mon espace',
+    Icone: GraduationCap,
+    pastille: 'bg-[#1E9E6A]',
+    points: ['Sessions, stagiaires, émargement', 'Convention, attestation, facture', 'Cours en ligne et apprenants'],
+  },
+];
+
+const MODULES: { titre: string; Icone: LucideIcon; fond: string; encre: string; points: string[] }[] = [
+  { titre: 'Créer', Icone: PenLine, fond: 'bg-[#E3F5EC]', encre: 'text-[#0F5F3E]', points: ['Éditeur de leçons', 'Vidéo, quiz, devoirs', 'Certificat de réussite'] },
+  { titre: 'Vendre', Icone: Wallet, fond: 'bg-[#FEF3E2]', encre: 'text-[#7C3E06]', points: ['Page école et boutique', 'Paiement en ligne', 'Packs, codes promo, affiliation'] },
+  { titre: 'Former', Icone: CalendarDays, fond: 'bg-[#ECEBFC]', encre: 'text-[#4338CA]', points: ['Sessions et planning', 'Formateurs et salles', 'Classes virtuelles'] },
+  { titre: 'Administrer', Icone: ClipboardCheck, fond: 'bg-[#FDE7EC]', encre: 'text-[#8A1B3D]', points: ['Émargement en ligne', 'Convention, convocation, certificat', 'Devis, factures, avoirs'] },
+  { titre: 'Qualiopi', Icone: BadgeCheck, fond: 'bg-[#E3F5EC]', encre: 'text-[#0F5F3E]', points: ['32 indicateurs, une preuve chacun', 'Enquêtes de satisfaction', 'Veille et réclamations'] },
+  { titre: 'Suivre', Icone: Users, fond: 'bg-[#ECEBFC]', encre: 'text-[#4338CA]', points: ['Progression par leçon', 'E-mails automatiques', 'Communauté'] },
+  { titre: 'Déclarer', Icone: ListChecks, fond: 'bg-[#FEF3E2]', encre: 'text-[#7C3E06]', points: ['BPF prêt à déposer', 'Contrôle avant Mon Compte Formation', 'Statistiques de ventes'] },
+  { titre: 'Personnaliser', Icone: Sparkles, fond: 'bg-[#FDE7EC]', encre: 'text-[#8A1B3D]', points: ['Logo et couleurs', 'Ta page de vente', 'Intégrations par clé API'] },
+];
 
 /* --------------------------------------------------------------- connectée */
 

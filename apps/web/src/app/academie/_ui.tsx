@@ -93,7 +93,7 @@ export function Coque({
                   Toulali
                 </a>
                 , centre de formation. Le référentiel qualité affiché est le référentiel national qualité (Qualiopi) ;
-                cet outil ne délivre aucune certification. Gratuit, pendant que l&apos;outil se construit.
+                cet outil ne délivre aucune certification. Gratuit pour démarrer · option Premium au prix affiché avant tout paiement.
               </p>
               <p className="mt-2 max-w-[70ch] leading-relaxed">
                 Le dispositif est porté par l&apos;association{' '}

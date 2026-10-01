@@ -284,8 +284,17 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
 
   // Sans espace, on ne montre que ce qui s'ouvre vraiment ; avec un espace,
   // « Le chemin » ouvre celui de l'espace, pas la page des deux parcours.
+  // Dans l'académie, « Le chemin » reste dans l'académie, connecté ou non
+  // (audit du 01/10/2026) : la page des deux parcours reste accessible depuis
+  // l'accueil de Pilote. Et sans compte, « Tableau de bord » devient « Accueil ».
   const entrees: Element[] = (compte?.espaceOuvert ? MENU : MENU.filter((e) => !estGroupe(e) && PUBLIC.includes(e.href))).map((e) =>
-    !estGroupe(e) && e.href === CHEMIN_COMMUN && compte?.espaceOuvert ? { ...e, href: CHEMIN_ESPACE } : e,
+    estGroupe(e)
+      ? e
+      : e.href === CHEMIN_COMMUN
+        ? { ...e, href: CHEMIN_ESPACE }
+        : e.libelle === 'Tableau de bord' && !compte?.espaceOuvert
+          ? { ...e, libelle: 'Accueil' }
+          : e,
   );
 
   const element = (e: Element) => {
