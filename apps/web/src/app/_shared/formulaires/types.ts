@@ -45,6 +45,8 @@ export interface FormulaireResume {
   nbReponses: number;
   fermeLe: string | null;
   modifieLe: string;
+  /** Absent tant que l'API déployée ne le renvoie pas encore. */
+  creeLe?: string;
 }
 
 export interface FormulaireComplet {

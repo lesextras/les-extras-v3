@@ -41,8 +41,8 @@ interface Quote {
   service?: { id: string; title: string } | null;
   /**
    * ⚠ C'EST CE CHAMP QUI DÉCIDE DU RÉGIME TARIFAIRE. Un devis porte soit un
-   * `serviceId` (atelier du catalogue, 0 %), soit un `missionId` (renfort
-   * RenforTeam, commissionné). `findOne` renvoie le devis entier, donc il est
+   * `serviceId` (atelier du catalogue), soit un `missionId` (renfort
+   * RenforTeam) — les deux à 0 % depuis le 01/10/2026. `findOne` renvoie le devis entier, donc il est
    * présent dans la charge utile.
    */
   missionId?: string | null;
@@ -208,8 +208,8 @@ export default async function DevisDetailPage({ params: paramsPromesse }: { para
             </CardContent>
           </Card>
           {/* ⚠ LE TAUX DÉPEND DU DEVIS, PAS DU COMPTE QUI LE REGARDE. Un
-              devis de renfort (il porte un `missionId`) est commissionné à
-              15 % depuis le 21/09/2026 ; un devis d'atelier reste à zéro. Le
+              devis de renfort (il porte un `missionId`) et un devis d'atelier
+              sont tous deux à 0 % depuis le 01/10/2026 (`lib/commission.ts`). Le
               serveur applique exactement la même règle à l'acceptation
               (`quotes.service.ts`), et les deux doivent rester d'accord :
               afficher un total que la facture contredit est la façon la plus

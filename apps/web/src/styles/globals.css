@@ -72,6 +72,9 @@
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    /* Réserve la place de la barre de défilement : l'en-tête ne bouge plus
+       d'une page courte à une page longue. */
+    scrollbar-gutter: stable;
   }
 
   body {

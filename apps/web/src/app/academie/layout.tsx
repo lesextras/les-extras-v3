@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { Fraunces, Nunito } from 'next/font/google';
 import { getSession } from '@/lib/session';
+import { apiRequest } from '@/lib/api';
 import { Coque, NOM_SITE, ORIGINE_SITE } from './_ui';
 import { COOKIE_ESPACE } from './_session';
 import { cookies, headers } from 'next/headers';
@@ -97,12 +98,34 @@ export default async function AcademieLayout({ children }: { children: ReactNode
     const voulu = (await cookies()).get(COOKIE_ESPACE)?.value;
     const active = (voulu ? academies.find((c) => c.id === voulu) : null) ?? academies[0] ?? null;
 
+    /*
+     * ⚠ LE NOM AFFICHÉ = CELUI DE LA FICHE (01/10/2026). Le cookie de session
+     * garde le nom du compte tel qu'il était à la connexion (« les extras »),
+     * alors que l'accueil affiche le nom de la fiche (« ADéPA ») : la barre
+     * latérale et l'accueil se contredisaient. On lit donc la fiche ; si l'API
+     * tarde ou échoue, on retombe sur le nom du compte.
+     */
+    let nomFiche: string | null = null;
+    if (active) {
+      try {
+        const fiche = await apiRequest<{ nom?: string | null }>('/academie/fiche', {
+          token: session.token,
+          accountId: active.id,
+          cache: 'no-store',
+          signal: AbortSignal.timeout(2500),
+        });
+        nomFiche = fiche?.nom?.trim() || null;
+      } catch {
+        nomFiche = null;
+      }
+    }
+
     const espaces: EspaceAffiche[] = tous
       .filter((c) => ['ACADEMIE', 'ASSOCIATION'].includes(c.type as string))
-      .map((c) => ({ id: c.id, nom: c.name, type: c.type as string }));
+      .map((c) => ({ id: c.id, nom: c.id === active?.id && nomFiche ? nomFiche : c.name, type: c.type as string }));
 
     compte = {
-      nom: active?.name ?? session.user.firstName ?? session.user.email,
+      nom: nomFiche ?? active?.name ?? session.user.firstName ?? session.user.email,
       prenom: session.user.firstName ?? session.user.email.split('@')[0],
       espaceOuvert: Boolean(active),
       espaces,

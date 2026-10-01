@@ -1,9 +1,8 @@
 /* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
-import { Encart, SousTitre, Titre, Tuile } from '../../_ui';
+import { Encart, Titre, Tuile } from '../../_ui';
 import type { ActionAssociation, Espace, ResumeActions } from '../_types';
-import { Recherche } from '../financeurs/Recherche';
 import { Kanban } from './Kanban';
 
 /**
@@ -19,7 +18,6 @@ export default async function ProjetsPage() {
   ]);
   if (!data) return <Encart ton="attention">{error ?? 'Les projets ne se chargent pas pour le moment.'}</Encart>;
   const { actions, resume } = data;
-  const projetComplet = espace.data?.projet.complet ?? false;
 
   return (
     <>
@@ -38,25 +36,7 @@ export default async function ProjetsPage() {
         <Tuile libelle="Bilans à écrire" valeur={resume.sansBilan} detail={resume.sansBilan ? 'projets finis' : undefined} ton={resume.sansBilan ? 'attention' : 'ok'} />
       </section>
 
-      <Kanban projets={actions} />
-
-      {/* ------------------------------------------------- trouver l'argent */}
-      <section id="financeurs" className="mt-12 scroll-mt-24">
-        <SousTitre info="Pistes à vérifier, pas des promesses.">Trouver des financeurs</SousTitre>
-
-        {!projetComplet ? (
-          <div className="mb-4">
-            <Encart ton="attention">
-              <p className="font-extrabold">Projet en une page à remplir d&apos;abord.</p>
-              <Link href="/espace/association#projet" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">
-                Écrire mon projet →
-              </Link>
-            </Encart>
-          </div>
-        ) : null}
-
-        <Recherche disponible={espace.data?.ia?.disponible ?? false} />
-      </section>
+      <Kanban projets={actions} iaDisponible={espace.data?.ia?.disponible ?? false} />
 
       <p className="mt-8 flex flex-wrap gap-x-4 gap-y-1 text-sm text-[#6B6A8A]">
         <Link href="/chemin/la-premiere-assemblee-generale" className="font-bold text-[#4F46E5] underline underline-offset-4">

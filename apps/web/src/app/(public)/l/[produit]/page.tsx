@@ -105,9 +105,9 @@ export default async function LandingPage({ params }: { params: Promise<{ produi
           <strong className="text-foreground">Les Extras</strong> est édité par l&apos;association ADéPA
           (Melun, Seine-et-Marne), organisme de formation certifié Qualiopi. La mise en relation est
           gratuite pour les établissements comme pour les intervenants, sans abonnement, et le
-          catalogue d&apos;ateliers est à 0&nbsp;% de commission. Ce que l&apos;association
-          facture, elle le dit&nbsp;: un assistant d&apos;écriture, et une commission sur les
-          renforts RenforTeam, où elle vérifie chaque intervenant.
+          0&nbsp;% de commission sur RenforTeam et les ateliers&nbsp;: ce que le client paie
+          revient à l&apos;intervenant. Ce que l&apos;association facture, elle le dit&nbsp;: un
+          assistant d&apos;écriture.
         </p>
       </section>
     </div>

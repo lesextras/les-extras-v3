@@ -4,6 +4,7 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../../_client';
+import { Recherche } from '../financeurs/Recherche';
 import { LIBELLES_ETAT_ACTION, pourInput, type ActionAssociation, type EtatAction } from '../_types';
 
 const CHAMP =
@@ -49,9 +50,12 @@ function depuis(a: ActionAssociation | null): Valeurs {
  * La fiche d'un projet : peu de champs, et seulement ceux qui servent. Les
  * chiffres du bas sont exactement ceux qu'un financeur demande.
  */
-export function FicheProjet({ projet, onFermer }: { projet: ActionAssociation | null; onFermer: () => void }) {
+export function FicheProjet({ projet: initial, onFermer, iaDisponible = false }: { projet: ActionAssociation | null; onFermer: () => void; iaDisponible?: boolean }) {
   const router = useRouter();
-  const [v, setV] = useState<Valeurs>(depuis(projet));
+  /* Un nouveau projet, une fois ajouté, reste ouvert : on enchaîne sur ses financeurs. */
+  const [cree, setCree] = useState<ActionAssociation | null>(null);
+  const projet = initial ?? cree;
+  const [v, setV] = useState<Valeurs>(depuis(initial));
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
 
@@ -74,10 +78,15 @@ export function FicheProjet({ projet, onFermer }: { projet: ActionAssociation | 
       bilan: v.bilan.trim() || null,
     };
     try {
-      if (projet) await appel(`/association/actions/${projet.id}`, { method: 'PATCH', body });
-      else await appel('/association/actions', { method: 'POST', body });
-      router.refresh();
-      onFermer();
+      if (projet) {
+        await appel(`/association/actions/${projet.id}`, { method: 'PATCH', body });
+        router.refresh();
+        if (initial) onFermer();
+      } else {
+        const nouveau = await appel<ActionAssociation>('/association/actions', { method: 'POST', body });
+        setCree(nouveau);
+        router.refresh();
+      }
     } catch (err) {
       setErreur(err instanceof Error ? err.message : "L'enregistrement a échoué.");
     } finally {
@@ -100,7 +109,8 @@ export function FicheProjet({ projet, onFermer }: { projet: ActionAssociation | 
   }
 
   return (
-    <form onSubmit={enregistrer} className="flex flex-col gap-4 rounded-2xl border-2 border-[#4F46E5] bg-white p-5 sm:p-6">
+    <div className="rounded-2xl border-2 border-[#4F46E5] bg-white p-5 sm:p-6">
+    <form onSubmit={enregistrer} className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-extrabold text-[#1D1B5C]">{projet ? projet.intitule : 'Un nouveau projet'}</h3>
         <button type="button" onClick={onFermer} className="text-sm font-bold text-[#6B6A8A] hover:text-[#1D1B5C]">
@@ -188,8 +198,9 @@ export function FicheProjet({ projet, onFermer }: { projet: ActionAssociation | 
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="submit" disabled={enCours} className="rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA] disabled:opacity-60">
-          {enCours ? 'Enregistrement…' : projet ? 'Enregistrer' : 'Ajouter ce projet'}
+          {enCours ? 'Enregistrement…' : projet ? 'Enregistrer' : 'Ajouter et chercher des financeurs'}
         </button>
+        {cree ? <span className="text-sm font-bold text-[#0F5F3E]">✓ Projet ajouté</span> : null}
         {projet ? (
           <button type="button" onClick={supprimer} disabled={enCours} className="rounded-xl px-4 py-3 text-sm font-bold text-[#8A2419] hover:bg-[#FDE8E6]">
             Supprimer
@@ -197,5 +208,19 @@ export function FicheProjet({ projet, onFermer }: { projet: ActionAssociation | 
         ) : null}
       </div>
     </form>
+
+      {/* ------------------------------------------- trouver des financeurs */}
+      <section className="mt-6 border-t border-[#E6E4F3] pt-5">
+        <div className="mb-3 flex items-center gap-2">
+          <span className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-extrabold ${projet ? 'bg-[#4F46E5] text-white' : 'bg-[#ECEBFC] text-[#6B6A8A]'}`}>€</span>
+          <h4 className="font-extrabold text-[#1D1B5C]">Trouver des financeurs</h4>
+        </div>
+        {projet ? (
+          <Recherche disponible={iaDisponible} projetId={projet.id} projetIntitule={projet.intitule} integre />
+        ) : (
+          <p className="text-sm text-[#6B6A8A]">S’ouvre dès que le projet est ajouté.</p>
+        )}
+      </section>
+    </div>
   );
 }

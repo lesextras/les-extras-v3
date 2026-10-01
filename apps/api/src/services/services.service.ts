@@ -355,8 +355,8 @@ export class ServicesService {
     }
 
     // Paiement à la prestation : aucune monnaie interne. La réservation est
-    // créée telle quelle, puis facturée au tarif de la prestation (majoré des
-    // frais de gestion) une fois l'intervention confirmée. Un seul prix, une
+    // créée telle quelle, puis facturée au tarif de la prestation (sans
+    // commission) une fois l'intervention confirmée. Un seul prix, une
     // seule facture — rien à recharger à l'avance.
     const booking = await this.prisma.$transaction(async (tx) => {
       const created = await tx.booking.create({

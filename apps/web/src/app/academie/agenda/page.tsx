@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { sessionAcademie } from '../_session';
 import { Titre } from '../_ui';
 import Ecran from './Ecran';
+import { OngletsAgenda } from './Onglets';
 
 export const metadata: Metadata = { title: 'Mon agenda', robots: { index: false, follow: false } };
 
@@ -17,9 +18,10 @@ export default async function AgendaAcademiePage() {
   await sessionAcademie('/academie/agenda');
   return (
     <>
+      <OngletsAgenda actif="agenda" />
       <Titre
         surtitre="Formations"
-        sousTitre="Sessions, classes virtuelles et rendez-vous, partagés avec l'équipe."
+        sousTitre="Rendez-vous et sessions, partagés avec l'équipe."
       >
         Mon agenda
       </Titre>

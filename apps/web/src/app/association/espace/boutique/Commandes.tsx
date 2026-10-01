@@ -10,6 +10,7 @@ import {
   type Commande,
   type StatutCommande,
 } from './_types';
+import { EtatVide } from '../../EtatVide';
 
 const SUITE: StatutCommande[] = ['PAYEE', 'PREPAREE', 'EXPEDIEE', 'REMISE'];
 
@@ -37,9 +38,7 @@ export function Commandes({ initiales }: { initiales: Commande[] }) {
 
   if (!commandes.length) {
     return (
-      <Encart>
-        Aucune commande.
-      </Encart>
+      <EtatVide picto="sac">Aucune commande.</EtatVide>
     );
   }
 

@@ -181,9 +181,8 @@ export function SiteFooter() {
                 ⚠ DEUX CORRECTIONS DE SEPTEMBRE 2026, ET AUCUNE N'EST
                 COSMÉTIQUE. « établissements médico-sociaux » seuls ne couvre
                 plus la demande (19/09) : un particulier, une école, une mairie
-                demandent directement. Et « reliés sans commission » (21/09)
-                était devenu faux pour RenforTeam, qui est commissionné parce
-                que l'association vérifie chaque intervenant. Ce pied de page
+                demandent directement. Et RenforTeam, commissionné du 21/09 au
+                30/09/2026, est revenu à 0 % le 01/10/2026. Ce pied de page
                 est sur les 93 pages du site : une promesse tarifaire fausse y
                 est fausse 93 fois. */}
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">

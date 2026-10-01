@@ -335,7 +335,7 @@ export function MesFactures({ theme }: { theme: ThemeFactures }) {
     }
   };
 
-  if (!charge && !erreur) return <p className="text-sm opacity-70">Chargement…</p>;
+  if (!charge && !erreur) return <SqueletteFactures />;
   const ab = charge?.abonnement;
 
   // ─── Sans abonnement : la page de présentation et le bouton ────────────────
@@ -1100,7 +1100,7 @@ function EditionEnveloppe({ theme, e, occupe, agir, onOk }: { theme: ThemeFactur
 function RelevesVue({ theme, releves, postes, enveloppes, factures, occupe, agir }: { theme: ThemeFactures; releves: Releves | null; postes: readonly string[]; enveloppes: Enveloppe[]; factures: Facture[]; occupe: boolean; agir: Agir }) {
   const fichier = useRef<HTMLInputElement>(null);
   const [filtre, setFiltre] = useState<'tout' | 'sans-facture' | 'sans-poste' | 'recettes'>('tout');
-  if (!releves) return <p className="text-sm opacity-70">Chargement…</p>;
+  if (!releves) return <SqueletteVue />;
   const ops = releves.operations.filter((o) => (filtre === 'tout' ? true : filtre === 'recettes' ? o.sens === 'RECETTE' : filtre === 'sans-facture' ? o.sens === 'DEPENSE' && !o.facture : o.sens === 'DEPENSE' && !o.facture && !o.poste));
   const modifierOp = (id: string, corps: Record<string, unknown>) => agir(() => appel(`/factures/releves/operations/${id}`, { method: 'PATCH', body: corps }));
   const candidates = factures.filter((f) => f.statut !== 'PAYEE');
@@ -1296,7 +1296,7 @@ function RelevesVue({ theme, releves, postes, enveloppes, factures, occupe, agir
 /* ═══════════════════════ Fournisseurs ═══════════════════════ */
 
 function FournisseursVue({ theme, data }: { theme: ThemeFactures; data: Fournisseurs | null }) {
-  if (!data) return <p className="text-sm opacity-70">Chargement…</p>;
+  if (!data) return <SqueletteVue />;
   return (
     <div className="grid gap-5">
       <div className={`${theme.carte} p-5`}>
@@ -1392,7 +1392,7 @@ function NotesDeFrais({ theme, frais, postes, enveloppes, occupe, agir }: { them
   const [v, setV] = useState(NOTE_VIDE);
   const fichier = useRef<HTMLInputElement>(null);
   const champ = 'rounded-lg border px-2 py-1.5 text-[14px]';
-  if (!frais) return <p className="text-sm opacity-70">Chargement…</p>;
+  if (!frais) return <SqueletteVue />;
   const statut = (id: string, s: string) => agir(() => appel(`/factures/frais/${id}/statut`, { method: 'PATCH', body: { statut: s } }));
   return (
     <div className="grid gap-5">
@@ -1666,7 +1666,7 @@ function DevisVue({ theme, data, postes, factures, occupe, agir }: { theme: Them
   const [v, setV] = useState(DEVIS_VIDE);
   const [ouvert, setOuvert] = useState<string | null>(null);
   const champ = 'rounded-lg border px-2 py-1.5 text-[14px]';
-  if (!data) return <p className="text-sm opacity-70">Chargement…</p>;
+  if (!data) return <SqueletteVue />;
   const modifier = (id: string, corps: Record<string, unknown>, msg?: string) => agir(() => appel(`/factures/devis/${id}`, { method: 'PATCH', body: corps }), msg);
   return (
     <div className="grid gap-5">
@@ -1885,7 +1885,7 @@ function DevisVue({ theme, data, postes, factures, occupe, agir }: { theme: Them
 function TresorerieVue({ theme, t, occupe, agir }: { theme: ThemeFactures; t: Tresorerie | null; occupe: boolean; agir: Agir }) {
   const [solde, setSolde] = useState('');
   const [au, setAu] = useState(new Date().toISOString().slice(0, 10));
-  if (!t) return <p className="text-sm opacity-70">Chargement…</p>;
+  if (!t) return <SqueletteVue />;
   return (
     <div className="grid gap-5">
       {t.alertes.map((a) => (
@@ -2056,4 +2056,42 @@ function Info({ theme, children }: { theme: ThemeFactures; children: ReactNode }
 
 function Bandeau({ ton, children }: { ton: 'info' | 'alerte'; children: ReactNode }) {
   return <p className={`rounded-xl border px-4 py-3 text-[14px] ${ton === 'alerte' ? 'border-[#F3B0C2] bg-[#FDE7EC] text-[#8A1B3D]' : 'border-[#C7C4F2] bg-[#ECEBFC] text-[#1D1B5C]'}`}>{children}</p>;
+}
+
+/* ═══════════════════════ Squelettes de chargement ═══════════════════════ */
+
+function BlocGris({ className = '' }: { className?: string }) {
+  return <div aria-hidden="true" className={`animate-pulse rounded-xl bg-[#ECEBF3] ${className}`} />;
+}
+
+/** La silhouette de l'écran chargé : onglets, quatre tuiles, deux graphiques. */
+function SqueletteFactures() {
+  return (
+    <div role="status" aria-busy="true" aria-label="Chargement" className="grid gap-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <BlocGris className="h-10 w-full max-w-[640px]" />
+        <BlocGris className="ml-auto h-9 w-48" />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <BlocGris key={i} className="h-[92px]" />
+        ))}
+      </div>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <BlocGris className="h-64" />
+        <BlocGris className="h-64" />
+      </div>
+    </div>
+  );
+}
+
+/** Pour un onglet dont les données arrivent encore. */
+function SqueletteVue() {
+  return (
+    <div role="status" aria-busy="true" aria-label="Chargement" className="grid gap-3">
+      <BlocGris className="h-28" />
+      <BlocGris className="h-16" />
+      <BlocGris className="h-16" />
+    </div>
+  );
 }

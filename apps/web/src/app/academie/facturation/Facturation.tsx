@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { appel } from '../_client';
+import { Squelette } from '../Squelette';
 import { BTN_PRIMAIRE, BTN_SECONDAIRE, Encart, Info, Tuile } from '../_ui';
 import { EditeurFacture, LigneFactureOrg } from '../_gestion/Factures';
 import { euros, telecharger } from '../_gestion/outils';
@@ -127,7 +128,7 @@ export function Facturation({ tvaParDefaut, siretManquant }: { tvaParDefaut: num
       </nav>
 
       {!liste ? (
-        <p className="text-[15px] text-[#5E7A6E]">Chargement…</p>
+        <Squelette lignes={4} />
       ) : visibles.length ? (
         <ul className="grid gap-3">
           {visibles.map((f) => (

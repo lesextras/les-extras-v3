@@ -45,7 +45,7 @@ const TONS: Record<Piste['type'], string> = {
  * classées de la plus facile à décrocher à la plus difficile. Quand elle est
  * ouverte depuis un projet, c'est la liste des financeurs DE CE projet.
  */
-export function Recherche({ disponible, projetId, projetIntitule }: { disponible: boolean; projetId?: string; projetIntitule?: string }) {
+export function Recherche({ disponible, projetId, projetIntitule, integre = false }: { disponible: boolean; projetId?: string; projetIntitule?: string; integre?: boolean }) {
   const [precision, setPrecision] = useState('');
   const [pistes, setPistes] = useState<Piste[] | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -72,7 +72,7 @@ export function Recherche({ disponible, projetId, projetIntitule }: { disponible
 
   if (!disponible) {
     return (
-      <div className={`${CARTE} p-5`}>
+      <div className={integre ? '' : `${CARTE} p-5`}>
         <p className="font-extrabold text-[#1D1B5C]">Recherche assistée bientôt disponible.</p>
         <Link href="/chemin#droits" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">
           Ce à quoi j&apos;ai droit →
@@ -83,10 +83,10 @@ export function Recherche({ disponible, projetId, projetIntitule }: { disponible
 
   return (
     <div className="space-y-4">
-      <div className={`${CARTE} p-5`}>
+      <div className={integre ? '' : `${CARTE} p-5`}>
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold text-[#1D1B5C]">
-            {projetIntitule ? `Précisions sur « ${projetIntitule} »` : 'Priorité à financer'}
+            {projetIntitule ? 'Ce qu’il faut financer' : 'Priorité à financer'}
           </span>
           <span className="text-[#6B6A8A]">Facultatif · ex. matériel, sortie pour 20 jeunes</span>
           <textarea

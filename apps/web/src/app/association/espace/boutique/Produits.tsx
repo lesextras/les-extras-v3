@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { appel } from '../../_client';
 import { CARTE, Encart } from '../../_ui';
 import { euros, type NatureProduit, type Produit } from './_types';
+import { EtatVide } from '../../EtatVide';
 
 /**
  * CE QUE L'ASSOCIATION VEND.
@@ -116,9 +117,7 @@ export function Produits({ initiaux }: { initiaux: Produit[] }) {
 
       {/* ------------------------------------------------------- la liste */}
       {produits.length === 0 ? (
-        <Encart>
-          Aucun produit.
-        </Encart>
+        <EtatVide picto="colis">Aucun produit.</EtatVide>
       ) : (
         <ul className="grid gap-3">
           {produits.map((p) => (

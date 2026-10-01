@@ -136,7 +136,7 @@ export const GUIDES: Guide[] = [
         titre: "Facturez, et gardez tout",
         texte: [
           "Devis, feuille de mission, déclaration d'heures, facture PDF : tout est généré depuis la mission, à votre nom et sous votre SIRET. Vous facturez l'établissement en direct.",
-          "Vous touchez 100 % de votre tarif dans les deux cas. Sur vos ateliers, rien n'est ajouté. Sur un renfort RenforTeam, 15 % de frais de gestion s'ajoutent à votre tarif et sont payés par le demandeur : ils rémunèrent la vérification de votre dossier par l'association, qui encaisse et vous reverse.",
+          "Vous touchez 100 % de votre tarif dans les deux cas : 0 % de commission sur vos ateliers comme sur RenforTeam, ce que le client paie vous revient. Sur un renfort, l'association vérifie votre dossier, encaisse et vous reverse.",
         ],
       },
     ],

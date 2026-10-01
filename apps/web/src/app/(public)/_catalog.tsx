@@ -1,6 +1,7 @@
 // Vue catalogue PUBLIQUE réutilisable (ateliers / formations).
 // Server Component : rendu sans JS client, filtres via <form method="GET">.
 import Link from "next/link";
+import { ListeAuto } from "./_ListeAuto";
 import {
   MapPin,
   Clock,
@@ -414,40 +415,10 @@ export async function CatalogView({
           {!filtree && (publics.length > 0 || categories.length > 0) ? (
             <div className="grid gap-5 md:grid-cols-2">
               {publics.length > 0 ? (
-                <div className="rounded-2xl border border-border bg-card p-5">
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    Expert d’un public
-                  </h2>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {publics.map((pu) => (
-                      <Link
-                        key={pu}
-                        href={`?public=${encodeURIComponent(pu)}`}
-                        className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft"
-                      >
-                        {pu}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+                <ListeAuto titre="Expert d’un public" param="public" tous="Choisir un public" options={publics} />
               ) : null}
               {categories.length > 0 ? (
-                <div className="rounded-2xl border border-border bg-card p-5">
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    Expert d’une technique
-                  </h2>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {categories.map((c) => (
-                      <Link
-                        key={c}
-                        href={`?category=${encodeURIComponent(c)}`}
-                        className="rounded-full border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft"
-                      >
-                        {c}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+                <ListeAuto titre="Expert d’une technique" param="category" tous="Choisir une technique" options={categories} />
               ) : null}
             </div>
           ) : null}

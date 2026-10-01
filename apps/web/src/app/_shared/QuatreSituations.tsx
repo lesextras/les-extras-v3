@@ -24,8 +24,8 @@
  * chose.
  *
  * ⚠ LES CHIFFRES SONT VRAIS, ET ILS VIENNENT D'AILLEURS DANS LE SITE :
- *  - 0 % sur les ateliers, 15 % sur le renfort
- *    (/frais-de-service, arrêté le 21/09/2026) ;
+ *  - 0 % de commission sur les ateliers et sur le renfort
+ *    (/frais-de-service, décision du 01/10/2026) ;
  *  - 48 h pour un devis (promesse tenue partout ailleurs) ;
  *  - 15 générations LEX offertes par mois, puis 19 € (billing.service.ts).
  * Aucun n'est arrondi ni inventé. Si l'un bouge, il bouge aux deux endroits.
@@ -163,8 +163,8 @@ const SITUATIONS: Situation[] = [
     ],
     reperes: [
       // ⚠ PLUS DE PRIX NI DE DÉLAI SUR L'ACCUEIL (01/10/2026, méthode Airbnb) :
-      // « 48 h » et « +15 % » sont retirés. Les frais restent écrits sur
-      // /renforteam, /frais-de-service et au moment du devis.
+      // « 48 h » et « +15 % » sont retirés (et RenforTeam est à 0 % depuis le
+      // 01/10/2026, voir /frais-de-service).
       { icone: UserRoundCheck, valeur: 'Vérifiés', quoi: 'par l’association' },
       {
         icone: GraduationCap,

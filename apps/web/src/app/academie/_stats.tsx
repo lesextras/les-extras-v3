@@ -1,9 +1,8 @@
 'use client';
 /* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
-import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import { BTN_DISCRET, CARTE, Encart, Pastille, SousTitre } from './_ui';
+import { useMemo, useState, type ReactNode } from 'react';
+import { CARTE, Pastille, Tuile } from './_ui';
 import { euros, type Apprenant, type CoursResume, type Vente } from './_ecole/types';
 
 /**
@@ -32,27 +31,29 @@ const PERIODES: { cle: string; nom: string; jours: number }[] = [
   { cle: 'tout', nom: 'Tout, depuis le début', jours: 0 },
 ];
 
-/** Ce qu'on lit sous un chiffre : la même mesure, la période d'avant. */
-function Avant({ valeur, avant, format }: { valeur: number; avant: number | null; format?: (n: number) => string }) {
-  if (avant === null) return <span className="mt-1 block text-[14px] text-[#5E7A6E]">depuis le début</span>;
+/** Ce qu'on lit sous un chiffre : l'écart avec la période d'avant. */
+function Ecart({ valeur, avant, format }: { valeur: number; avant: number | null; format?: (n: number) => string }) {
+  if (avant === null) return null;
   const dire = format ?? ((n: number) => String(n));
   const ecart = valeur - avant;
   const ton = ecart > 0 ? 'text-[#0F5F3E]' : ecart < 0 ? 'text-[#8A1B3D]' : 'text-[#5E7A6E]';
-  return (
-    <span className="mt-1 block text-[14px] text-[#5E7A6E]">
-      Période précédente : {dire(avant)} <span className={`font-bold ${ton}`}>{ecart > 0 ? `+${dire(ecart)}` : ecart < 0 ? dire(ecart) : '='}</span>
-    </span>
-  );
+  return <span className={`font-bold ${ton}`}>{ecart > 0 ? `+${dire(ecart)}` : ecart < 0 ? dire(ecart) : '='}</span>;
 }
 
 export function BlocStatistiques({
   ventes,
   inscriptions,
   cours,
+  avant,
+  apres,
 }: {
   ventes: Vente[];
   inscriptions: Apprenant[];
   cours: CoursResume[];
+  /** Les tuiles fixes posées avant celles de la période (formations, sessions). */
+  avant?: ReactNode;
+  /** Et celles posées après (devoirs à corriger). */
+  apres?: ReactNode;
 }) {
   const [periode, setPeriode] = useState('j30');
   const jours = PERIODES.find((p) => p.cle === periode)?.jours ?? 30;
@@ -136,69 +137,82 @@ export function BlocStatistiques({
 
   const rienDuTout = !ventes.length && !inscriptions.length;
 
+  const ici = fenetre.maintenant;
+  const prec = fenetre.avant;
+
+  /*
+   * ⚠ UNE SEULE RANGÉE DE TUILES (01/10/2026). Le tableau de bord en avait deux
+   * qui se répétaient (Apprenants en haut, APPRENANTS en bas, avec deux chiffres
+   * différents). « Apprenants » compte ici les mêmes personnes que l'écran
+   * Mes apprenants : une adresse e-mail = une personne, tous cours confondus.
+   */
   return (
-    <section className="mt-10" id="statistiques">
-      <SousTitre>Statistiques</SousTitre>
-
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <label className="flex flex-wrap items-center gap-2 text-[14px] font-bold text-[#12312A]">
-          Période
-          <select
-            value={periode}
-            onChange={(e) => setPeriode(e.target.value)}
-            className="rounded-xl border-2 border-[#DDEBE4] bg-white px-3 py-2 text-[15px] font-normal text-[#12312A]"
-          >
-            {PERIODES.map((p) => (
-              <option key={p.cle} value={p.cle}>
-                {p.nom}
-              </option>
-            ))}
-          </select>
-        </label>
+    <section className="mt-8" id="statistiques">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-extrabold tracking-tight text-[#12312A] sm:text-2xl">En chiffres</h2>
+        <select
+          value={periode}
+          onChange={(e) => setPeriode(e.target.value)}
+          aria-label="Période"
+          className="rounded-xl border-2 border-[#DDEBE4] bg-white px-3 py-2 text-[15px] font-bold text-[#12312A]"
+        >
+          {PERIODES.map((p) => (
+            <option key={p.cle} value={p.cle}>
+              {p.nom}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { t: 'Apprenants', n: fenetre.maintenant.apprenants, a: fenetre.avant?.apprenants ?? null, f: undefined, c: 'text-[#12312A]' },
-          { t: 'Ventes', n: fenetre.maintenant.ventes, a: fenetre.avant?.ventes ?? null, f: undefined, c: 'text-[#12312A]' },
-          { t: 'Revenus', n: fenetre.maintenant.revenus, a: fenetre.avant?.revenus ?? null, f: euros, c: 'text-[#0F5F3E]' },
-          { t: 'Inscriptions', n: fenetre.maintenant.inscriptions, a: fenetre.avant?.inscriptions ?? null, f: undefined, c: 'text-[#12312A]' },
-        ].map((x) => (
-          <div key={x.t} className={`${CARTE} p-5`}>
-            <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">{x.t}</p>
-            <p className={`mt-1 text-[28px] font-black leading-none ${x.c}`}>{x.f ? x.f(x.n) : x.n}</p>
-            <Avant valeur={x.n} avant={x.a} format={x.f} />
-          </div>
-        ))}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {avant}
+        <Tuile
+          libelle="Apprenants"
+          valeur={personnes.size}
+          detail={
+            <>
+              +{ici.apprenants} sur la période <Ecart valeur={ici.apprenants} avant={prec?.apprenants ?? null} />
+            </>
+          }
+          href="/academie/apprenants"
+        />
+        <Tuile
+          libelle="Revenus"
+          valeur={euros(ici.revenus)}
+          ton="ok"
+          detail={
+            <>
+              {ici.ventes} vente{ici.ventes > 1 ? 's' : ''} <Ecart valeur={ici.revenus} avant={prec?.revenus ?? null} format={euros} />
+            </>
+          }
+          href="/academie/ventes"
+        />
+        {apres}
       </div>
 
-      <p className="mb-6 flex flex-wrap gap-2 text-[15px] text-[#334A42]">
-        <Pastille ton="accent">{fenetre.maintenant.commences} commencé{fenetre.maintenant.commences > 1 ? 's' : ''}</Pastille>
-        <Pastille ton="ok">{fenetre.maintenant.finis} terminé{fenetre.maintenant.finis > 1 ? 's' : ''}</Pastille>
-      </p>
-
-      {rienDuTout ? (
-        <Encart ton="info">Aucune vente ni inscription.</Encart>
-      ) : (
+      {rienDuTout ? null : (
         <>
-          <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { t: `Encaissé en ${annee}`, v: euros(caAnnee), d: `${payeesAnnee.length} vente${payeesAnnee.length > 1 ? 's' : ''} payée${payeesAnnee.length > 1 ? 's' : ''}`, c: 'text-[#0F5F3E]' },
-              { t: 'Apprenants', v: String(personnes.size), d: `${inscriptions.length} inscription${inscriptions.length > 1 ? 's' : ''}`, c: 'text-[#12312A]' },
-              { t: "Taux d'achèvement", v: `${achevement} %`, d: `${terminees} parcours terminé${terminees > 1 ? 's' : ''}`, c: achevement >= 50 ? 'text-[#0F5F3E]' : 'text-[#7C3E06]' },
-              { t: 'Inactifs (+30 j)', v: String(inactifs), d: inactifs ? 'à relancer' : '—', c: inactifs ? 'text-[#8A1B3D]' : 'text-[#12312A]' },
-            ].map((x) => (
-              <div key={x.t} className={`${CARTE} p-5`}>
-                <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">{x.t}</p>
-                <p className={`mt-1 text-[28px] font-black leading-none ${x.c}`}>{x.v}</p>
-                <p className="mt-1 text-[14px] text-[#5E7A6E]">{x.d}</p>
-              </div>
-            ))}
-          </div>
+          <p className="mb-6 mt-4 flex flex-wrap gap-2">
+            <Pastille ton="accent">
+              {ici.commences} commencé{ici.commences > 1 ? 's' : ''}
+            </Pastille>
+            <Pastille ton="ok">
+              {ici.finis} terminé{ici.finis > 1 ? 's' : ''}
+            </Pastille>
+            <Pastille ton={achevement >= 50 ? 'ok' : 'attention'}>{achevement} % d&apos;achèvement</Pastille>
+            {inactifs ? (
+              <Pastille ton="alerte">
+                {inactifs} inactif{inactifs > 1 ? 's' : ''} (+30 j)
+              </Pastille>
+            ) : null}
+          </p>
 
           <div className="grid gap-5 lg:grid-cols-2">
             <div className={`${CARTE} p-5`}>
-              <h3 className="mb-3 text-[17px] font-extrabold text-[#12312A]">Encaissements / mois</h3>
+              <h3 className="mb-3 flex flex-wrap items-baseline justify-between gap-2 text-[17px] font-extrabold text-[#12312A]">
+                Encaissements {annee}
+                <span className="text-[15px] font-black text-[#0F5F3E]">{euros(caAnnee)}</span>
+              </h3>
               <div className="overflow-x-auto">
                 <ul className="flex min-w-[500px] items-end gap-2" style={{ height: 140 }}>
                   {caParMois.map((m) => (
@@ -250,15 +264,6 @@ export function BlocStatistiques({
               </ul>
             </>
           ) : null}
-
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/academie/ventes" className={BTN_DISCRET}>
-              Ventes
-            </Link>
-            <Link href="/academie/apprenants" className={BTN_DISCRET}>
-              Apprenants
-            </Link>
-          </div>
         </>
       )}
     </section>

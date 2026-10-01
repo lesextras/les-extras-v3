@@ -64,10 +64,8 @@ const PORTES = [
     icone: UserRound,
     qui: "Je suis un professionnel",
     titre: "Trouver des missions et proposer vos services",
-    // ⚠ « zéro commission » COUVRAIT LES MISSIONS AUSSI, et ce n'est plus vrai
-    // depuis le 21/09/2026 : RenforTeam est commissionné, parce que
-    // l'association vérifie chaque intervenant avant de l'envoyer. Le catalogue
-    // d'ateliers, lui, reste à 0 %. La carte dit donc lequel des deux.
+    // Depuis le 01/10/2026, 0 % de commission sur RenforTeam comme sur les
+    // ateliers (RenforTeam était à 15 % du 21/09 au 30/09/2026).
     // ⚠ PLUS DE TAUX ICI DEPUIS LE 21/09/2026 : les prix ont quitté l'accueil
     // (décision de Siham). Ce qui reste décrit ce qu'on obtient, pas ce qu'on
     // paie — et /frais-de-service, à un clic, porte les montants.

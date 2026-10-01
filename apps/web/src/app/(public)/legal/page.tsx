@@ -71,7 +71,7 @@ const sections: Section[] = [
           'LES EXTRAS est une plateforme de mise en relation. Elle permet à une structure de publier un besoin de renfort ou de rechercher une intervention (atelier), et à un professionnel de se faire connaître, de répondre à ces besoins et d’en assurer le suivi : planning, pointage des heures, pièces de conformité, messagerie, documents.',
           'La plateforme fournit également des outils d’aide à la contractualisation (modèles de contrat, devis, factures) et un assistant d’écriture professionnelle, LEX.',
           'La création d’un compte, la publication d’un besoin, la candidature et la contractualisation sont gratuites, pour les structures comme pour les intervenants.',
-          'Aucune commission n’est prélevée sur les ateliers du catalogue, qui se réservent et se facturent en direct entre la structure et l’intervenant. Les interventions RenforTeam font exception : l’association y vérifie l’intervenant, encaisse la prestation et lui en reverse le produit. Des frais de gestion de 15 % s’ajoutent alors au tarif de l’intervenant et sont dus par le demandeur ; ils figurent sur une ligne distincte du devis, avant son acceptation. Aucun montant n’est prélevé sur la rémunération de l’intervenant. Un taux différent peut être convenu par écrit avec un compte.',
+          'Aucune commission n’est prélevée, ni sur les ateliers du catalogue, qui se réservent et se facturent en direct entre la structure et l’intervenant, ni sur les interventions RenforTeam, pour lesquelles l’association vérifie l’intervenant, encaisse la prestation et lui en reverse le produit : ce que le demandeur paie revient intégralement à l’intervenant. Un taux différent peut être convenu par écrit avec un compte.',
         ],
       },
       {

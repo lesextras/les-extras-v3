@@ -532,10 +532,26 @@ export function Apprenants({
       ) : null}
 
       {/* ------------------------------------------------------ les personnes */}
-      {personnes.length === 0 ? (
-        <Encart ton="info">
-          Aucun inscrit.
-        </Encart>
+      {personnes.length === 0 && !inviter ? (
+        <div className={`${CARTE} flex flex-col items-center px-6 py-10 text-center`}>
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E3F5EC] text-[#0F5F3E]" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6" />
+            </svg>
+          </span>
+          <p className="mt-4 text-lg font-extrabold text-[#12312A]">Pas encore d&apos;apprenant.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setInviter(true);
+              setInvitation(null);
+              setErreur(null);
+            }}
+            className={`${BTN_PRIMAIRE} mt-5 !px-7 !py-3.5 text-lg`}
+          >
+            Inviter un apprenant
+          </button>
+        </div>
       ) : null}
 
       <ul className="grid gap-2">

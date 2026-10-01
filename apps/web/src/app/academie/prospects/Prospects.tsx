@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { CalendarClock, ChevronLeft, ChevronRight, FileText, Landmark, Mail, Phone, Plus, Trash2, X } from 'lucide-react';
 import { appel } from '../_client';
+import { Squelette } from '../Squelette';
 import { BTN_DISCRET, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CHAMP, Encart, Pastille, Tuile } from '../_ui';
 import { ETAPES_PROSPECT, ETAPE_PROSPECT, STATUT_DOSSIER, centsDepuis, champDate, eurosCents, jourMois, saisieCents } from '../_gestion/financements';
 import type { DossierFinancement, EtapeProspect, ListeProspects, ProspectOrg } from '../_gestion/types';
@@ -86,7 +87,7 @@ export function Prospects({ devis }: { devis: { id: string; libelle: string }[] 
       <AjoutRapide apres={lire} />
 
       {!liste ? (
-        <p className="text-[15px] text-[#5E7A6E]">Chargement…</p>
+        <Squelette lignes={4} />
       ) : (
         <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
           <div className="grid min-w-[1000px] grid-cols-5 gap-3">

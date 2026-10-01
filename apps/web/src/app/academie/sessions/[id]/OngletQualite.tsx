@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { appel } from '../../_client';
+import { Squelette } from '../../Squelette';
 import { Encart, Tuile } from '../../_ui';
 import type { RapportSession } from '../../_gestion/types';
 import { Bloc } from './OngletApercu';
@@ -26,7 +27,7 @@ export function OngletQualite({ ctx }: { ctx: ContexteFiche }) {
   }, [s.id]);
 
   if (erreur) return <Encart ton="alerte">{erreur}</Encart>;
-  if (!r) return <p className="text-[15px] text-[#5E7A6E]">Chargement…</p>;
+  if (!r) return <Squelette tuiles={4} lignes={2} />;
 
   const actifs = s.inscriptions.filter((i) => i.status !== 'CANCELLED');
   return (

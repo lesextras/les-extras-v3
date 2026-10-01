@@ -106,9 +106,8 @@ const MENU: Entree[] = [
   { href: '/espace/partenaires', libelle: 'Mes contacts', icone: ICONES.partenaires },
   { href: '/espace/agenda', libelle: 'Mon agenda', icone: ICONES.agenda },
   { href: '/espace/formulaires', libelle: 'Mes formulaires', icone: ICONES.formulaire },
-  { href: '/espace/boutique', libelle: 'Ma boutique', icone: ICONES.boutique },
+  { href: '/espace/boutique', libelle: 'Boutique et visibilité', icone: ICONES.boutique },
   { href: '/espace/factures', libelle: 'Mes factures', icone: ICONES.factures, pastille: 'Premium' },
-  { href: '/presence-en-ligne', libelle: 'Être visible en ligne', icone: ICONES.globe },
   { href: '/se-former', libelle: 'Se former', icone: ICONES.former },
   { href: '/affiliation', libelle: 'Affiliation', icone: ICONES.affiliation },
 ];
@@ -142,6 +141,7 @@ const PORTEES: Record<string, string> = {
   '/ajouter-une-association': '/espace/association',
   '/verifier': '/espace/association',
   '/agrements': '/espace/association',
+  '/presence-en-ligne': '/espace/boutique',
   '/outils': '/chemin',
   '/avantages': '/chemin',
 };
@@ -327,8 +327,8 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
         </div>
       ) : null}
 
-      {/* Grand écran : la barre latérale fixe. */}
-      <aside className="sticky top-0 hidden h-screen overflow-y-auto bg-[#1D1B5C] p-4 pt-6 lg:block">{contenu}</aside>
+      {/* Grand écran : la barre latérale suit la page, sans ascenseur à elle. */}
+      <aside className="hidden bg-[#1D1B5C] p-4 pt-6 lg:block">{contenu}</aside>
     </>
   );
 }
@@ -367,17 +367,17 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
       {compte?.espaceOuvert ? (
         <Link
           href="/espace/dossiers"
-          className="shrink-0 rounded-xl border border-[#F3B0C2] bg-gradient-to-r from-white to-[#FDE7EC] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-[#8A1B3D] no-underline shadow-sm transition hover:from-[#FDE7EC] hover:to-[#F9C9D6] sm:px-5 sm:text-[15px]"
+          className="flex shrink-0 items-center gap-2 rounded-2xl border-2 border-[#F3B0C2] bg-gradient-to-r from-white to-[#FDE7EC] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-[#8A1B3D] no-underline shadow-[0_10px_24px_-14px_rgba(138,27,61,0.6)] transition hover:-translate-y-0.5 hover:from-[#FDE7EC] hover:to-[#F9C9D6] sm:px-7 sm:py-3 sm:text-[18px]"
         >
-          <span className="sm:hidden">Mes subventions</span>
-          <span className="hidden sm:inline">Mes subventions</span>
+          <span aria-hidden="true" className="hidden sm:inline">€</span>
+          Mes subventions
         </Link>
       ) : null}
 
       {/* ⚠ Pas de flex-1 ici : à 390 px, les boutons de droite débordaient sur le
           logo « Piloter » (vu en direct le 28/09). La droite garde sa largeur, la
           gauche se rétrécit. */}
-      <div className="relative flex shrink-0 items-center justify-end gap-2">
+      <div className="relative flex shrink-0 items-center justify-end gap-2 lg:flex-1">
         {/* Pouvoir écrire à quelqu'un, depuis n'importe quel écran. */}
         <Link
           href="/nous-contacter"

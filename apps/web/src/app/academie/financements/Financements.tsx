@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { AlertTriangle, Building2, CalendarClock, ClipboardCheck, Plus, Wallet } from 'lucide-react';
 import { appel } from '../_client';
+import { Squelette } from '../Squelette';
 import { BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, CHAMP, Encart, Pastille, Tuile } from '../_ui';
 import { FINANCEUR, STATUT_DOSSIER, centsDepuis, eurosCents, jourMois, saisieCents } from '../_gestion/financements';
 import type { DossierFinancement, ListeFinancements, TypeFinanceur } from '../_gestion/types';
@@ -115,7 +116,7 @@ export function Financements({ sessions }: { sessions: SessionChoix[] }) {
       </nav>
 
       {!liste ? (
-        <p className="text-[15px] text-[#5E7A6E]">Chargement…</p>
+        <Squelette lignes={4} />
       ) : visibles.length ? (
         <ul className="grid gap-3 md:grid-cols-2">
           {visibles.map((d) => (

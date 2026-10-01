@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { appel } from '../../_client';
+import { Squelette } from '../../Squelette';
 import { BTN_PRIMAIRE, BTN_SECONDAIRE, CHAMP, Encart } from '../../_ui';
 import { LigneFactureOrg } from '../../_gestion/Factures';
 import type { ListeFactures } from '../../_gestion/types';
@@ -103,7 +104,7 @@ export function OngletFacturation({ ctx }: { ctx: ContexteFiche }) {
           <Encart ton="info">Aucune facture ni aucun devis pour cette session.</Encart>
         )
       ) : (
-        <p className="text-[15px] text-[#5E7A6E]">Chargement…</p>
+        <Squelette lignes={3} />
       )}
     </>
   );

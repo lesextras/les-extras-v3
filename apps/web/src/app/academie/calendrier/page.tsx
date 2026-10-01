@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { Encart, Titre } from '../_ui';
 import { Calendrier } from './Calendrier';
+import { OngletsAgenda } from '../agenda/Onglets';
 import type { Evenement, ReglagesSuite } from '../_ecole/suite-types';
 import type { CoursResume } from '../_ecole/types';
 
@@ -23,7 +24,8 @@ export default async function PageCalendrier() {
   ]);
   return (
     <>
-      <Titre surtitre="Formations" sousTitre="Ce que tes apprenants voient arriver.">
+      <OngletsAgenda actif="calendrier" />
+      <Titre surtitre="Mon agenda" sousTitre="Ce que tes apprenants voient arriver.">
         Calendrier
       </Titre>
       {Array.isArray(ev.data) && reg.data ? (

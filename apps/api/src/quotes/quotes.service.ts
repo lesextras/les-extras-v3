@@ -384,13 +384,13 @@ export class QuotesService {
     }
 
     // Modèle prestataire : le montant facturé à l'établissement est le tarif
-    // de l'intervenant AUGMENTÉ des frais de gestion. Rien n'est prélevé sur
-    // l'intervenant, qui perçoit exactement le montant qu'il a chiffré.
+    // de l'intervenant, AUGMENTÉ d'une éventuelle commission. Rien n'est
+    // prélevé sur l'intervenant, qui perçoit exactement ce qu'il a chiffré.
     //
-    // ⚠ DEUX RÉGIMES DEPUIS LE 21/09/2026, ET C'EST LE DEVIS QUI DIT LEQUEL.
-    // Un devis porte soit un `serviceId` (atelier du catalogue : gratuit),
-    // soit un `missionId` (renfort RenforTeam : commissionné, parce que
-    // l'association y vérifie l'intervenant). Voir `billing/commission.ts`.
+    // Depuis le 01/10/2026, 0 % sur les renforts comme sur les ateliers : le
+    // calcul reste en place mais ne majore plus rien. Un devis porte soit un
+    // `serviceId` (atelier du catalogue), soit un `missionId` (renfort
+    // RenforTeam). Voir `billing/commission.ts`.
     //
     // ⚠ Le test est `missionId`, pas la catégorie ni le titre : c'est la seule
     // donnée qui ne dépend pas de ce que quelqu'un a saisi dans un champ

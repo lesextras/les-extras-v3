@@ -103,7 +103,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Combien la plateforme me prélève-t-elle ?",
         reponse: [
           "Sur vos ateliers, rien : vous facturez l'établissement en direct, vous touchez 100 % de votre prix, et la mise en relation est gratuite pour lui aussi.",
-          "Sur un renfort RenforTeam, 15 % de frais de gestion. Ils s'ajoutent à votre tarif au lieu d'être prélevés dessus : vous touchez toujours 100 % de ce que vous avez chiffré, c'est le demandeur qui les paie. L'association y vérifie chaque intervenant avant de l'envoyer, encaisse la prestation et vous la reverse. La ligne est sur le devis avant que quiconque ne l'accepte.",
+          "Sur un renfort RenforTeam, rien non plus : 0 % de commission. L'association vérifie chaque intervenant avant de l'envoyer, encaisse la prestation et vous la reverse en entier : ce que le demandeur paie vous revient.",
           "C'est le parti pris du modèle associatif. L'association se finance sur les crédits LEX (l'assistant IA), jamais sur votre rémunération.",
         ],
       },
@@ -136,7 +136,7 @@ export const RUBRIQUES: Rubrique[] = [
         question: "Qu'est-ce qui est gratuit ?",
         reponse: [
           "Tout le logiciel : publier un renfort, réserver un atelier, devis, feuilles de mission, factures, planning, messagerie, pointage, coffre-fort de conformité. Gratuit, pour les établissements comme pour les intervenants, sans abonnement.",
-          "Ce qui se paie : LEX (l'assistant IA, à crédits), et 15 % de frais de gestion sur les renforts RenforTeam. Ils paient la vérification de l'intervenant et s'ajoutent à son tarif. Un atelier, lui, se paie à son intervenant, à son tarif, et la plateforme n'ajoute rien.",
+          "Ce qui se paie : LEX (l'assistant IA, à crédits). 0 % de commission sur RenforTeam et les ateliers : ce que vous payez revient à l'intervenant.",
         ],
       },
       {

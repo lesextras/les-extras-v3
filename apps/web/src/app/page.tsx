@@ -195,7 +195,8 @@ const TARIFS = [
      * Les formations (commission sur devis, 24/09/2026) ont quitté Les
      * Extras le 28/09/2026 : deux régimes, deux lignes.
      *
-     * ⚠ 15 %, ARRÊTÉ LE 21/09/2026. Le taux et sa justification sont dans
+     * ⚠ 0 % DEPUIS LE 01/10/2026 (décision de Siham), RenforTeam compris.
+     * (Ancienne règle : 15 %, arrêtée le 21/09/2026.) Le taux et sa justification sont dans
      * `lib/commission.ts` — relevé des grilles publiques compris. Ne pas le
      * changer ici seul : il est aussi sur /frais-de-service, /renforteam et
      * dans les CGU.
@@ -203,8 +204,8 @@ const TARIFS = [
     points: [
       'Publication, diffusion et relances',
       'Devis et feuille de mission édités',
-      'Ateliers : 0 % de commission',
-      'RenforTeam : 15 % de frais de gestion, ajoutés au tarif. L’intervenant touche 100 %',
+      'Ateliers et RenforTeam : 0 % de commission',
+      'Ce que vous payez revient à l’intervenant',
     ],
     lien: { libelle: 'Publier un besoin', href: '/renforteam' },
     trait: 'bg-primary',
@@ -350,8 +351,8 @@ export default async function LandingPage() {
                   aucun prix ni délai sur l'accueil.
 
                   ⚠⚠ ET SURTOUT : PAS DE « MISE EN RELATION GRATUITE » TOUT
-                  COURT. Depuis le 21/09, RenforTeam prend 15 % de frais de
-                  gestion ; seuls les ateliers sont à 0 %.
+                  COURT. Depuis le 01/10/2026, ateliers ET RenforTeam sont à
+                  0 % de commission (avant : 15 % sur RenforTeam).
                   Une gratuité annoncée sans son périmètre est démentie deux
                   écrans plus bas, sur la page qui vend le renfort — c'est la
                   pastille « 0 % sur les ateliers » qui porte la nuance, et

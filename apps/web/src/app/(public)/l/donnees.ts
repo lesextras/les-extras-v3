@@ -159,9 +159,9 @@ export const LANDINGS: Landing[] = [
       'Une fiche, un catalogue lu par des directions d’IME, de MECS et d’ESAT, des demandes de devis qui arrivent dans votre boîte. Devis, feuilles de mission et factures édités par la plateforme. Aucune commission sur vos ateliers.',
     preuves: [
       {
-        titre: 'Zéro commission sur vos ateliers, zéro abonnement',
+        titre: 'Zéro commission, zéro abonnement',
         texte:
-          'L’établissement paie votre tarif, vous le touchez intégralement. Seul RenforTeam est commissionné : l’association y vérifie chaque intervenant avant de l’envoyer, et c’est ce travail-là qui se paie.',
+          'L’établissement paie votre tarif, vous le touchez intégralement : 0 % de commission sur vos ateliers comme sur RenforTeam.',
       },
       {
         titre: 'Les papiers sont faits',

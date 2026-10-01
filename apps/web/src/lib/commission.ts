@@ -2,67 +2,40 @@
  * Décomposition du prix — MIROIR EXACT de apps/api/src/billing/commission.ts.
  *
  * ⚠ Les deux fichiers doivent rester identiques sous cet en-tête : c'est le
- * serveur qui facture, l'écran ne fait que montrer le même calcul. Ce fichier
- * a déjà affirmé le contraire du serveur une fois — 15 % de « frais de
- * gestion » affichés quand le serveur n'en prélevait aucun — et un intervenant
- * qui aurait suivi la consigne aurait facturé une association qui ne
- * l'attendait pas.
+ * serveur qui facture, l'écran ne fait que montrer le même calcul.
  *
  *
- * ⚠⚠ IL N'Y A PLUS UNE RÈGLE TARIFAIRE, IL Y EN A DEUX DEPUIS LE 21/09/2026.
+ * ═══════════════════════ LE MODÈLE ÉCONOMIQUE ═══════════════════════════════
  *
- *  1. LE CATALOGUE — ateliers. GRATUIT, des deux côtés.
- *     L'établissement réserve, l'intervenant facture en direct, l'association
- *     ne s'interpose pas et ne prélève rien. Inchangé depuis l'origine.
+ * ⚠ DÉCISION DU 01/10/2026 (fondatrice) : 0 % DE COMMISSION SUR RENFORTEAM ET
+ * SUR LES ATELIERS. Ce que le client paie revient à l'intervenant, au centime.
  *
- *  2. RENFORTEAM — les renforts. COMMISSIONNÉ.
- *     Décision de Siham. RenforTeam n'est pas un annuaire ouvert : ce sont des
- *     professionnels de l'éducation spécialisée et de la rééducation que
- *     l'association VÉRIFIE un par un avant de les envoyer chez quelqu'un —
- *     diplôme, pièce d'identité, bulletin n° 3 du casier judiciaire, assurance,
- *     numéro ADELI quand la profession en a un. C'est ce travail de sélection
- *     que paie la commission, pas la mise en relation.
+ * Historique : du 21/09 au 30/09/2026, RenforTeam ajoutait 15 % de « frais de
+ * gestion » au tarif de l'intervenant (justifiés par la vérification des
+ * pièces : diplôme, identité, casier B3, assurance, ADELI). Abandonné le
+ * 01/10/2026. Les devis émis avant cette date gardent leur montant : on ne
+ * réécrit pas un document déjà envoyé ou accepté.
  *
- * ⚠ LA COMMISSION S'AJOUTE AU TARIF, ELLE NE S'Y PRÉLÈVE PAS. `decomposerPrix`
- * calcule `prixClientHt = tarif + commission` : l'intervenant perçoit
- * exactement ce qu'il a chiffré, et le demandeur voit la ligne de frais sur le
- * devis AVANT de l'accepter (`DecompositionPrix` côté web l'affiche dès que la
- * commission est non nulle). C'est ce qui permet au site de continuer à
- * écrire, sans mentir, que l'intervenant touche son tarif en entier.
+ * Le chemin de code est conservé (`COMMISSION_RENFORT`, `tauxCommission`,
+ * `decomposerPrix`) pour qu'un taux puisse revenir par une décision explicite,
+ * pas par une réécriture. Côté web, `DecompositionPrix` n'affiche la ligne de
+ * frais que si la commission est non nulle : à 0, elle disparaît d'elle-même.
  *
- * ─────────────────────────── POURQUOI 15 % ───────────────────────────────────
+ * ⚠ CE TAUX EST UN PRIX PUBLIÉ. Le modifier ici impose de réécrire le miroir
+ * `apps/web/src/lib/commission.ts`, /frais-de-service, l'accueil, les CGU et
+ * la page RenforTeam — sinon le site ment.
  *
- * Taux arrêté le 21/09/2026 par Siham, avec pour consigne de s'aligner sur la
- * concurrence. Relevé ce jour-là sur les grilles publiques :
- *
- *  • Brigad (indépendants, dont la santé) : 10 % HT facturés à l'entreprise
- *    ET 15 % TTC prélevés sur l'indépendant — 9,9 % TTC pour les infirmiers.
- *    Soit environ 25 % de prélèvement cumulé sur une mission.
- *  • Malt (freelances, toutes professions) : 10 % HT sur le freelance, ramenés
- *    à 5 % après six mois avec le même client. Mais Malt ne vérifie ni
- *    diplôme, ni casier, ni assurance : ce n'est pas la même prestation.
- *  • Intérim médico-social : coefficient de facturation de 1,9 à 2,2 sur le
- *    salaire, soit 90 à 120 % — le chiffre que porte déjà le calculateur de
- *    coût du dépôt.
- *
- * 15 % sur UN SEUL côté place donc Les Extras nettement sous le prélèvement
- * cumulé de Brigad, très loin sous l'intérim, et au-dessus de Malt — l'écart
- * avec Malt étant exactement ce que couvre la vérification des pièces.
- *
- * ⚠ CE TAUX EST UN PRIX PUBLIÉ. Il ne se change pas en passant : il est écrit
- * en toutes lettres sur /frais-de-service, sur l'accueil, dans les CGU et sur
- * la page RenforTeam. Le modifier ici sans réécrire ces quatre endroits fait
- * mentir le site, et c'est la page que ressort une direction en cas de litige.
- *
- * ⚠ UN TAUX NÉGOCIÉ SUR UN COMPTE (`Account.commissionRate`) PRIME TOUJOURS —
- * y compris à zéro, pour un partenaire historique ou une convention.
+ * ⚠ UN TAUX NÉGOCIÉ SUR UN COMPTE (`Account.commissionRate`) PRIME TOUJOURS.
  */
 
 /** Le catalogue : ateliers. Rien n’est prélevé. */
 export const COMMISSION_DEFAUT = 0;
 
-/** RenforTeam : frais de gestion de l'association, ajoutés au tarif. */
-export const COMMISSION_RENFORT = 0.15;
+/**
+ * RenforTeam : 0 depuis le 01/10/2026 (était 0,15 du 21/09 au 30/09/2026).
+ * Si un taux revient un jour, il s'AJOUTE au tarif, il ne s'y prélève pas.
+ */
+export const COMMISSION_RENFORT = 0;
 
 /**
  * Le taux applicable à un devis.

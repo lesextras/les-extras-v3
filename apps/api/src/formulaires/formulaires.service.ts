@@ -38,6 +38,7 @@ export class FormulairesService {
       nbReponses: f._count.reponses,
       fermeLe: f.fermeLe,
       modifieLe: f.updatedAt,
+      creeLe: f.createdAt,
     }));
   }
 

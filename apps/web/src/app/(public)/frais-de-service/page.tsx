@@ -7,7 +7,7 @@ import { renfortSalarieVisible } from "@/lib/offre";
 export const metadata: Metadata = metaPublique({
   title: "Ce qui est gratuit, ce qui est payant",
   description:
-    "Logiciel gratuit des deux côtés. Ateliers : 0 % de commission. RenforTeam : 15 % de frais de gestion. LEX, l’assistant IA, à crédits.",
+    "Logiciel gratuit des deux côtés. 0 % de commission sur RenforTeam et les ateliers. LEX, l’assistant IA, à crédits.",
   path: "/frais-de-service",
 });
 
@@ -33,8 +33,8 @@ const GRATUIT = [
 // ⚠ LE RÉGIME « FORMATION QUALIOPI, SUR DEVIS » EST RETIRÉ DE CETTE PAGE LE
 // 28/09/2026 (décision de Siham) : les formations ont quitté Les Extras pour
 // adepa77.fr, le site du centre de formation ADéPA, qui porte ses propres
-// conditions. Il reste ici les deux régimes de Les Extras : les ateliers à
-// 0 %, RenforTeam à 15 %, et LEX à crédits.
+// conditions. Il reste ici : ateliers et RenforTeam à 0 % (depuis le
+// 01/10/2026), et LEX à crédits.
 const PAYANT = [
   {
     icone: Sparkles,
@@ -60,20 +60,16 @@ export default function FraisPage() {
           ⚠⚠ C'EST LA PAGE QU'UNE DIRECTION RESSORT EN CAS DE LITIGE. Elle ne
           peut pas être approximative d'un mot.
 
-          Décision de Siham, 21/09/2026 : RenforTeam est commissionné. Il n'y a
-          donc plus UNE règle tarifaire mais DEUX, et la page doit les séparer
-          dès le chapeau plutôt que de laisser découvrir la seconde sur une
-          facture.
-
-          ⚠ 15 %, ARRÊTÉ LE 21/09/2026 (voir `lib/commission.ts` pour le taux,
-          son calcul et le relevé des grilles concurrentes). Le chiffre est
-          écrit ici, sur l'accueil, sur /renforteam et dans les CGU : les
-          quatre bougent ensemble ou pas du tout.
+          Décision du 01/10/2026 : 0 % de commission sur RenforTeam et sur les
+          ateliers (RenforTeam était à 15 % du 21/09 au 30/09/2026). Le taux vit
+          dans `lib/commission.ts` ; il est écrit ici, sur l'accueil, sur
+          /renforteam et dans les CGU : les quatre bougent ensemble ou pas du
+          tout.
         */}
         <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-          Pas d’abonnement obligatoire, pas d’engagement, pas de frais d’entrée. Sur les
-          ateliers, aucune commission n’est prélevée sur l’intervenant. Sur un renfort RenforTeam, 15&nbsp;% de frais de gestion s’ajoutent à son tarif&nbsp;:
-          c’est l’association qui vérifie chaque professionnel avant de l’envoyer.
+          Pas d’abonnement obligatoire, pas d’engagement, pas de frais d’entrée.
+          0&nbsp;% de commission sur RenforTeam et les ateliers&nbsp;: ce que le client
+          paie revient à l’intervenant.
         </p>
       </div>
 
@@ -135,22 +131,16 @@ export default function FraisPage() {
               Côté intervenant
             </p>
             <p className="mt-2 text-2xl font-semibold text-foreground">
-              Zéro commission sur vos ateliers
+              Zéro commission, ateliers comme RenforTeam
             </p>
             <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
               Vous touchez 100 % de votre prix. Vous réservez et facturez en direct,
               l’association ne s’interpose pas.
             </p>
             <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-              <strong className="font-semibold text-foreground">RenforTeam est différent.</strong>{" "}
-              L’association y vérifie chaque professionnel de l’éducation spécialisée avant de
-              l’envoyer chez quelqu’un, encaisse la prestation et vous reverse. Ce travail de
-              sélection se paie&nbsp;: <strong className="font-semibold text-foreground">15&nbsp;%
-              de frais de gestion</strong>, <em>ajoutés</em> au tarif de l’intervenant et payés
-              par le demandeur. Rien n’est prélevé sur vous, et la ligne figure sur le devis avant
-              que quiconque ne l’accepte. À titre de comparaison, une plateforme d’indépendants
-              comme Brigad prélève 10&nbsp;% à l’entreprise et 15&nbsp;% au professionnel, et
-              l’intérim applique un coefficient de 1,9 à 2,2 sur le salaire.
+              <strong className="font-semibold text-foreground">Sur RenforTeam aussi&nbsp;:</strong>{" "}
+              l’association vérifie chaque professionnel avant de l’envoyer, encaisse la
+              prestation et vous reverse l’intégralité. Ce que le client paie vous revient.
             </p>
           </div>
           <div className="grid size-28 shrink-0 place-items-center rounded-2xl bg-background ring-1 ring-inset ring-secondary/25 md:size-32">

@@ -32,7 +32,7 @@
  * par toute la page, anime l'apparition comme pour les autres sections.
  */
 import Image from 'next/image';
-import { ArrowRight, Clock, GraduationCap } from 'lucide-react';
+import { ArrowRight, BookOpen, Clock, GraduationCap, HeartHandshake, MapPin, ShieldCheck, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Reveal } from './Reveal';
 
@@ -57,21 +57,80 @@ export function CentreFormationAdepa() {
   return (
     <section id="centre-de-formation" className="scroll-mt-24 bg-nacre">
       <div className="section">
-        <Reveal className="max-w-3xl">
+        {/* L'ASSOCIATION, SA MISSION, SON HISTOIRE (01/10/2026, demande de Siham :
+            « intègre la présentation de l'association dans ce bloc avec les
+            formations »). L'ancien bloc « Derrière le réseau, il y a ADéPA »
+            vit désormais ici : un seul bloc ADéPA sur l'accueil. */}
+        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <Reveal>
+            <span className="eyebrow flex w-fit">
+              <HeartHandshake className="size-3.5" />
+              L’association ADéPA
+            </span>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+              Derrière Les Extras, il y a ADéPA.
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+              Association éducative de Melun. Sa mission : l’insertion des enfants, des adolescents et des
+              familles par l’éducation, l’animation et la prévention.
+            </p>
+            <ul className="mt-6 flex flex-wrap gap-2">
+              {[
+                { icone: MapPin, texte: 'Melun, Seine-et-Marne' },
+                { icone: ShieldCheck, texte: 'Certifiée Qualiopi · QNW0132' },
+                { icone: HeartHandshake, texte: 'Pas d’actionnaire' },
+              ].map((c) => {
+                const Icone = c.icone;
+                return (
+                  <li key={c.texte} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground">
+                    <Icone className="size-4 text-primary" aria-hidden />
+                    {c.texte}
+                  </li>
+                );
+              })}
+            </ul>
+          </Reveal>
+
+          <div className="grid gap-3">
+            {[
+              { icone: BookOpen, titre: 'Son histoire', texte: 'D’où elle vient, ce qu’elle défend.', href: 'https://adepa77.fr/notre-histoire/' },
+              { icone: HeartHandshake, titre: 'Devenir adhérent', texte: 'Soutenir ce qui se construit ici.', href: 'https://adepa77.fr/devenir-adherent/' },
+              { icone: Users, titre: 'Rejoindre l’équipe', texte: 'Bénévole, intervenant ou formateur.', href: 'https://adepa77.fr/rejoignez-nous/' },
+            ].map((porte, i) => {
+              const Icone = porte.icone;
+              return (
+                <Reveal key={porte.titre} delay={i * 90}>
+                  <a
+                    href={porte.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-4 rounded-2xl border border-border bg-background p-4 no-underline transition duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card"
+                  >
+                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                      <Icone className="size-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-bold text-foreground">{porte.titre}</span>
+                      <span className="block text-sm text-muted-foreground">{porte.texte}</span>
+                    </span>
+                    <ArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
+                  </a>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+
+        <Reveal className="mt-14 max-w-3xl">
           <span className="eyebrow flex w-fit">
             <GraduationCap className="size-3.5" />
-            Centre de formation ADéPA
+            Son centre de formation
           </span>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl text-balance">
+          <h3 className="mt-3 text-2xl font-bold tracking-tight md:text-3xl text-balance">
             Des parcours gratuits pour comprendre un comportement avant de le changer
-          </h2>
-          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-            ADéPA, l’association qui porte Les Extras, est un organisme de formation certifié
-            Qualiopi (n°&nbsp;QNW0132) pour les actions de formation et les bilans de compétences.
-          </p>
+          </h3>
           <p className="mt-3 leading-relaxed text-muted-foreground">
-            Ses formations en établissement sont finançables par votre OPCO. Ses parcours en ligne
-            sont gratuits, sans carte bancaire, à suivre à votre rythme.
+            En ligne, gratuits, à votre rythme. En établissement, finançables par votre OPCO.
           </p>
         </Reveal>
 
@@ -106,7 +165,7 @@ export function CentreFormationAdepa() {
                       {p.minutes}&nbsp;min
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold leading-snug text-foreground">{p.titre}</h3>
+                  <h4 className="text-lg font-semibold leading-snug text-foreground">{p.titre}</h4>
                   <span className="mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-medium text-primary">
                     Voir le parcours
                     <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />

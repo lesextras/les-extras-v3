@@ -71,8 +71,8 @@ export function DecompositionPrix({
             ? `Rien n'est prélevé sur votre tarif : les ${pct} % de frais de gestion sont ajoutés au prix client. Vous facturez la structure à votre tarif, sans démarche de plus.`
             : `Les frais de gestion couvrent le contrat, l'assurance et la vérification des pièces obligatoires. À titre de comparaison, une agence d'intérim applique un coefficient de 1,9 à 2,2 sur le salaire brut.`
           : vue === "intervenant"
-            ? `Rien n'est prélevé : la structure paie exactement votre tarif et vous le percevez intégralement. La contractualisation se fait entre vous et elle, et c'est vous qui lui adressez la facture depuis votre compte.`
-            : `La mise en relation et l'aide à la contractualisation sont gratuites : vous payez le tarif de l'intervenant, rien de plus. La facture vous parvient de sa part, pas de l'association.`}
+            ? `0 % de commission : la structure paie exactement votre tarif et vous le percevez intégralement. La contractualisation se fait entre vous et elle, et c'est vous qui lui adressez la facture depuis votre compte.`
+            : `0 % de commission : ce que vous payez revient à l'intervenant, rien de plus. La facture vous parvient de sa part, pas de l'association.`}
       </p>
     </div>
   );

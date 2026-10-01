@@ -1,7 +1,9 @@
 /* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import { apiEspace, sessionAssociation } from '../../_session';
 import { nomCourt } from '../../_nom';
+import Link from 'next/link';
 import { Encart, SousTitre, Titre, Tuile } from '../../_ui';
+import { ETAPES_PRESENCE } from '../../_avantages';
 import type { Espace } from '../_types';
 import { euros, type Commande, type EtatStripe, type Produit, type Vitrine as VitrineType } from './_types';
 import { Vitrine } from './Vitrine';
@@ -49,11 +51,23 @@ export default async function BoutiquePage() {
     <>
       <Titre
         surtitre={espace.data ? nomCourt(espace.data.organisation.nom) : undefined}
-        sousTitre="Objets, fichiers et accès à vendre."
+        sousTitre="Vendre et se faire trouver."
         info="Une commande n'est enregistrée qu'une fois le paiement confirmé."
       >
-        Ma boutique
+        Boutique et visibilité
       </Titre>
+
+      <nav className="-mt-2 mb-6 flex flex-wrap gap-2 text-sm font-bold">
+        {[
+          ['#produits', 'Vendre'],
+          ['#commandes', 'Commandes'],
+          ['#visible', 'Être visible'],
+        ].map(([href, libelle]) => (
+          <a key={href} href={href} className="rounded-full border border-[#D9D6EE] bg-white px-4 py-2 text-[#1D1B5C] no-underline hover:border-[#4F46E5] hover:bg-[#ECEBFC]">
+            {libelle}
+          </a>
+        ))}
+      </nav>
 
       <section className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tuile
@@ -86,9 +100,29 @@ export default async function BoutiquePage() {
         <Vitrine initiale={vitrine.data} />
       </section>
 
-      <section id="commandes" className="scroll-mt-24">
+      <section id="commandes" className="mb-10 scroll-mt-24">
         <SousTitre>Commandes</SousTitre>
         <Commandes initiales={listeCommandes} />
+      </section>
+
+      <section id="visible" className="scroll-mt-24">
+        <SousTitre info="Tout est gratuit, sauf le nom de domaine.">Être visible en ligne</SousTitre>
+        <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {ETAPES_PRESENCE.map((e) => (
+            <li key={e.code}>
+              <Link
+                href={`/presence-en-ligne#${e.code}`}
+                className="flex h-full items-start gap-2 rounded-xl border border-[#E6E4F3] bg-white p-3 no-underline transition hover:border-[#4F46E5] hover:bg-[#ECEBFC]"
+              >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1D1B5C] text-xs font-extrabold text-white">{e.numero}</span>
+                <span>
+                  <span className="block text-sm font-extrabold leading-snug text-[#1D1B5C]">{e.nom}</span>
+                  <span className="block text-xs text-[#6B6A8A]">{e.duree}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ol>
       </section>
     </>
   );

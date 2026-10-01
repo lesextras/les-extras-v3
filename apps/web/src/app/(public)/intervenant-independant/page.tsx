@@ -18,7 +18,7 @@ import { renfortSalarieVisible } from "@/lib/offre";
 export const metadata: Metadata = metaPublique({
   title: "Rejoindre le réseau d'intervenants",
   description:
-    "Éducateurs, AES, psychologues, thérapeutes indépendants : référencez-vous gratuitement auprès des établissements médico-sociaux. 0 % sur vos ateliers.",
+    "Éducateurs, AES, psychologues, thérapeutes indépendants : référencez-vous gratuitement auprès des établissements médico-sociaux. 0 % de commission sur vos ateliers et vos renforts.",
   path: "/intervenant-independant",
 });
 
@@ -103,12 +103,10 @@ La plateforme de l’association ADéPA : MECS, IME, ITEP, SESSAD et EHPAD d’u
 
       <div className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-2xl border border-success/30 bg-success/5 p-6 md:p-7">
-          {/* ⚠ CE BLOC PARLE DU CATALOGUE, PAS DE RENFORTEAM. Depuis le
-              21/09/2026 les deux ne suivent plus la même règle : le renfort est
-              commissionné, parce que l'association y vérifie l'intervenant. Le
-              titre le précise, sinon la page promet 100 % sur tout. */}
+          {/* Depuis le 01/10/2026, 0 % de commission sur les ateliers ET sur
+              RenforTeam (le renfort était à 15 % du 21/09 au 30/09/2026). */}
           <p className="text-sm font-semibold uppercase tracking-wide text-success">
-            Zéro commission sur vos ateliers
+            Zéro commission, ateliers comme renforts
           </p>
           <p className="mt-2 text-xl font-semibold text-foreground">
             Vous fixez votre tarif. Vous touchez 100 %.
@@ -258,8 +256,8 @@ Un établissement réserve votre offre. Vous intervenez{" "}
                   Vous acceptez une demande de renfort et vous intervenez{" "}
                   <strong>en prestation</strong>, sur un besoin nommé, en présentiel ou en
                   visioconsultation. L’association vous vérifie avant de vous envoyer, encaisse
-                  et vous reverse : ni relance, ni impayé à courir. C’est le seul dispositif du
-                  site où elle prélève une commission.
+                  et vous reverse l’intégralité : ni relance, ni impayé à courir, et 0&nbsp;% de
+                  commission.
                 </>
               )}
             </p>

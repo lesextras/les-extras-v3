@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { BTN_SECONDAIRE, CARTE, Encart, Pastille, Titre } from '../_ui';
+import { OngletsAgenda } from '../agenda/Onglets';
 
 export const metadata: Metadata = { title: 'Planning', robots: { index: false, follow: false } };
 
@@ -50,8 +51,9 @@ export default async function PlanningPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
+      <OngletsAgenda actif="planning" />
       <Titre
-        surtitre="Gestion de l’organisme"
+        surtitre="Mon agenda"
         sousTitre="Tes créneaux, semaine par semaine."
         actions={
           <Link href="/academie/sessions" className={BTN_SECONDAIRE}>

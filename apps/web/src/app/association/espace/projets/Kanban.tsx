@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type DragEvent } from 'react';
+import { useEffect, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../../_client';
 import { CARTE } from '../../_ui';
@@ -19,13 +19,18 @@ const COLONNES: { etat: EtatAction; titre: string; aide: string }[] = [
   { etat: 'TERMINEE', titre: 'Terminés', aide: 'À raconter dans le rapport' },
 ];
 
-export function Kanban({ projets }: { projets: ActionAssociation[] }) {
+export function Kanban({ projets, iaDisponible }: { projets: ActionAssociation[]; iaDisponible: boolean }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState<ActionAssociation | null | 'nouveau'>(null);
   const [attrape, setAttrape] = useState<string | null>(null);
   const [survolee, setSurvolee] = useState<EtatAction | null>(null);
   const [deplaces, setDeplaces] = useState<Record<string, EtatAction>>({});
   const [erreur, setErreur] = useState<string | null>(null);
+
+  /* Les liens « Trouver des financeurs » (…/projets#financeurs) ouvrent la fiche. */
+  useEffect(() => {
+    if (window.location.hash === '#financeurs') setOuvert('nouveau');
+  }, []);
 
   const etatDe = (p: ActionAssociation) => deplaces[p.id] ?? p.etat;
 
@@ -56,17 +61,17 @@ export function Kanban({ projets }: { projets: ActionAssociation[] }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div id="financeurs" className="scroll-mt-24 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-sm text-[#6B6A8A]">Attrape une carte et pose-la dans une autre colonne. Sur téléphone, utilise « Déplacer vers ».</p>
+        <p className="text-sm text-[#6B6A8A]">Un projet ajouté → ses financeurs.</p>
         <button type="button" onClick={() => setOuvert('nouveau')} className="ml-auto rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA]">
           + Ajouter un projet
         </button>
       </div>
 
       {erreur ? <p className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">{erreur}</p> : null}
-      {ouvert === 'nouveau' ? <FicheProjet projet={null} onFermer={() => setOuvert(null)} /> : null}
-      {ouvert && ouvert !== 'nouveau' ? <FicheProjet projet={ouvert} onFermer={() => setOuvert(null)} /> : null}
+      {ouvert === 'nouveau' ? <FicheProjet projet={null} onFermer={() => setOuvert(null)} iaDisponible={iaDisponible} /> : null}
+      {ouvert && ouvert !== 'nouveau' ? <FicheProjet key={ouvert.id} projet={ouvert} onFermer={() => setOuvert(null)} iaDisponible={iaDisponible} /> : null}
 
       <section className="grid gap-4 md:grid-cols-3">
         {COLONNES.map((col) => {

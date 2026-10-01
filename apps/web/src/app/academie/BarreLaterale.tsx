@@ -114,7 +114,6 @@ const MENU: Element[] = [
       { href: '/academie/formations', libelle: 'Mes formations', icone: ICONES.catalogue },
       { href: '/academie/devoirs', libelle: 'Devoirs à corriger', icone: ICONES.formulaire },
       { href: '/academie/classes-virtuelles', libelle: 'Classes virtuelles', icone: ICONES.classes },
-      { href: '/academie/calendrier', libelle: 'Calendrier', icone: ICONES.sessions },
       { href: '/academie/agenda', libelle: 'Mon agenda', icone: ICONES.agenda },
       { href: '/academie/reglages', libelle: 'Réglages des formations', icone: ICONES.reglages },
     ],
@@ -135,7 +134,6 @@ const MENU: Element[] = [
     icone: ICONES.secretariat,
     entrees: [
       { href: '/academie/sessions', libelle: 'Sessions', icone: ICONES.sessions },
-      { href: '/academie/planning', libelle: 'Planning', icone: ICONES.agenda },
       { href: '/academie/formateurs', libelle: 'Formateurs et salles', icone: ICONES.formateurs },
       { href: '/academie/prospects', libelle: 'Prospects', icone: ICONES.prospects },
       { href: '/academie/facturation', libelle: 'Devis et factures', icone: ICONES.factures },
@@ -196,6 +194,10 @@ const PORTEES: Record<string, string> = {
   '/academie/reclamations': '/academie/mon-academie',
   '/academie/mon-profil': '/academie/mon-academie',
   '/academie/ajouter-une-academie': '/academie/mon-academie',
+  // Une seule entrée de dates (01/10/2026) : le planning et le calendrier
+  // apprenants sont des onglets de « Mon agenda ».
+  '/academie/calendrier': '/academie/agenda',
+  '/academie/planning': '/academie/agenda',
 };
 
 /**
@@ -253,9 +255,12 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
 
   useEffect(() => {
     setOuvert(false);
-    if (MON_COMPTE.some((e) => chemin.startsWith(e.href))) setCompteOuvert(true);
+    // ⚠ PRÉVISIBLE (01/10/2026) : à chaque changement de page, seul le groupe qui
+    // contient la page est ouvert ; les autres se referment. Avant, les groupes
+    // ouverts s'accumulaient et le menu finissait tout déplié.
+    setCompteOuvert(MON_COMPTE.some((e) => chemin.startsWith(e.href)));
     const g = groupeCourant();
-    if (g) setGroupesOuverts((l) => (l.includes(g) ? l : [...l, g]));
+    setGroupesOuverts(g ? [g] : []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chemin]);
 
@@ -407,7 +412,7 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
         </div>
       ) : null}
 
-      <aside className="sticky top-0 hidden h-screen overflow-y-auto bg-[#12312A] p-4 pt-6 lg:block">{contenu}</aside>
+      <aside className="hidden bg-[#12312A] p-4 pt-6 lg:block">{contenu}</aside>
     </>
   );
 }
@@ -445,16 +450,17 @@ export function BarreHaut({ compte }: { compte: CompteAffiche | null }) {
       {compte?.espaceOuvert ? (
         <Link
           href="/academie/certification"
-          className="shrink-0 rounded-xl border border-[#B7E4CE] bg-gradient-to-r from-white to-[#E3F5EC] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-[#0F5F3E] no-underline shadow-sm transition hover:from-[#E3F5EC] hover:to-[#B7E4CE] sm:px-5 sm:text-[15px]"
+          className="flex shrink-0 items-center gap-2 rounded-2xl border-2 border-[#B7E4CE] bg-gradient-to-r from-white to-[#E3F5EC] px-3 py-2 text-center text-[13px] font-extrabold leading-tight text-[#0F5F3E] no-underline shadow-[0_10px_24px_-14px_rgba(15,95,62,0.6)] transition hover:-translate-y-0.5 hover:from-[#E3F5EC] hover:to-[#B7E4CE] sm:px-7 sm:py-3 sm:text-[18px]"
         >
-          <span className="sm:hidden">Ma certification</span>
-          <span className="hidden sm:inline">Ma certification Qualiopi</span>
+          <span aria-hidden="true" className="hidden sm:inline">✓</span>
+          <span className="sm:hidden">Qualiopi · EDOF</span>
+          <span className="hidden sm:inline">Ma certification Qualiopi et EDOF</span>
         </Link>
       ) : null}
 
       {/* ⚠ Pas de flex-1 ici : à 390 px, les boutons de droite débordaient sur le
           logo (vu en direct le 28/09). La droite garde sa largeur, la gauche se rétrécit. */}
-      <div className="relative flex shrink-0 items-center justify-end gap-2">
+      <div className="relative flex shrink-0 items-center justify-end gap-2 lg:flex-1">
         {/* Pouvoir écrire à quelqu'un, depuis n'importe quel écran. */}
         <Link
           href="/academie/nous-contacter"

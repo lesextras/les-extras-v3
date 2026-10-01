@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../../_client';
 import { dateCourte, type DocumentLibre } from '../_types';
+import { EtatVide } from '../../EtatVide';
 
 const CATEGORIES = ['Réunions', 'Projets', 'Comptes', 'Courriers', 'Photos', 'Autre'];
 const CHAMP =
@@ -126,10 +127,7 @@ export function Documents({ documents }: { documents: DocumentLibre[] }) {
       ) : null}
 
       {visibles.length === 0 ? (
-        <div className="rounded-2xl border border-[#E6E4F3] bg-white px-6 py-10 text-center">
-          <p className="font-bold text-[#1D1B5C]">Aucun document pour l&apos;instant.</p>
-          <p className="mt-1 text-sm text-[#6B6A8A]">Les procès-verbaux, les courriers reçus, les photos des actions, les devis… Tout au même endroit, retrouvable en un clic.</p>
-        </div>
+        <EtatVide picto="document">Aucun document pour l&apos;instant.</EtatVide>
       ) : (
         <ul className="divide-y divide-[#E6E4F3] overflow-hidden rounded-2xl border border-[#E6E4F3] bg-white">
           {visibles.map((d) => (

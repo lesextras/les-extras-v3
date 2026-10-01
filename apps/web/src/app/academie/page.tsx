@@ -6,7 +6,7 @@ import { academieConnectee, apiAcademie, sessionAcademie } from './_session';
 import { chargerChemin, tempsDe, TEINTES } from './_chemin';
 
 export const metadata: Metadata = { alternates: { canonical: '/academie' } };
-import { Accent, Barre, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CARTE_VIVE, Carte, Encart, Pastille, SousTitre, Tuile, formaterDate } from './_ui';
+import { Accent, Barre, BTN_PRIMAIRE, CARTE, CARTE_VIVE, Carte, Encart, Pastille, SousTitre, Tuile, formaterDate } from './_ui';
 import { LIBELLES_QUALIOPI, type EspaceAcademie } from './_types';
 import { BlocStatistiques } from './_stats';
 import { BlocInstaller } from '../_shared/BlocInstaller';
@@ -178,13 +178,12 @@ const MODULES: { titre: string; Icone: LucideIcon; fond: string; encre: string; 
 
 /* --------------------------------------------------------------- connectée */
 
-/** Les cinq gestes du quotidien, comme sur l'accueil de l'espace association. */
+/** Les quatre gestes du quotidien. « Le chemin » a sa propre carte plus bas. */
 const RACCOURCIS: { href: string; libelle: string; icone: string }[] = [
   { href: '/academie/formations', libelle: 'Créer une formation', icone: 'M12 5v14M5 12h14' },
   { href: '/academie/apprenants', libelle: 'Inscrire un apprenant', icone: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6' },
   { href: '/academie/devoirs', libelle: 'Corriger les devoirs', icone: 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11' },
   { href: '/academie/certification', libelle: 'Déposer une preuve', icone: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
-  { href: '@chemin', libelle: 'Continuer le chemin', icone: 'M4 20V9a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5M4 20h16M12 10v10' },
 ];
 
 /** L'anneau de progression, le même que celui de l'espace association. */
@@ -223,8 +222,8 @@ async function TableauDeBord() {
   const { data, error } = espace;
   if (!data) return <Encart ton="attention">{error ?? 'Ton espace ne se charge pas pour le moment.'}</Encart>;
 
-  const { academie, chemin, qualiopi, sessions, apprenants, catalogue, reclamations, veille } = data;
-  const prochaine = sessions[0] ?? null;
+  const { academie, chemin, qualiopi, sessions, catalogue, reclamations, veille } = data;
+  const stagiaires = sessions.reduce((n, x) => n + x.inscrits, 0);
   const etapeCourante = chemin.etapes.find((e) => e.slug === chemin.courante) ?? null;
 
   /** Ce qui presse : on ne liste que ce sur quoi il y a vraiment quelque chose à faire. */
@@ -318,15 +317,16 @@ async function TableauDeBord() {
         <p className="mt-2 text-lg text-[#334A42]">
           <Accent>{academie.nom}</Accent> · cette semaine
         </p>
-        <div className="mt-5 flex flex-wrap justify-center gap-2">
+        {/* Une seule rangée de quatre cartes ; deux par ligne sur téléphone. */}
+        <div className="mx-auto mt-6 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
           {RACCOURCIS.map((r) => (
             <Link
               key={r.libelle}
-              href={r.href === '@chemin' ? (etapeCourante ? `/academie/chemin/${etapeCourante.slug}` : '/academie/chemin') : r.href}
-              className={`${BTN_SECONDAIRE} gap-2`}
+              href={r.href}
+              className={`${CARTE_VIVE} flex flex-col items-center gap-2 px-3 py-4 text-center text-[15px] font-bold leading-tight text-[#12312A] no-underline`}
             >
-              <span className="text-[#1E9E6A]" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E3F5EC] text-[#0F5F3E]" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d={r.icone} />
                 </svg>
               </span>
@@ -431,12 +431,29 @@ async function TableauDeBord() {
         )}
       </section>
 
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Tuile libelle="Formations" valeur={catalogue.total} detail={`${catalogue.publiees} en ligne`} href="/academie/formations" />
-        <Tuile libelle="Sessions à venir" valeur={sessions.length} detail={prochaine ? formaterDate(prochaine.debut) ?? undefined : undefined} href="/academie/sessions" />
-        <Tuile libelle="Apprenants" valeur={apprenants.total} href="/academie/apprenants" />
-        <Tuile libelle="Devoirs à corriger" valeur={aCorriger} href="/academie/devoirs" ton={aCorriger > 0 ? 'attention' : 'neutre'} />
-      </section>
+      {/*
+        ⚠ UNE SEULE RANGÉE DE CHIFFRES (01/10/2026). « Apprenants » y compte les
+        mêmes personnes que l'écran Mes apprenants (comptes de l'école en ligne) ;
+        les inscrits aux sessions à venir sont affichés sous « Sessions à venir »,
+        sous leur vrai nom : stagiaires.
+      */}
+      <BlocStatistiques
+        ventes={Array.isArray(ventesR.data) ? ventesR.data : []}
+        inscriptions={Array.isArray(apprenantsR.data) ? apprenantsR.data : []}
+        cours={Array.isArray(coursR.data) ? coursR.data : []}
+        avant={
+          <>
+            <Tuile libelle="Formations" valeur={catalogue.total} detail={`${catalogue.publiees} en ligne`} href="/academie/formations" />
+            <Tuile
+              libelle="Sessions à venir"
+              valeur={sessions.length}
+              detail={`${stagiaires} stagiaire${stagiaires > 1 ? 's' : ''} inscrit${stagiaires > 1 ? 's' : ''}`}
+              href="/academie/sessions"
+            />
+          </>
+        }
+        apres={<Tuile libelle="Devoirs à corriger" valeur={aCorriger} href="/academie/devoirs" ton={aCorriger > 0 ? 'attention' : 'neutre'} />}
+      />
 
       {sessions.length ? (
         <section className="mt-8">
@@ -460,12 +477,6 @@ async function TableauDeBord() {
           </ul>
         </section>
       ) : null}
-
-      <BlocStatistiques
-        ventes={Array.isArray(ventesR.data) ? ventesR.data : []}
-        inscriptions={Array.isArray(apprenantsR.data) ? apprenantsR.data : []}
-        cours={Array.isArray(coursR.data) ? coursR.data : []}
-      />
     </>
   );
 }

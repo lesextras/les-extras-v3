@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { appel, messageDe } from './api';
 import { Portail } from './Portail';
 import {
@@ -224,8 +224,15 @@ export function ListeCours({
       ) : (
         <ul className="grid gap-3">
           {visibles.map((c) => (
-            <li key={c.id} className="rounded-2xl border bg-white p-5" style={{ borderColor: VERT.bord }}>
-              <div className="flex flex-wrap items-start justify-between gap-4">
+            // ⚠ TOUTE LA CARTE S'OUVRE (01/10/2026) : le titre porte un lien
+            // étiré sur la carte (after:inset-0) ; les actions secondaires sont
+            // rangées dans « ⋯ », posé au-dessus du lien (z-10).
+            <li
+              key={c.id}
+              className="relative rounded-2xl border bg-white p-5 transition focus-within:z-20 hover:z-20 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(15,95,62,0.10)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              style={{ borderColor: VERT.bord }}
+            >
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 flex-1 gap-4">
                   {c.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -243,7 +250,7 @@ export function ListeCours({
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/academie/formations/${c.id}`}
-                        className="text-lg font-extrabold tracking-tight no-underline hover:underline"
+                        className="text-lg font-extrabold tracking-tight no-underline after:absolute after:inset-0 after:rounded-2xl after:content-[''] hover:underline focus-visible:outline-none focus-visible:after:ring-4 focus-visible:after:ring-[#B7E4CE]"
                         style={{ color: VERT.encre }}
                       >
                         {c.titre}
@@ -276,47 +283,16 @@ export function ListeCours({
                   </div>
                 </div>
 
-                <div className="flex shrink-0 flex-wrap gap-2">
-                  <Link
-                    href={`/academie/formations/${c.id}`}
-                    className="rounded-lg border-2 bg-white px-3 py-2 text-sm font-bold no-underline"
-                    style={{ borderColor: VERT.bord, color: VERT.encre }}
-                  >
-                    Ouvrir
-                  </Link>
-                  {c.statut === 'PUBLIE' ? (
-                    <a
-                      href={`/cours/${c.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-lg border-2 bg-white px-3 py-2 text-sm font-bold no-underline"
-                      style={{ borderColor: VERT.bord, color: VERT.encre }}
-                    >
-                      Voir la page
-                    </a>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => dupliquer(c.id)}
-                    disabled={occupe}
-                    className="rounded-lg border-2 bg-white px-3 py-2 text-sm font-bold disabled:opacity-60"
-                    style={{ borderColor: VERT.bord, color: VERT.encre }}
-                  >
-                    Dupliquer
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setASupprimer(c.id)}
-                    disabled={occupe}
-                    className="rounded-lg border-2 border-[#F3B0C2] bg-white px-3 py-2 text-sm font-bold text-[#8A1B3D] disabled:opacity-60"
-                  >
-                    Supprimer
-                  </button>
-                </div>
+                <MenuActions
+                  pageHref={c.statut === 'PUBLIE' ? `/cours/${c.slug}` : null}
+                  occupe={occupe}
+                  onDupliquer={() => dupliquer(c.id)}
+                  onSupprimer={() => setASupprimer(c.id)}
+                />
               </div>
 
               {aSupprimer === c.id ? (
-                <div className="mt-4 rounded-xl border border-[#F3B0C2] bg-[#FDE7EC] px-4 py-3">
+                <div className="relative z-10 mt-4 rounded-xl border border-[#F3B0C2] bg-[#FDE7EC] px-4 py-3">
                   <p className="text-[15px] font-bold text-[#8A1B3D]">
                     Supprimer « {c.titre} », ses leçons et ses {c.nbApprenants} inscrit
                     {c.nbApprenants > 1 ? 's' : ''} ? C&apos;est définitif.
@@ -446,6 +422,116 @@ export function ListeCours({
           </div>
         </div>
         </Portail>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * LE PETIT MENU « ⋯ » D'UNE CARTE : voir la page, dupliquer, supprimer.
+ * Se ferme au clic dehors, à Échap, et après chaque choix.
+ */
+function MenuActions({
+  pageHref,
+  occupe,
+  onDupliquer,
+  onSupprimer,
+}: {
+  pageHref: string | null;
+  occupe: boolean;
+  onDupliquer: () => void;
+  onSupprimer: () => void;
+}) {
+  const [ouvert, setOuvert] = useState(false);
+  const boite = useRef<HTMLDivElement>(null);
+  const bouton = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!ouvert) return;
+    const dehors = (e: MouseEvent | TouchEvent) => {
+      if (boite.current && !boite.current.contains(e.target as Node)) setOuvert(false);
+    };
+    const echap = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOuvert(false);
+        bouton.current?.focus();
+      }
+    };
+    document.addEventListener('mousedown', dehors);
+    document.addEventListener('touchstart', dehors);
+    document.addEventListener('keydown', echap);
+    return () => {
+      document.removeEventListener('mousedown', dehors);
+      document.removeEventListener('touchstart', dehors);
+      document.removeEventListener('keydown', echap);
+    };
+  }, [ouvert]);
+
+  const item = 'block w-full rounded-lg px-3 py-2 text-left text-sm font-bold no-underline transition hover:bg-[#E3F5EC] disabled:opacity-60';
+
+  return (
+    <div ref={boite} className="relative z-10 shrink-0">
+      <button
+        ref={bouton}
+        type="button"
+        aria-label="Plus d'actions"
+        aria-haspopup="menu"
+        aria-expanded={ouvert}
+        onClick={() => setOuvert((o) => !o)}
+        className="flex h-10 w-10 items-center justify-center rounded-xl border-2 bg-white transition hover:bg-[#E3F5EC]"
+        style={{ borderColor: VERT.bord, color: VERT.encre }}
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <circle cx="5" cy="12" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="19" cy="12" r="2" />
+        </svg>
+      </button>
+      {ouvert ? (
+        <div
+          role="menu"
+          className="absolute right-0 top-12 w-48 rounded-xl border bg-white p-1.5 shadow-[0_10px_28px_rgba(15,95,62,0.16)]"
+          style={{ borderColor: VERT.bord }}
+        >
+          {pageHref ? (
+            <a
+              role="menuitem"
+              href={pageHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOuvert(false)}
+              className={item}
+              style={{ color: VERT.encre }}
+            >
+              Voir la page
+            </a>
+          ) : null}
+          <button
+            role="menuitem"
+            type="button"
+            disabled={occupe}
+            onClick={() => {
+              setOuvert(false);
+              onDupliquer();
+            }}
+            className={item}
+            style={{ color: VERT.encre }}
+          >
+            Dupliquer
+          </button>
+          <button
+            role="menuitem"
+            type="button"
+            disabled={occupe}
+            onClick={() => {
+              setOuvert(false);
+              onSupprimer();
+            }}
+            className={`${item} text-[#8A1B3D] hover:bg-[#FDE7EC]`}
+          >
+            Supprimer
+          </button>
+        </div>
       ) : null}
     </div>
   );

@@ -283,15 +283,33 @@ export default function AgendaPilote({ teinte, appel }: Props) {
     setFormulaire((f) =>
       f && f.id ? f : { ...brouillonVide(), debut: pourChamp(j) },
     );
-    window.setTimeout(() => zoneJour.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
   };
+
+  const fermerFenetre = () => {
+    setJourOuvert(null);
+    setFormulaire(null);
+  };
+
+  useEffect(() => {
+    if (!jourOuvert && !formulaire) return;
+    const echap = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') fermerFenetre();
+    };
+    window.addEventListener('keydown', echap);
+    const avant = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', echap);
+      document.body.style.overflow = avant;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Boolean(jourOuvert || formulaire)]);
 
   const nouveau = (jour?: Date) => {
     const base = jour ? new Date(jour) : new Date();
     if (jour) base.setHours(9, 0, 0, 0);
     else base.setMinutes(0, 0, 0);
     setFormulaire({ ...brouillonVide(), debut: pourChamp(base) });
-    window.setTimeout(() => zoneJour.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
   };
 
   const editer = (e: EvenementAgenda) => {
@@ -607,8 +625,20 @@ export default function AgendaPilote({ teinte, appel }: Props) {
         </div>
       )}
 
-      {/* ------------------------------------------------- jour + saisie */}
-      <div ref={zoneJour} className="grid gap-5 lg:grid-cols-2">
+      {/* ------------------------------------- jour + saisie : une fenêtre */}
+      {jourOuvert || formulaire ? (
+      <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto p-3 sm:p-6" role="dialog" aria-modal="true" aria-label="Agenda">
+        <button type="button" aria-label="Fermer" className="fixed inset-0 bg-[#1D1B5C]/50" onClick={fermerFenetre} />
+      <div ref={zoneJour} className={`relative my-auto grid w-full gap-4 pt-11 ${jourOuvert && formulaire ? 'max-w-5xl lg:grid-cols-2' : 'max-w-xl'}`}>
+        <button
+          type="button"
+          onClick={fermerFenetre}
+          aria-label="Fermer"
+          className="absolute right-0 top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg font-bold shadow"
+          style={{ color: t.encre }}
+        >
+          ×
+        </button>
         {jourOuvert ? (
           <section className={`${t.carte} p-5`} aria-label="Détail du jour">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -651,6 +681,8 @@ export default function AgendaPilote({ teinte, appel }: Props) {
           />
         ) : null}
       </div>
+      </div>
+      ) : null}
 
       {/* ------------------------------------------------------ légende */}
       <section className={`${t.carte} p-4`} aria-label="Ce que l’agenda affiche">
@@ -669,10 +701,6 @@ export default function AgendaPilote({ teinte, appel }: Props) {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[13px]" style={{ color: t.encre, opacity: 0.75 }}>
-          Une seule chose se saisit ici : le rendez-vous. Le reste vient des écrans où ces dates sont
-          déjà renseignées et se met à jour tout seul.
-        </p>
       </section>
     </div>
   );

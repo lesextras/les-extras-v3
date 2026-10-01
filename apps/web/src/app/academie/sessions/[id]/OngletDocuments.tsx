@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { appel } from '../../_client';
+import { Squelette } from '../../Squelette';
 import { BTN_DISCRET, BTN_PRIMAIRE, BTN_SECONDAIRE, Encart, Pastille } from '../../_ui';
 import { DOCUMENTS, dateCourte, telecharger } from '../../_gestion/outils';
 import type { Registre, ResultatEnvoi } from '../../_gestion/types';
@@ -91,7 +92,9 @@ export function OngletDocuments({ ctx }: { ctx: ContexteFiche }) {
       </Encart>
 
       {!registre ? (
-        <p className="mt-6 text-[15px] text-[#5E7A6E]">Chargement des documents…</p>
+        <div className="mt-6">
+          <Squelette lignes={4} />
+        </div>
       ) : (
         <div className="mt-6">
           {DOCUMENTS.map((d) => (

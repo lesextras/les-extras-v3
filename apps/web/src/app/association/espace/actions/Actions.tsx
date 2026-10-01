@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { LIBELLES_ETAT_ACTION, dateCourte, formaterEuros, type ActionAssociation, type EtatAction } from '../_types';
 import { FicheAction } from './FicheAction';
+import { EtatVide } from '../../EtatVide';
 
 type Onglet = 'TOUTES' | EtatAction;
 
@@ -60,17 +61,16 @@ export function Actions({ actions }: { actions: ActionAssociation[] }) {
       {ouverte === 'nouvelle' ? <FicheAction action={null} onFermer={() => setOuverte(null)} /> : null}
 
       {liste.length === 0 ? (
-        <div className="rounded-2xl border border-[#E6E4F3] bg-white px-6 py-10 text-center">
-          <p className="font-bold text-[#1D1B5C]">
-            {onglet === 'TOUTES' ? 'Aucune action pour l’instant.' : 'Aucune action dans cette liste.'}
-          </p>
-          <p className="mt-1 text-sm text-[#6B6A8A]">
-            Note ce que vous faites : une sortie, un atelier, un tournoi. C&apos;est ça qu&apos;on raconte dans un dossier de subvention et dans le rapport d&apos;activité.
-          </p>
-          <button type="button" onClick={() => setOuverte('nouvelle')} className="mt-4 rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA]">
-            Ajouter une action
-          </button>
-        </div>
+        <EtatVide
+          picto="action"
+          action={
+            <button type="button" onClick={() => setOuverte('nouvelle')} className="rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA]">
+              Ajouter une action
+            </button>
+          }
+        >
+          {onglet === 'TOUTES' ? 'Aucune action pour l’instant.' : 'Aucune action dans cette liste.'}
+        </EtatVide>
       ) : (
         <ul className="grid gap-4 md:grid-cols-2">
           {liste.map((a) =>

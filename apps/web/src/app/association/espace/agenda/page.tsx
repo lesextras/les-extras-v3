@@ -16,11 +16,8 @@ export default async function AgendaAssociationPage() {
   await sessionAssociation('/espace/agenda');
   return (
     <>
-      <Titre
-        surtitre="Mon agenda"
-        sousTitre="Tout ce qui a une date, au même endroit : les échéances de tes dossiers, les pièces à renouveler, tes actions, la clôture de tes formulaires, les dates choisies par ceux qui y répondent, et les rendez-vous que tu notes. Toute l'équipe voit le même agenda."
-      >
-        Ce qui vient
+      <Titre surtitre="Mon association" sousTitre="Rendez-vous et échéances, partagés avec l'équipe.">
+        Mon agenda
       </Titre>
       <Ecran />
     </>

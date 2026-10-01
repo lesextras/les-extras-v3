@@ -7,7 +7,6 @@ import {
   FileSpreadsheet,
   FileText,
   Presentation,
-  Search,
   Sparkles,
 } from "lucide-react";
 import { metaPublique } from "@/lib/meta";
@@ -26,6 +25,7 @@ import {
   type Ressource,
 } from "@/lib/ressources";
 import { METIERS_LEX, lienLex, type MetierLex } from "@/lib/lex-taches";
+import { FiltresRessources } from "./Filtres";
 
 /**
  * LA BANQUE D'OUTILS GRATUITS (01/10/2026, décision de Siham).
@@ -56,13 +56,6 @@ type Filtres = {
 
 const un = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-function lien(f: Filtres, change: Partial<Filtres>) {
-  const suite = { ...f, ...change };
-  const p = new URLSearchParams();
-  for (const [k, v] of Object.entries(suite)) if (v) p.set(k, v);
-  const q = p.toString();
-  return q ? `/ressources?${q}` : "/ressources";
-}
 
 const ICONE: Record<FormatModifiable, typeof FileText> = {
   word: FileText,
@@ -196,11 +189,6 @@ export default async function RessourcesPage({
   const compte = (c: CategorieRessource) =>
     RESSOURCES.filter((r) => correspond(r, { ...f, categorie: c })).length;
 
-  const puce = (actif: boolean) =>
-    "rounded-full border px-3.5 py-1.5 text-sm font-medium transition " +
-    (actif
-      ? "border-foreground bg-foreground text-background"
-      : "border-border bg-card hover:border-foreground/40");
 
   return (
     <div className="space-y-10">
@@ -218,131 +206,18 @@ export default async function RessourcesPage({
         </p>
       </header>
 
-      <form
-        action="/ressources"
-        method="get"
-        role="search"
-        className="flex max-w-2xl gap-2"
-      >
-        {f.categorie ? (
-          <input type="hidden" name="categorie" value={f.categorie} />
-        ) : null}
-        {f.public ? (
-          <input type="hidden" name="public" value={f.public} />
-        ) : null}
-        {f.metier ? (
-          <input type="hidden" name="metier" value={f.metier} />
-        ) : null}
-        {f.format ? (
-          <input type="hidden" name="format" value={f.format} />
-        ) : null}
-        <label className="relative flex-1">
-          <span className="sr-only">Rechercher un outil</span>
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
-          />
-          <input
-            type="search"
-            name="q"
-            defaultValue={f.q ?? ""}
-            placeholder="Rechercher : planning, émotions, autorisation…"
-            className="h-11 w-full rounded-lg border border-border bg-card pl-9 pr-3 text-sm outline-none focus:border-foreground/40"
-          />
-        </label>
-        <button
-          type="submit"
-          className="h-11 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-90"
-        >
-          Chercher
-        </button>
-      </form>
-
-      <nav aria-label="Filtrer les outils" className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={lien(f, { categorie: undefined })}
-            className={puce(!f.categorie)}
-            aria-current={!f.categorie ? "page" : undefined}
-          >
-            Tout
-          </Link>
-          {CATEGORIES_RESSOURCES.map((c) => {
+      <FiltresRessources
+        valeurs={f}
+        listes={{
+          categorie: CATEGORIES_RESSOURCES.flatMap((c) => {
             const n = compte(c.id);
-            if (!n && f.categorie !== c.id) return null;
-            return (
-              <Link
-                key={c.id}
-                href={lien(f, { categorie: c.id })}
-                className={puce(f.categorie === c.id)}
-                aria-current={f.categorie === c.id ? "page" : undefined}
-              >
-                {c.titre} <span className="opacity-60">({n})</span>
-              </Link>
-            );
-          })}
-        </div>
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="w-24 shrink-0 text-muted-foreground">
-            Pour qui&nbsp;:
-          </span>
-          <Link
-            href={lien(f, { public: undefined })}
-            className={puce(!f.public)}
-          >
-            Tous
-          </Link>
-          {PUBLICS_RESSOURCES.map((p) => (
-            <Link
-              key={p.id}
-              href={lien(f, { public: p.id })}
-              className={puce(f.public === p.id)}
-            >
-              {p.label}
-            </Link>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="w-24 shrink-0 text-muted-foreground">
-            Votre métier&nbsp;:
-          </span>
-          <Link
-            href={lien(f, { metier: undefined })}
-            className={puce(!f.metier)}
-          >
-            Tous
-          </Link>
-          {METIERS_LEX.map((m) => (
-            <Link
-              key={m.id}
-              href={lien(f, { metier: m.id })}
-              className={puce(f.metier === m.id)}
-            >
-              {m.label}
-            </Link>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="w-24 shrink-0 text-muted-foreground">
-            Format&nbsp;:
-          </span>
-          <Link
-            href={lien(f, { format: undefined })}
-            className={puce(!f.format)}
-          >
-            Tous
-          </Link>
-          {FORMATS_RESSOURCES.map((x) => (
-            <Link
-              key={x.id}
-              href={lien(f, { format: x.id })}
-              className={puce(f.format === x.id)}
-            >
-              {x.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
+            return n || f.categorie === c.id ? [{ id: c.id, label: `${c.titre} (${n})` }] : [];
+          }),
+          public: PUBLICS_RESSOURCES.map((p) => ({ id: p.id, label: p.label })),
+          metier: METIERS_LEX.map((m) => ({ id: m.id, label: m.label })),
+          format: FORMATS_RESSOURCES.map((x) => ({ id: x.id, label: x.label })),
+        }}
+      />
 
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         <span>
