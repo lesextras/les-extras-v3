@@ -336,7 +336,8 @@ export default async function LandingPage() {
                   (« IME · ITEP · SESSAD · MECS · ESAT »). Sans notoriété ni
                   chiffres à afficher, c'est la voie concrète qui paie. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Ateliers, Renforts éducatifs.{' '}
+                Ateliers, Renforts éducatifs.
+                <br />
                 <span className="text-secondary">Tout commence par votre besoin.</span>
               </h1>
               {/* LE SOUS-TITRE NOMME LES PUBLICS, ce qui manquait au titre n° 2
