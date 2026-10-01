@@ -67,7 +67,7 @@ export function Coque({
   mentions?: boolean;
 }) {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#F2F7F5] text-[#334A42]" style={{ fontFamily: 'var(--font-pilote), system-ui, sans-serif' }}>
+    <div id="pilote-racine" className="min-h-screen overflow-x-hidden bg-[#F2F7F5] text-[#334A42]" style={{ fontFamily: 'var(--font-pilote), system-ui, sans-serif' }}>
       <style dangerouslySetInnerHTML={{ __html: MOUVEMENT }} />
       <a
         href="#main"

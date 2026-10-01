@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 /**
  * CE À QUOI J'AI DROIT, EN CARTES.
@@ -63,7 +64,7 @@ export function GrilleAvantages({ cartes }: { cartes: CarteCourte[] }) {
         ))}
       </ul>
 
-      {active ? (
+      {active && typeof document !== 'undefined' ? createPortal(
         <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto p-3 sm:p-6" role="dialog" aria-modal="true" aria-label={active.nom}>
           <button type="button" aria-label="Fermer" className="fixed inset-0 bg-[#1D1B5C]/50" onClick={() => setOuverte(null)} />
           <div className="relative my-auto w-full max-w-3xl pt-11">
@@ -77,7 +78,8 @@ export function GrilleAvantages({ cartes }: { cartes: CarteCourte[] }) {
             </button>
             {active.fiche}
           </div>
-        </div>
+        </div>,
+        document.getElementById('pilote-racine') ?? document.body,
       ) : null}
     </>
   );

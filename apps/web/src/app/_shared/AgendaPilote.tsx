@@ -21,6 +21,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Teinte } from './formulaires/types';
 
 /* ------------------------------------------------------------------ types */
@@ -626,10 +627,10 @@ export default function AgendaPilote({ teinte, appel }: Props) {
       )}
 
       {/* ------------------------------------- jour + saisie : une fenêtre */}
-      {jourOuvert || formulaire ? (
+      {(jourOuvert || formulaire) && typeof document !== 'undefined' ? createPortal(
       <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto p-3 sm:p-6" role="dialog" aria-modal="true" aria-label="Agenda">
         <button type="button" aria-label="Fermer" className="fixed inset-0 bg-[#1D1B5C]/50" onClick={fermerFenetre} />
-      <div ref={zoneJour} className={`relative my-auto grid w-full gap-4 pt-11 ${jourOuvert && formulaire ? 'max-w-5xl lg:grid-cols-2' : 'max-w-xl'}`}>
+      <div ref={zoneJour} className={`relative my-auto grid w-full items-start gap-4 pt-11 ${jourOuvert && formulaire ? 'max-w-5xl lg:grid-cols-2' : 'max-w-xl'}`}>
         <button
           type="button"
           onClick={fermerFenetre}
@@ -682,7 +683,7 @@ export default function AgendaPilote({ teinte, appel }: Props) {
         ) : null}
       </div>
       </div>
-      ) : null}
+      , document.getElementById('pilote-racine') ?? document.body) : null}
 
       {/* ------------------------------------------------------ légende */}
       <section className={`${t.carte} p-4`} aria-label="Ce que l’agenda affiche">
