@@ -1,6 +1,8 @@
 import {
   IsEmail,
+  IsIn,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -12,6 +14,14 @@ export class ForgotPasswordDto {
   @IsEmail({}, { message: 'Adresse e-mail invalide.' })
   @MaxLength(180)
   email!: string;
+
+  /**
+   * Le produit d'où vient la demande. `pilote` : le lien du courriel ramène
+   * sur pilote.toulali.fr, au gabarit de Pilote, sans rien de Les Extras.
+   */
+  @IsOptional()
+  @IsIn(['pilote'])
+  produit?: 'pilote';
 }
 
 /**
