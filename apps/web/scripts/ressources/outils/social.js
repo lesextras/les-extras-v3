@@ -1,0 +1,140 @@
+const { B } = require('../dsl.js');
+
+const base = { cat: 'social', theme: 'Accompagnement social', metiers: ['social', 'associatif', 'protection', 'education'], publics: ['adultes', 'familles', 'equipes'] };
+
+const DEP = ['Loyer ou crédit immobilier', 'Charges (eau, chauffage)', 'Électricité, gaz', 'Assurances', 'Téléphone, internet', 'Transports (carburant, abonnement)', 'Alimentation', 'Santé (mutuelle, frais)', 'Enfants (cantine, garde, activités)', 'Remboursements de crédits', 'Impôts', 'Autres dépenses'];
+const REV = ['Salaire ou revenu d’activité', 'Salaire ou revenu d’activité (2e personne)', 'Allocations familiales et prestations', 'Aide au logement', 'Pension, retraite', 'Autres revenus'];
+const MOIS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+module.exports = [
+  {
+    ...base,
+    id: 'budget-familial-mensuel',
+    titre: 'Budget familial du mois',
+    description: 'Revenus et dépenses du mois, prévu et réel, et le reste à vivre calculé tout seul dans la version Excel : l’outil à remplir avec la famille.',
+    kicker: 'Budget · famille',
+    t1: 'Mon budget', t2: 'du mois', sous: 'ce qui rentre, ce qui sort, ce qui reste',
+    format: 'Tableau A4 · 1 page', mod: ['xlsx', 'docx'],
+    corps: [
+      B.champs({ items: [['Mois', 1], ['Personnes au foyer', 1]], cols: 2 }),
+      B.cote(
+        B.tableau({ feuille: 'Revenus', titre: 'Ce qui rentre', cols: [{ t: 'Revenu', w: 52 }, { t: 'Prévu (€)', w: 24 }, { t: 'Réel (€)', w: 24 }], lignes: REV.map((r) => [r, '', '']), total: [1, 2], euros: [1, 2], h: 8, couleur: 'vert' }),
+        B.tableau({ feuille: 'Dépenses', titre: 'Ce qui sort', cols: [{ t: 'Dépense', w: 52 }, { t: 'Prévu (€)', w: 24 }, { t: 'Réel (€)', w: 24 }], lignes: DEP.map((r) => [r, '', '']), total: [1, 2], euros: [1, 2], h: 8, couleur: 'corail' }),
+      ),
+      B.tableau({ feuille: 'Reste à vivre', titre: 'Ce qui reste', cols: [{ t: '', w: 52 }, { t: 'Prévu (€)', w: 24 }, { t: 'Réel (€)', w: 24 }], lignes: [['Total des revenus', `='Revenus'!B${4 + REV.length}`, `='Revenus'!C${4 + REV.length}`], ['Total des dépenses', `='Dépenses'!B${4 + DEP.length}`, `='Dépenses'!C${4 + DEP.length}`], ['Reste pour le mois', '=B4-B5', '=C4-C5']], euros: [1, 2], premiereGras: true, h: 9 }),
+      B.texte('Ce tableau appartient à la famille : on le remplit avec elle, et c’est elle qui décide de ce qu’elle en fait.', true),
+    ],
+  },
+  {
+    ...base,
+    id: 'budget-familial-annuel',
+    titre: 'Budget familial sur l’année',
+    description: 'Douze mois de revenus et de dépenses côte à côte, avec les totaux et le reste mensuel calculés : pour voir venir les mois difficiles.',
+    kicker: 'Budget · année',
+    t1: 'Mon budget', t2: 'sur l’année', sous: 'repérer les mois difficiles',
+    format: 'Tableau A4 paysage · 1 page', mod: ['xlsx'], paysage: true,
+    corps: [
+      B.tableau({ feuille: 'Année', cols: [{ t: '', w: 16 }, ...MOIS.map((m) => ({ t: m.slice(0, 4), w: 7 }))], lignes: [['Revenus', ...MOIS.map(() => '')], ['Logement', ...MOIS.map(() => '')], ['Énergie', ...MOIS.map(() => '')], ['Alimentation', ...MOIS.map(() => '')], ['Transports', ...MOIS.map(() => '')], ['Assurances, santé', ...MOIS.map(() => '')], ['Enfants', ...MOIS.map(() => '')], ['Crédits', ...MOIS.map(() => '')], ['Autres', ...MOIS.map(() => '')], ['Reste', ...MOIS.map((_, i) => { const c = String.fromCharCode(66 + i); return `=${c}4-SUM(${c}5:${c}12)`; })]], premiereGras: true, euros: Array.from({ length: 12 }, (_, i) => i + 1), h: 10 }),
+      B.texte('Les dépenses qui ne reviennent qu’une fois par an (rentrée scolaire, assurance, taxe) se notent dans leur mois : ce sont elles qui font les mois difficiles.', true),
+    ],
+  },
+  {
+    ...base,
+    id: 'suivi-des-demarches-administratives',
+    titre: 'Suivi des démarches administratives',
+    description: 'Chaque démarche avec l’organisme, la date d’envoi, les pièces fournies, la réponse attendue et la relance : pour ne rien laisser tomber.',
+    kicker: 'Démarches · suivi',
+    t1: 'Suivi', t2: 'des démarches', sous: 'envoyé, reçu, relancé',
+    format: 'Tableau A4 paysage · 1 page', mod: ['xlsx', 'docx'], paysage: true,
+    corps: [
+      B.tableau({ feuille: 'Démarches', cols: [{ t: 'Démarche', w: 22 }, { t: 'Organisme', w: 14 }, { t: 'Envoyée le', w: 10 }, { t: 'Pièces fournies', w: 20 }, { t: 'Réponse attendue', w: 11 }, { t: 'Relance le', w: 10 }, { t: 'Résultat', w: 13 }], vides: 10, h: 9 }),
+      B.texte('Gardez une copie de chaque envoi et notez le numéro de dossier : c’est lui qu’on vous demandera au téléphone.', true),
+    ],
+  },
+  {
+    ...base,
+    id: 'modele-courrier-demande-de-delai-de-paiement',
+    titre: 'Modèle : demande de délai de paiement',
+    description: 'Le courrier à adresser à un créancier pour demander un échéancier : la situation, la proposition, et ce qu’on joint.',
+    kicker: 'Courrier · budget',
+    t1: 'Demande', t2: 'de délai de paiement', sous: 'proposer un échéancier', modele: true,
+    format: 'Modèle A4 · 1 page', mod: ['docx'],
+    corps: [
+      B.champs({ items: [['Vos nom, adresse, téléphone', 2], ['Organisme, adresse', 2]], cols: 2 }),
+      B.champs({ items: [['Référence du dossier ou numéro de client', 1], ['Lieu et date', 1]], cols: 2 }),
+      B.texte('<b>Objet :</b> demande de délai de paiement'),
+      B.texte('Madame, Monsieur,'),
+      B.champs({ items: [['Je vous écris au sujet de la somme de … € due au titre de …', 1], ['Ma situation actuelle ne me permet pas de la régler en une fois, en raison de …', 2], ['Je vous propose de la régler en … versements de … €, à partir du …', 1]], cols: 1 }),
+      B.texte('Je joins à ce courrier les justificatifs de ma situation. Je vous remercie de l’attention que vous porterez à ma demande et vous prie d’agréer, Madame, Monsieur, mes salutations distinguées.'),
+      B.signatures(['Signature']),
+      B.texte('Envoyez ce courrier en recommandé ou gardez une preuve d’envoi. Pour une dette importante ou plusieurs dettes, un travailleur social ou un point conseil budget peut vous aider.', true),
+    ],
+    lex: { outil: 'clair', libelle: 'Rendre mon courrier plus clair avec LEX' },
+  },
+  {
+    ...base,
+    id: 'modele-cv-simple',
+    titre: 'Modèle de CV simple, en une page',
+    description: 'Un CV clair à remplir avec la personne : ce qu’elle sait faire, ses expériences, même courtes ou bénévoles, ses formations.',
+    publics: ['adultes', 'ados'],
+    kicker: 'Emploi · CV',
+    t1: 'Mon', t2: 'CV', sous: 'une page, l’essentiel',
+    format: 'Modèle A4 · 1 page', mod: ['docx'],
+    corps: [
+      B.champs({ items: [['Prénom et nom', 1], ['Téléphone et e-mail', 1], ['Ville', 1], ['Le poste que je recherche', 1]], cols: 2, couleur: 'indigo' }),
+      B.champs({ titre: 'Ce que je sais faire', items: [['Trois à cinq savoir-faire, avec des verbes : accueillir, ranger, conduire…', 3]] }),
+      B.tableau({ titre: 'Mes expériences', cols: [{ t: 'Dates', w: 18 }, { t: 'Poste ou mission', w: 36 }, { t: 'Où', w: 46 }], vides: 4, h: 12 }),
+      B.tableau({ titre: 'Mes formations', cols: [{ t: 'Année', w: 18 }, { t: 'Formation ou diplôme', w: 82 }], vides: 3, h: 9 }),
+      B.champs({ items: [['Langues, permis, centres d’intérêt', 1]] }),
+      B.texte('Le bénévolat, les stages et les missions courtes comptent : on les écrit.', true),
+    ],
+  },
+  {
+    ...base,
+    id: 'trame-lettre-de-motivation',
+    titre: 'Trame de lettre de motivation',
+    description: 'Trois paragraphes guidés : pourquoi cette structure, ce que j’apporte, la demande de rendez-vous. Avec des débuts de phrase.',
+    publics: ['adultes', 'ados'],
+    kicker: 'Emploi · lettre',
+    t1: 'Ma lettre', t2: 'de motivation', sous: 'trois paragraphes, pas plus',
+    format: 'Trame A4 · 1 page', mod: ['docx'],
+    corps: [
+      B.champs({ items: [['Mes coordonnées', 2], ['L’employeur, son adresse', 2]], cols: 2 }),
+      B.texte('<b>Objet :</b> candidature au poste de …'),
+      B.champs({ titre: '1. Vous', items: [['« Votre structure m’intéresse parce que… »', 3]], couleur: 'indigo' }),
+      B.champs({ titre: '2. Moi', items: [['« J’ai déjà… Je sais… Je suis prêt à… »', 4]], couleur: 'vert' }),
+      B.champs({ titre: '3. Nous', items: [['« Je serais heureux de vous rencontrer pour… »', 2]] }),
+      B.signatures(['Formule de politesse et signature']),
+    ],
+    lex: { outil: 'clair', libelle: 'Rendre ma lettre plus claire avec LEX' },
+  },
+  {
+    ...base,
+    id: 'preparer-un-rendez-vous-administratif',
+    titre: 'Préparer un rendez-vous administratif',
+    description: 'Les papiers à apporter, les questions à poser, ce qui a été dit et ce qu’il reste à faire : une page à emporter au guichet.',
+    kicker: 'Démarches · rendez-vous',
+    t1: 'Mon', t2: 'rendez-vous', sous: 'je n’oublie rien',
+    format: 'Fiche A4 · 1 page', mod: ['docx'],
+    corps: [
+      B.champs({ items: [['Organisme', 1], ['Date, heure, adresse', 1], ['Avec qui', 1], ['Numéro de dossier', 1]], cols: 2 }),
+      B.cocher('Les papiers que j’apporte', ['Pièce d’identité', 'Justificatif de domicile', 'Derniers justificatifs de revenus', 'Courrier reçu de l’organisme', '', ''], { cols: 2 }),
+      B.champs({ titre: 'Mes questions', items: [['', 3]], couleur: 'indigo' }),
+      B.cote(B.champs({ titre: 'Ce qu’on m’a dit', items: [['', 3]] }), B.champs({ titre: 'Ce qu’il reste à faire', items: [['', 3]], couleur: 'vert' })),
+    ],
+  },
+  {
+    ...base,
+    id: 'agenda-des-rendez-vous-du-mois',
+    titre: 'Agenda des rendez-vous du mois',
+    description: 'Tous les rendez-vous du mois sur une page, avec l’adresse, ce qu’il faut apporter et si quelqu’un accompagne.',
+    publics: ['adultes', 'familles', 'ados'],
+    kicker: 'Démarches · agenda',
+    t1: 'Mes rendez-vous', t2: 'du mois', sous: 'une page sur le frigo',
+    format: 'Tableau A4 · 1 page', mod: ['docx', 'xlsx'],
+    corps: [
+      B.champs({ items: [['Mois', 1]] }),
+      B.tableau({ feuille: 'Rendez-vous', cols: [{ t: 'Date, heure', w: 16 }, { t: 'Avec qui', w: 22 }, { t: 'Adresse', w: 26 }, { t: 'J’apporte', w: 22 }, { t: 'Accompagné par', w: 14 }], vides: 12, h: 13 }),
+    ],
+  },
+];

@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   // n'est plus proposé en ligne, et ce que la plateforme édite pour une
   // intervention, ce sont un devis et une feuille de mission.
   description:
-    'Ateliers et accompagnements personnalisés pour le médico-social, et LEX pour vos écrits. Devis sous 48 h, sans frais de recrutement.',
+    'Ateliers et accompagnements personnalisés pour le médico-social, et LEX pour vos écrits. Devis avant toute intervention, sans frais de recrutement.',
   keywords: [
     'atelier médico-social',
     'analyse des pratiques professionnelles',
@@ -86,7 +86,7 @@ export const metadata: Metadata = {
     // « Ateliers réservables en ligne » était faux (audit du 28/09/2026) :
     // le paiement en ligne n'est actif sur aucune fiche.
     description:
-      'Ateliers sur devis en 48 h et sans compte, dossier de conformité par intervenant. Et le renfort d’équipe quand l’urgence arrive.',
+      'Ateliers sur devis et sans compte, dossier de conformité par intervenant. Et le renfort d’équipe quand l’urgence arrive.',
     siteName: 'LES EXTRAS',
     // Carte de partage 1200×630. Sans elle, LinkedIn et Facebook affichent un
     // rectangle gris à la place du lien — le pire format possible pour une
@@ -106,7 +106,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'LES EXTRAS, Ateliers et renfort pour le médico-social',
     description:
-      'Ateliers sur devis en 48 h et sans compte, dossier de conformité par intervenant.',
+      'Ateliers sur devis et sans compte, dossier de conformité par intervenant.',
     images: ['/images/partage-les-extras.jpg'],
   },
   robots: { index: true, follow: true },

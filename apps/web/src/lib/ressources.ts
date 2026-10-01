@@ -1,49 +1,83 @@
 /**
- * LA BANQUE DE RESSOURCES GRATUITES (01/10/2026, décision de Siham).
+ * LA BANQUE D'OUTILS GRATUITS (01/10/2026, décision de Siham).
  *
- * Fiches activité, trames d'écrits, affiches, présentations et fiches
- * pratiques, téléchargeables sans compte. C'est ce qui attire ; LEX est ce
- * qui se paie : sous chaque ressource, « Adapter avec LEX » ouvre la tâche
- * déjà réglée (`lib/lex-taches.ts`). La fiche standard est gratuite, la
- * version adaptée à votre groupe coûte un crédit.
+ * Plus de cent outils à télécharger sans compte : repères visuels, tableaux
+ * de motivation, grilles d'observation, trames d'écrits, jeux, plannings,
+ * modèles pour les familles et la vie associative. Chacun en PDF prêt à
+ * imprimer et, quand c'est utile, en Word, Excel ou PowerPoint modifiable.
+ * C'est ce qui attire ; LEX est ce qui se paie : sous chaque outil,
+ * « Adapter avec LEX » ouvre la tâche déjà réglée (`lib/lex-taches.ts`).
  *
  * ⚠ RÈGLES DE CETTE LISTE :
  *   - chaque fichier existe dans `public/` (le test `ressources.test.ts` le vérifie) ;
- *   - textes originaux ADéPA, exemples fictifs, aucune image tierce ;
+ *   - textes originaux ADéPA, exemples fictifs, aucune image tierce
+ *     (les images des cartes sont des émojis de la police Noto, libre) ;
  *   - aucun e-mail exigé pour télécharger ;
- *   - les PDF de `public/ressources/` sont produits par
- *     `scripts/ressources/gen.js` à partir de `scripts/ressources/contenu.js`.
+ *   - les outils de `ressources-outils.ts` sont ENGENDRÉS par
+ *     `scripts/ressources/gen2.js` (PDF, aperçus) et `office.py` (Word,
+ *     Excel, PowerPoint) à partir de `scripts/ressources/outils/*.js` ;
+ *     on corrige le texte là-bas, jamais dans le fichier engendré.
  */
 import type { MetierLex } from "./lex-taches";
+import { OUTILS_ENGENDRES } from "./ressources-outils";
 
-export type CategorieRessource = "activites" | "ecrits" | "affiches" | "presentations" | "accompagner";
+export type CategorieRessource =
+  | "activites"
+  | "animation"
+  | "acm"
+  | "scenarios"
+  | "temps"
+  | "motivation"
+  | "emotions"
+  | "observation"
+  | "ecrits"
+  | "familles"
+  | "organisation"
+  | "associations"
+  | "social"
+  | "affiches"
+  | "presentations"
+  | "accompagner";
 
 export const CATEGORIES_RESSOURCES: { id: CategorieRessource; titre: string; texte: string }[] = [
-  {
-    id: "activites",
-    titre: "Activités prêtes à l’emploi",
-    texte: "Objectifs observables, déroulé minuté, variantes et points de vigilance, sur une page.",
-  },
-  {
-    id: "ecrits",
-    titre: "Trames et mémos d’écrits",
-    texte: "Des trames à remplir et des mémos avec des exemples fictifs avant / après.",
-  },
-  {
-    id: "affiches",
-    titre: "Affiches à imprimer",
-    texte: "Des supports à afficher et à compléter avec le groupe.",
-  },
-  {
-    id: "presentations",
-    titre: "Présentations à compléter",
-    texte: "Des diaporamas guidés pour une réunion avec les familles ou l’accueil d’un bénévole.",
-  },
-  {
-    id: "accompagner",
-    titre: "Fiches pratiques : comprendre et accompagner",
-    texte: "Les fiches récapitulatives des parcours de l’association ADéPA, une page chacune.",
-  },
+  { id: "activites", titre: "Activités prêtes à l’emploi", texte: "Objectifs observables, déroulé minuté, variantes et points de vigilance, sur une page." },
+  { id: "animation", titre: "Jeux, grands jeux et veillées", texte: "Des listes de jeux, des kits clés en main et les fiches pour préparer une activité." },
+  { id: "acm", titre: "Accueil de loisirs et séjours : les documents", texte: "Inscription, personnes autorisées, renseignements sanitaires, registre des soins, menus, couchage, sorties." },
+  { id: "scenarios", titre: "Scénarios sociaux et séquentiels", texte: "Des histoires illustrées pour préparer une situation, et les étapes du quotidien en images." },
+  { id: "temps", titre: "Repères de temps et routines", texte: "Cartes images, emplois du temps visuels, routines à cocher et calendriers." },
+  { id: "motivation", titre: "Motivation et encouragements", texte: "Tableaux de motivation, tableaux à jetons, diplômes et contrats d’engagement." },
+  { id: "emotions", titre: "Émotions et communication", texte: "Thermomètre de la colère, cartes « j’ai besoin », tableau de communication, coin calme." },
+  { id: "observation", titre: "Observer et évaluer", texte: "Grilles d’observation, relevés de fréquence, suivi des objectifs et de la participation." },
+  { id: "ecrits", titre: "Trames et mémos d’écrits", texte: "Rapport de situation, projet personnalisé, note d’incident, transmissions et mémos." },
+  { id: "familles", titre: "Familles et partenaires", texte: "Autorisations, mots aux familles, questionnaire de satisfaction, préparation d’entretien." },
+  { id: "organisation", titre: "Organiser l’équipe et les sorties", texte: "Plannings, check-lists de sortie, contacts d’urgence, ordres du jour et suivi des actions." },
+  { id: "social", titre: "Budget, démarches et emploi", texte: "Budget familial, suivi des démarches, courriers types, CV et lettre de motivation." },
+  { id: "associations", titre: "Vie associative", texte: "Budget prévisionnel, assemblée générale, adhésions, bénévoles et communication." },
+  { id: "affiches", titre: "Affiches à imprimer", texte: "Des supports à afficher et à compléter avec le groupe." },
+  { id: "presentations", titre: "Présentations à compléter", texte: "Des diaporamas guidés pour les familles, les financeurs ou les bénévoles." },
+  { id: "accompagner", titre: "Fiches pratiques : comprendre et accompagner", texte: "Les fiches récapitulatives des parcours de l’association ADéPA, une page chacune." },
+];
+
+/** Pour qui est l'outil. */
+export type PublicRessource = "petite-enfance" | "enfants" | "ados" | "adultes" | "familles" | "equipes";
+
+export const PUBLICS_RESSOURCES: { id: PublicRessource; label: string }[] = [
+  { id: "petite-enfance", label: "Moins de 6 ans" },
+  { id: "enfants", label: "Enfants" },
+  { id: "ados", label: "Adolescents" },
+  { id: "adultes", label: "Adultes" },
+  { id: "familles", label: "Familles" },
+  { id: "equipes", label: "Professionnels et équipes" },
+];
+
+export type FormatModifiable = "word" | "excel" | "powerpoint";
+export type FormatRessource = "pdf" | FormatModifiable;
+
+export const FORMATS_RESSOURCES: { id: FormatRessource; label: string; extension: string }[] = [
+  { id: "pdf", label: "PDF à imprimer", extension: "pdf" },
+  { id: "word", label: "Word modifiable", extension: "docx" },
+  { id: "excel", label: "Excel modifiable", extension: "xlsx" },
+  { id: "powerpoint", label: "PowerPoint modifiable", extension: "pptx" },
 ];
 
 export interface Ressource {
@@ -57,14 +91,33 @@ export interface Ressource {
   fichier: string;
   apercu: string;
   metiers: MetierLex[];
+  publics: PublicRessource[];
+  /** Versions modifiables, dans l'ordre où on les propose. */
+  modifiables: { type: FormatModifiable; fichier: string }[];
   lex?: { outil: string; libelle: string; valeurs?: Record<string, string> };
+}
+
+/** Ce que le générateur écrit dans `ressources-outils.ts`. */
+export interface OutilEngendre {
+  id: string;
+  titre: string;
+  description: string;
+  categorie: CategorieRessource;
+  theme: string;
+  format: string;
+  metiers: MetierLex[];
+  publics: PublicRessource[];
+  modifiables: FormatModifiable[];
+  lex?: Ressource["lex"] | null;
 }
 
 const TOUS: MetierLex[] = ["education", "animation", "protection", "handicap", "social", "associatif"];
 const EDUC: MetierLex[] = ["education", "protection", "handicap", "social"];
 
-const nouvelle = (r: Omit<Ressource, "fichier" | "apercu">): Ressource => ({
+const nouvelle = (r: Omit<Ressource, "fichier" | "apercu" | "publics" | "modifiables">): Ressource => ({
   ...r,
+  publics: PUBLICS_ANCIENS[r.id] ?? ["equipes"],
+  modifiables: [],
   fichier: `/ressources/${r.id}.pdf`,
   apercu: `/ressources/apercus/${r.id}.jpg`,
 });
@@ -85,13 +138,29 @@ const fiche = (
   fichier: `/fiches/${id}.pdf`,
   apercu: `/ressources/apercus/${id}.jpg`,
   metiers: EDUC,
+  publics: ["equipes", "familles"],
+  modifiables: [],
   lex,
 });
+
+/** Pour qui sont les ressources de la première série (écrites à la main). */
+const PUBLICS_ANCIENS: Record<string, PublicRessource[]> = {
+  "activite-noeud-humain": ["ados", "adultes"],
+  "activite-meteo-du-jour": ["enfants"],
+  "activite-grand-jeu-cinq-iles": ["enfants"],
+  "activite-brochettes-de-fruits": ["enfants", "adultes"],
+  "activite-boite-a-sons": ["petite-enfance", "enfants"],
+  "affiche-regles-de-vie": ["enfants", "ados"],
+  "affiche-etapes-de-ma-journee": ["petite-enfance", "enfants", "adultes"],
+  "affiche-comment-je-me-sens": ["enfants", "ados", "adultes"],
+  "presentation-atelier-familles": ["familles", "equipes"],
+  "presentation-accueil-benevole": ["equipes", "adultes"],
+};
 
 const ADAPTER = { outil: "adapter", libelle: "Adapter à mon groupe avec LEX" };
 const FACTUEL = { outil: "factuel", libelle: "Rendre mon écrit plus factuel avec LEX" };
 
-export const RESSOURCES: Ressource[] = [
+const PREMIERE_SERIE: Ressource[] = [
   // ── Activités ────────────────────────────────────────────────────────────
   nouvelle({
     id: "activite-noeud-humain",
@@ -304,5 +373,59 @@ export const RESSOURCES: Ressource[] = [
     fichier: "/fiches/toutes-les-fiches-recap.pdf",
     apercu: "/ressources/apercus/les-quatre-fonctions-d-un-comportement.jpg",
     metiers: EDUC,
+    publics: ["equipes", "familles"],
+    modifiables: [],
   },
 ];
+
+const EXTENSION: Record<FormatModifiable, string> = { word: "docx", excel: "xlsx", powerpoint: "pptx" };
+
+const DEUXIEME_SERIE: Ressource[] = OUTILS_ENGENDRES.map((o) => ({
+  id: o.id,
+  titre: o.titre,
+  description: o.description,
+  categorie: o.categorie,
+  theme: o.theme,
+  format: o.format,
+  fichier: `/ressources/${o.id}.pdf`,
+  apercu: `/ressources/apercus/${o.id}.jpg`,
+  metiers: o.metiers,
+  publics: o.publics,
+  modifiables: o.modifiables.map((type) => ({ type, fichier: `/ressources/modifiables/${o.id}.${EXTENSION[type]}` })),
+  lex: o.lex ?? undefined,
+}));
+
+/** Toutes les ressources, rangées dans l'ordre des catégories. */
+export const RESSOURCES: Ressource[] = CATEGORIES_RESSOURCES.flatMap((c) =>
+  [...PREMIERE_SERIE, ...DEUXIEME_SERIE].filter((r) => r.categorie === c.id),
+);
+
+/**
+ * LES INCONTOURNABLES : les types d'outils les plus demandés sur les blogs
+ * et les recherches du secteur (relevé du 01/10/2026). ⚠ Un CHOIX éditorial :
+ * on n'écrit jamais « les plus téléchargés » tant qu'on ne compte pas les
+ * téléchargements de CE site.
+ */
+export const INCONTOURNABLES: string[] = [
+  "budget-familial-mensuel",
+  "fiche-d-inscription-accueil-de-loisirs",
+  "fiche-de-renseignements-sanitaires",
+  "trame-scenario-social",
+  "cartes-pictos-quotidien",
+  "emploi-du-temps-visuel-journee",
+  "tableau-motivation-semaine",
+  "tableau-a-jetons-5",
+  "thermometre-de-la-colere",
+  "grille-abc-avant-pendant-apres",
+  "trame-projet-pedagogique-accueil-de-loisirs",
+  "modele-autorisation-de-sortie",
+];
+
+/** Ce qui se tape dans la recherche : accents et casse ignorés. */
+export function normaliserRecherche(s: string): string {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+export function formatsDe(r: Ressource): FormatRessource[] {
+  return ["pdf", ...r.modifiables.map((m) => m.type)];
+}

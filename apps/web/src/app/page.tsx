@@ -96,6 +96,7 @@ import { renfortSalarieVisible, visioconsultationVisible } from '@/lib/offre';
 import { type OfferCard } from './_shared/OfferCarousel';
 import { CatalogueOnglets } from './_shared/CatalogueOnglets';
 import { CentreFormationAdepa } from './_shared/CentreFormationAdepa';
+import { BanqueOutils } from './_shared/BanqueOutils';
 import { Reveal } from './_shared/Reveal';
 import { ChatBot } from './_shared/ChatBot';
 import { RetourHaut } from './_shared/RetourHaut';
@@ -633,7 +634,12 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ═══ 5. LE CENTRE DE FORMATION ADÉPA — le seul bloc formation ═══════
+        {/* ═══ 5. LA BANQUE D'OUTILS GRATUITS (01/10/2026, demande de Siham) ═══
+            Juste après le catalogue : ce qu'on télécharge sans compte. Voir
+            l'en-tête du composant. */}
+        <BanqueOutils />
+
+        {/* ═══ 6. LE CENTRE DE FORMATION ADÉPA — le seul bloc formation ═══════
             Posé à la place de l'ancien rayon « Formations » du catalogue :
             juste après les ateliers, avant LEX. Voir l'en-tête du composant. */}
         <CentreFormationAdepa />
@@ -656,9 +662,11 @@ export default async function LandingPage() {
             • « Derrière le réseau, il y a ADéPA » : l'éditeur est nommé dans le
               pied de page, et son histoire sur /notre-histoire.
           ⚠ NE PAS LES REMETTRE sans retirer autant de sections ailleurs : six
-          au plus, héros compris, pied de page non compté.
+          au plus, héros compris, pied de page non compté. Exception décidée
+          par Siham le 01/10/2026 : la banque d'outils gratuits (`BanqueOutils`)
+          porte le compte à SEPT. Ne pas en ajouter une huitième.
         */}
-        {/* ═══════════════════════════════ 6. OUVRIR UN COMPTE ════════════════ */}
+        {/* ═══════════════════════════════ 7. OUVRIR UN COMPTE ════════════════ */}
         <section className="section">
           <Reveal>
             <div className="relative overflow-hidden rounded-3xl bloc-nuit bg-[hsl(222,21%,15%)] px-6 py-16 text-center text-foreground shadow-card ring-1 ring-border md:px-16">

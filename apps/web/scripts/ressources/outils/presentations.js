@@ -1,0 +1,68 @@
+const { TOUS, CLAIR } = require('./commun.js');
+
+const base = { cat: 'presentations', theme: 'Présentations', mod: ['pptx'], paysage: true, lex: CLAIR };
+
+module.exports = [
+  {
+    ...base,
+    id: 'presentation-reunion-de-rentree',
+    titre: 'Présentation : réunion de rentrée avec les familles',
+    description: 'Huit diapositives à compléter : l’équipe, l’année, une journée type, les règles, les rendez-vous, les contacts.',
+    publics: ['familles', 'equipes'],
+    metiers: ['education', 'animation', 'handicap', 'protection'],
+    kicker: 'Présentation · rentrée',
+    t1: 'Réunion', t2: 'de rentrée', sous: 'avec les familles',
+    format: 'Présentation · 8 diapositives',
+    diapos: [
+      ['Bienvenue', 'Bienvenue à tous', ['Le nom de la structure, la date', 'Le déroulé de la réunion en trois points']],
+      ['L’équipe', 'Qui accompagne vos enfants', ['Les prénoms et les rôles de chacun', 'Une photo de l’équipe']],
+      ['L’année', 'Ce que nous allons vivre cette année', ['Les grands projets', 'Les temps forts et les sorties prévues']],
+      ['Une journée', 'Une journée type', ['Les horaires et les grands moments', 'Ce que votre enfant fait à chaque moment']],
+      ['Les règles', 'Les règles de vie', ['Les règles décidées avec les enfants', 'Ce que nous attendons de chacun']],
+      ['Ensemble', 'Comment nous communiquons', ['Le cahier de liaison, les mots, les rendez-vous', 'Comment demander un entretien']],
+      ['Pratique', 'Les informations pratiques', ['Ce qu’il faut apporter', 'Les documents à rendre et pour quand']],
+      ['Questions', 'Vos questions', ['Les contacts de l’équipe', 'Merci de votre présence']],
+    ],
+  },
+  {
+    ...base,
+    id: 'presentation-d-un-projet-a-un-financeur',
+    titre: 'Présentation : un projet devant un financeur',
+    description: 'Huit diapositives pour présenter un projet à une commune, une fondation ou la CAF : le besoin, l’action, le public, le budget, l’évaluation.',
+    publics: ['equipes'],
+    metiers: ['associatif', 'social', 'animation'],
+    kicker: 'Présentation · financement',
+    t1: 'Présenter', t2: 'un projet', sous: 'devant un financeur',
+    format: 'Présentation · 8 diapositives',
+    diapos: [
+      ['Le projet', 'Le nom du projet', ['L’association qui le porte', 'Le projet en une phrase']],
+      ['Le besoin', 'Ce que nous avons constaté', ['Les faits et les chiffres qui montrent le besoin', 'Ce que disent les personnes concernées']],
+      ['L’action', 'Ce que nous proposons', ['Les activités, concrètement', 'Où, quand, à quel rythme']],
+      ['Le public', 'Pour qui', ['Combien de personnes, quel âge, quel territoire', 'Comment elles seront associées']],
+      ['Les partenaires', 'Avec qui', ['Les partenaires déjà engagés', 'Ce que chacun apporte']],
+      ['Le budget', 'Ce que ça coûte', ['Les grandes lignes du budget prévisionnel', 'Ce que nous demandons, et les autres financements']],
+      ['L’évaluation', 'Comment nous mesurerons les résultats', ['Les indicateurs : ce qu’on comptera, ce qu’on observera', 'Le bilan prévu et sa date']],
+      ['Merci', 'Merci de votre attention', ['Le contact du porteur de projet', 'Nos questions pour vous']],
+    ],
+  },
+  {
+    ...base,
+    id: 'presentation-de-l-association',
+    titre: 'Présentation : notre association en 7 diapositives',
+    description: 'Qui nous sommes, ce que nous faisons, nos chiffres, nos partenaires, comment nous rejoindre : à adapter pour un forum ou un rendez-vous.',
+    publics: ['equipes', 'adultes'],
+    metiers: ['associatif', 'social', 'animation'],
+    kicker: 'Présentation · association',
+    t1: 'Notre', t2: 'association', sous: 'en sept diapositives',
+    format: 'Présentation · 7 diapositives',
+    diapos: [
+      ['Nous', 'Qui nous sommes', ['Le nom, la date de création, le lieu', 'Notre raison d’être en une phrase']],
+      ['Nos actions', 'Ce que nous faisons', ['Nos trois actions principales', 'Une photo de chacune']],
+      ['Nos chiffres', 'En quelques chiffres', ['Personnes accompagnées, bénévoles, salariés', 'Uniquement des chiffres réels et datés']],
+      ['Nos partenaires', 'Avec qui nous travaillons', ['Les partenaires principaux', 'Ce que nous faisons ensemble']],
+      ['Une histoire', 'Une histoire qui nous ressemble', ['Une situation vécue, racontée avec l’accord des personnes', 'Ce qu’elle a changé']],
+      ['Nous rejoindre', 'Comment nous rejoindre', ['Devenir adhérent ou bénévole', 'Nous soutenir']],
+      ['Contact', 'Nous contacter', ['Adresse, téléphone, site', 'Merci !']],
+    ],
+  },
+];

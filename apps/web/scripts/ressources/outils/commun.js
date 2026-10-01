@@ -1,0 +1,10 @@
+const TOUS = ['education', 'animation', 'protection', 'handicap', 'social', 'associatif'];
+const EDUC = ['education', 'protection', 'handicap', 'social'];
+const ENF = ['education', 'animation', 'protection', 'handicap'];
+const ADAPTER = { outil: 'adapter', libelle: 'Adapter à mon groupe avec LEX' };
+const CLAIR = { outil: 'clair', libelle: 'Rendre mon texte plus clair avec LEX' };
+const FACTUEL = { outil: 'factuel', libelle: 'Rendre mon écrit plus factuel avec LEX' };
+const OBJECTIFS = { outil: 'objectifs', libelle: 'Travailler mes objectifs avec LEX' };
+const JOURS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+const JOURS5 = JOURS.slice(0, 5);
+module.exports = { TOUS, EDUC, ENF, ADAPTER, CLAIR, FACTUEL, OBJECTIFS, JOURS, JOURS5 };

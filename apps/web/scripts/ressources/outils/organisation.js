@@ -1,0 +1,141 @@
+const { B } = require('../dsl.js');
+const { TOUS, JOURS } = require('./commun.js');
+
+const base = { cat: 'organisation', theme: 'Organisation', metiers: TOUS };
+
+module.exports = [
+  {
+    ...base,
+    id: 'planning-d-equipe-semaine',
+    titre: 'Planning d’équipe de la semaine',
+    description: 'Les horaires de chaque membre de l’équipe sur sept jours, avec les totaux d’heures calculés tout seuls dans la version Excel.',
+    publics: ['equipes'],
+    kicker: 'Organisation · planning',
+    t1: 'Planning', t2: 'de l’équipe', sous: 'qui est là, quand',
+    format: 'Tableau A4 paysage · 1 page', mod: ['xlsx', 'docx'], paysage: true,
+    corps: [
+      B.champs({ items: [['Semaine du … au …', 1], ['Service', 1]], cols: 2 }),
+      B.tableau({ feuille: 'Planning', cols: [{ t: 'Prénom', w: 16 }, ...JOURS.map((j) => ({ t: j, w: 10.4 })), { t: 'Heures', w: 11 }], vides: 10, h: 8, total: [8] }),
+      B.texte('Dans chaque case : l’horaire (ex. 7 h-14 h) ou R pour repos, C pour congé. La colonne Heures se remplit à la main ou se calcule dans la version Excel.', true),
+    ],
+  },
+  {
+    ...base,
+    id: 'check-list-avant-une-sortie',
+    titre: 'Check-list avant une sortie',
+    description: 'Les vingt points à vérifier avant de partir : autorisations, trousse, liste des présents, transport, contacts, eau, repli.',
+    publics: ['equipes'],
+    metiers: ['animation', 'education', 'protection', 'handicap', 'associatif'],
+    kicker: 'Organisation · sortie',
+    t1: 'Avant', t2: 'de partir', sous: 'on vérifie tout, ensemble',
+    format: 'Check-list A4 · 1 page', mod: ['docx'],
+    corps: [
+      B.cote(
+        B.cocher('La veille', ['Autorisations de sortie signées et rangées.', 'Liste des participants et des encadrants imprimée.', 'Transport réservé et confirmé.', 'Lieu vérifié : accès, toilettes, abri en cas de pluie.', 'Fiche de sortie remise à la direction.', 'Familles informées de l’heure de retour.'], { couleur: 'indigo' }),
+        B.cocher('Le jour même', ['Trousse de secours complète.', 'Téléphones chargés, numéros d’urgence enregistrés.', 'Eau et goûter pour chacun.', 'Traitements et informations médicales prévus par la structure.', 'Appel fait avant le départ.', 'Chacun connaît le point de ralliement.'], { couleur: 'vert' }),
+      ),
+      B.cote(
+        B.cocher('Sur place', ['Appel à l’arrivée et à chaque changement de lieu.', 'Répartition des enfants par adulte annoncée.', 'Pause boisson régulière.']),
+        B.cocher('Au retour', ['Appel au retour.', 'Incidents notés le jour même.', 'Matériel rangé, trousse recomplétée.']),
+      ),
+      B.texte('Respectez le taux d’encadrement et les règles propres à votre structure et à votre type d’accueil.', true),
+    ],
+  },
+  {
+    ...base,
+    id: 'fiche-de-sortie',
+    titre: 'Fiche de sortie à remettre à la direction',
+    description: 'Lieu, horaires, transport, encadrants, liste des participants, téléphone joignable : la fiche qui reste à la structure pendant la sortie.',
+    publics: ['equipes'],
+    metiers: ['animation', 'education', 'protection', 'handicap', 'associatif'],
+    kicker: 'Organisation · sortie',
+    t1: 'Fiche', t2: 'de sortie', sous: 'elle reste à la structure',
+    format: 'Fiche A4 · 1 page', mod: ['docx', 'xlsx'],
+    corps: [
+      B.champs({ items: [['Lieu de la sortie, adresse', 1], ['Date', 1], ['Départ / retour prévus', 1], ['Transport', 1], ['Téléphone joignable sur place', 1], ['Responsable de la sortie', 1]], cols: 2 }),
+      B.tableau({ feuille: 'Participants', titre: 'Participants', cols: [{ t: 'N°', w: 8 }, { t: 'Nom et prénom', w: 42 }, { t: 'Présent au départ', w: 16 }, { t: 'Présent au retour', w: 16 }, { t: 'Remarque', w: 18 }], lignes: Array.from({ length: 14 }, (_, i) => [String(i + 1), '', '', '', '']) }),
+      B.champs({ items: [['Encadrants', 1], ['Visa de la direction', 1]], cols: 2 }),
+    ],
+  },
+  {
+    ...base,
+    id: 'fiche-contacts-d-urgence',
+    titre: 'Fiche des contacts d’urgence à afficher',
+    description: 'Les numéros nationaux d’urgence déjà remplis, et les contacts de votre structure à compléter : à afficher près du téléphone.',
+    publics: ['equipes'],
+    kicker: 'Organisation · urgence',
+    t1: 'En cas', t2: 'd’urgence', sous: 'à afficher près du téléphone',
+    format: 'Affiche A4 · 1 page', mod: ['docx'], classe: 'poster',
+    corps: [
+      B.tableau({ titre: 'Numéros nationaux', cols: [{ t: 'Service', w: 60 }, { t: 'Numéro', w: 40 }], lignes: [['SAMU', '15'], ['Police secours', '17'], ['Pompiers', '18'], ['Numéro d’urgence européen', '112'], ['Urgence par SMS (personnes sourdes ou malentendantes)', '114'], ['Enfance en danger', '119'], ['Centre antipoison', 'à compléter selon votre région']], premiereGras: true, h: 11 }),
+      B.tableau({ titre: 'Contacts de la structure', cols: [{ t: 'Qui', w: 40 }, { t: 'Nom', w: 30 }, { t: 'Téléphone', w: 30 }], lignes: [['Direction', '', ''], ['Cadre d’astreinte', '', ''], ['Infirmerie ou médecin référent', '', ''], ['Maintenance', '', '']], vides: 2, premiereGras: true, h: 11 }),
+      B.champs({ items: [['Adresse exacte de la structure (à donner aux secours)', 1]] }),
+    ],
+  },
+  {
+    ...base,
+    id: 'ordre-du-jour-de-reunion',
+    titre: 'Ordre du jour de réunion',
+    description: 'Les points, qui les présente, combien de temps, et ce qu’on attend de chacun : à envoyer avant pour une réunion qui finit à l’heure.',
+    publics: ['equipes'],
+    kicker: 'Organisation · réunion',
+    t1: 'Ordre', t2: 'du jour', sous: 'envoyé la veille',
+    format: 'Trame A4 · 1 page', mod: ['docx'],
+    corps: [
+      B.champs({ items: [['Réunion', 1], ['Date, heure, lieu ou lien', 1], ['Animée par', 1], ['Secrétaire de séance', 1]], cols: 2 }),
+      B.tableau({ cols: [{ t: 'Point', w: 40 }, { t: 'Présenté par', w: 18 }, { t: 'Durée', w: 12 }, { t: 'On attend', w: 30 }], vides: 7, h: 12 }),
+      B.texte('« On attend » : une information, un avis, ou une décision. Ce mot dit à chacun comment préparer le point.', true),
+    ],
+    lex: { outil: 'reunion', libelle: 'Passer de mes notes au compte rendu avec LEX' },
+  },
+  {
+    ...base,
+    id: 'tableau-de-suivi-des-actions',
+    titre: 'Tableau de suivi des actions',
+    description: 'Ce qui a été décidé, qui le fait, pour quand, où on en est : le tableau qu’on relit en ouverture de chaque réunion.',
+    publics: ['equipes'],
+    kicker: 'Organisation · suivi',
+    t1: 'Qui fait', t2: 'quoi, pour quand', sous: 'relu à chaque réunion',
+    format: 'Tableau A4 paysage · 1 page', mod: ['xlsx', 'docx'], paysage: true,
+    corps: [
+      B.tableau({ feuille: 'Actions', cols: [{ t: 'Décidé le', w: 11 }, { t: 'Action', w: 35 }, { t: 'Qui', w: 14 }, { t: 'Pour le', w: 11 }, { t: 'État', w: 12 }, { t: 'Commentaire', w: 17 }], vides: 12, h: 10 }),
+      B.texte('État : à faire, en cours, fait, abandonné. Une action abandonnée reste dans le tableau avec la raison : ça évite de la redécider.', true),
+    ],
+  },
+  {
+    ...base,
+    id: 'accueil-d-un-nouveau-collegue',
+    titre: 'Check-list d’accueil d’un nouveau collègue',
+    description: 'Avant l’arrivée, le premier jour, la première semaine, le premier mois : rien n’est oublié et personne n’arrive sans repères.',
+    publics: ['equipes'],
+    kicker: 'Organisation · accueil',
+    t1: 'Accueillir', t2: 'un nouveau collègue', sous: 'personne n’arrive sans repères',
+    format: 'Check-list A4 · 1 page', mod: ['docx'],
+    corps: [
+      B.champs({ items: [['Prénom du nouveau collègue', 1], ['Son tuteur ou référent', 1], ['Date d’arrivée', 1], ['Poste', 1]], cols: 2 }),
+      B.cote(
+        B.cocher('Avant l’arrivée', ['Planning des deux premières semaines envoyé.', 'Accès, clés, badge, codes préparés.', 'Équipe prévenue de l’arrivée.']),
+        B.cocher('Le premier jour', ['Visite des lieux et présentation de l’équipe.', 'Consignes de sécurité et d’urgence.', 'Règles de confidentialité expliquées.']),
+      ),
+      B.cote(
+        B.cocher('La première semaine', ['Temps en doublon sur chaque moment de la journée.', 'Présentation des personnes accompagnées, avec leurs repères.', 'Les écrits du service et où ils se rangent.']),
+        B.cocher('Le premier mois', ['Point d’étape avec le tuteur.', 'Questions et besoins de formation notés.', 'Bilan avec la direction.']),
+      ),
+    ],
+  },
+  {
+    ...base,
+    id: 'registre-des-presences',
+    titre: 'Registre des présences du mois',
+    description: 'Les participants en lignes, les jours du mois en colonnes, et les totaux calculés : pour les bilans et les financeurs.',
+    publics: ['equipes'],
+    metiers: ['animation', 'associatif', 'social', 'education'],
+    kicker: 'Organisation · présences',
+    t1: 'Registre', t2: 'des présences', sous: 'un mois, une feuille',
+    format: 'Tableau A4 paysage · 1 page', mod: ['xlsx'], paysage: true,
+    corps: [
+      B.champs({ items: [['Mois', 1], ['Activité ou service', 1]], cols: 2 }),
+      B.tableau({ feuille: 'Présences', cols: [{ t: 'Participant', w: 16 }, ...Array.from({ length: 31 }, (_, i) => ({ t: String(i + 1), w: 2.5 })), { t: 'Total', w: 6 }], vides: 12, h: 7, ligneFormule: [32, '=COUNTIF(B{r}:AF{r},"P")'] }),
+    ],
+  },
+];

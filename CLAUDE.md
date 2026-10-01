@@ -6551,3 +6551,73 @@ quatre défauts étaient réels et sont corrigés :
 - **Healthcheck de l'API élargi** (`apps/api/Dockerfile`) : start-period 120 s,
   12 essais à 20 s. Les échecs « Healthcheck starting » sans erreur venaient
   d'un démarrage plus long que la fenêtre ; Coolify lit ce HEALTHCHECK.
+
+### 30/09/2026 — adepa77 1.6.2 : deux carrousels de formations sur l'accueil
+
+- `inc/carrousels.php` : section `#nos-formations` insérée juste avant
+  « Notre cadre réglementaire » (`<section class="proof`), deux rangées :
+  formations éducatives (fiches du CPT, Qualiopi d'abord, thème
+  numerique-et-bureautique exclu) et réseaux sociaux (CM IA, CM Mobile,
+  Workshop, liens Teachizy via `adepa_cf_teachizy()`). Shortcode `[adepa_carrousels]`.
+- ⚠ Le filtre `elementor/frontend/the_content` NE VOIT PAS le widget HTML de
+  l'accueil : l'insertion passe par un tampon de sortie (`template_redirect`,
+  accueil seulement), le repère `id="nos-formations"` empêche le doublon.
+- ⚠ `\u{2011}` dans une chaîne PHP entre apostrophes s'imprime tel quel :
+  écrire le caractère lui-même.
+- Installation : `javascript_tool` qui clique `#install-plugin-submit` (un clic
+  par ref ne soumet pas), puis clic aux coordonnées sur « Remplacer » ; la page
+  ne finit jamais de charger (traduction Elementor Pro « Unauthorized »), `find`
+  et `computer` marchent quand même. Purge : URL `LSCWP_CTRL=purge…purge_all`,
+  puis hPanel → Performance → CDN → « Vider le cache » (celui du tableau de bord
+  ne vide PAS les nœuds du CDN).
+- **1.6.4 (`inc/logo-cliquable.php`)** : le logo « ADéPA. » des pages autres que
+  l'accueil (modèle Elementor 5093, et pied de l'accueil) était un `<div>` :
+  transformé en lien vers l'accueil au rendu (tampon de sortie, seul le logo
+  portant `class="mark"`). ⚠ `style="color:inherit"` obligatoire : sinon la
+  règle `a{color:#ff5757}` du thème peint le logo en corail.
+- ⚠ Installation plus rapide : après « Installer maintenant », aller DIRECTEMENT
+  sur `update.php?action=upload-plugin&package=<id>&overwrite=update-plugin&_wpnonce=<nonce>`
+  (lire l'href du lien « Remplacer… » avec `find`) ; le nonce reste le même sur la journée.
+
+### 01/10/2026 — la banque d'outils gratuits passe à 146 outils, filtrables
+
+Demande de Siham : « plein d'outils catégorisés et filtrables, de docs, comme
+ce que proposent les blogs », PDF + modifiables, environ 100, et présentés sur
+l'accueil.
+
+- **115 outils neufs** (+ les 31 de la première série) en 16 catégories :
+  activités, jeux et veillées, accueil de loisirs et séjours (inscription,
+  personnes autorisées, renseignements sanitaires, registre des soins, menus,
+  couchage, pointage, minibus), scénarios sociaux et séquentiels, repères de
+  temps, motivation, émotions et communication, observation, écrits, familles,
+  organisation, budget/démarches/emploi (budget familial Excel, courriers
+  types, CV), vie associative, affiches, présentations, fiches pratiques.
+- Le second lot (« copie ce qui est le plus téléchargé ») reprend les TYPES
+  d'outils les plus demandés sur les blogs du secteur (AnimyJob, blogs
+  d'éducateurs, budget familial), jamais leur contenu : textes originaux.
+  ⚠ `INCONTOURNABLES` (lib/ressources.ts) est un choix éditorial : ne jamais
+  écrire « les plus téléchargés » tant que les téléchargements de ce site ne
+  sont pas comptés.
+- **Chaque outil neuf existe en PDF ET en modifiable** (Word, Excel ou
+  PowerPoint) : `public/ressources/<id>.pdf`, `public/ressources/apercus/<id>.jpg`,
+  `public/ressources/modifiables/<id>.docx|xlsx|pptx`. Les Excel portent des
+  formules (budget : totaux et écart ; registre et participation : COUNTIF).
+- **Source unique : `apps/web/scripts/ressources/outils/*.js`** (mini-langage
+  `dsl.js`). `gen2.js` rend PDF + aperçus, `office.py` rend Word/Excel/
+  PowerPoint depuis LES MÊMES blocs, `export-ts.py` écrit
+  `src/lib/ressources-outils.ts` (ENGENDRÉ : ne pas l'éditer à la main).
+  Un bloc HTML brut est ignoré par `office.py` : l'outil fournit alors
+  `officeCorps`.
+- `/ressources` : filtres par catégorie (avec compteurs qui tiennent compte des
+  autres filtres), public (moins de 6 ans, enfants, ados, adultes, familles,
+  équipes), métier, format, et recherche sans accents (`?q=`). Tout passe par
+  l'adresse, la page marche sans JavaScript.
+- Accueil : section `BanqueOutils` (4 outils à télécharger + catégories),
+  juste après le catalogue. ⚠ L'accueil passe à SEPT sections par décision de
+  Siham ; ne pas en ajouter une huitième.
+- ⚠ Les images des cartes sont des émojis (police Noto Color Emoji, libre) :
+  aucune image tierce. Les modèles juridiques (autorisations, droit à
+  l'image, convocation et PV d'AG) portent « modèle à adapter et à faire
+  valider par votre structure ».
+- Les métas du layout racine ne disent plus « 48 h » (même décision que
+  l'accueil).
