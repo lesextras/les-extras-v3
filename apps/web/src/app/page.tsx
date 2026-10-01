@@ -321,7 +321,7 @@ export default async function LandingPage() {
                   4. Retour au n° 2, enrichi du seul élément qui lui manquait
                      vraiment : les établissements nommés.
                   5. 01/10/2026, choix de Siham : « Ateliers, Renforts
-                     éducatifs, et outils. Tout commence par votre besoin. »
+                     éducatifs et Outils. Tout commence par votre besoin. »
                      Le héros part du besoin de la personne (enfant, proche,
                      soi-même, structure). Pas de deux-points : un point.
                      Ne pas écrire « à domicile » ni « crédit d'impôt » tant
@@ -336,7 +336,7 @@ export default async function LandingPage() {
                   (« IME · ITEP · SESSAD · MECS · ESAT »). Sans notoriété ni
                   chiffres à afficher, c'est la voie concrète qui paie. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Ateliers, Renforts éducatifs, et outils.
+                Ateliers, Renforts éducatifs et Outils.
                 <br />
                 <span className="text-secondary">Tout commence par votre besoin.</span>
               </h1>
