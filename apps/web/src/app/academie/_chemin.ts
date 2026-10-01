@@ -3,7 +3,12 @@ import type { ObligationEtape } from '../_shared/chemin-obligations';
 
 /** Le chemin de l'académie, tel que l'API le renvoie (apps/api/src/academie/chemin.ts). */
 
-/** Avec, pour chaque étape : obligatoire ou non, déclencheur, échéance, prérequis (01/10/2026). */
+/**
+ * Avec, pour chaque étape : obligatoire ou non, déclencheur, échéance,
+ * prérequis, priorité et financements débloqués (01/10/2026). Les numéros
+ * suivent l'ordre par priorité dans chaque temps : chaque temps garde le même
+ * nombre d'étapes, donc les bornes de TEMPS restent justes.
+ */
 export interface EtapeChemin extends ObligationEtape {
   slug: string;
   numero: number;
@@ -64,13 +69,14 @@ export const TEMPS = [
     de: 16,
     a: 22,
     resume:
-      'Le bilan pédagogique et financier, Qualiopi dans la durée, les preuves des sessions, les réclamations, les formateurs, les changements à déclarer, les résultats à publier. Ces étapes repassent dans « À faire » chaque 1er janvier.',
+      'Le bilan pédagogique et financier, Qualiopi dans la durée, les preuves des sessions, les réclamations, les formateurs, les changements à déclarer, les résultats à publier. Une fois la date de l\'année passée, ou au 1er janvier sans date, elles reviennent dans « À faire » pour l\'année suivante.',
   },
   {
     titre: 'Être finançable',
     de: 23,
     a: 99,
-    resume: "Mon Compte Formation, le Carif-Oref et France Travail, la TVA. Une étape ne te concerne pas ? Marque-la « Pas concerné ».",
+    resume:
+      "L'agrément ESUS, le Carif-Oref (Dokelio en Île-de-France) et France Travail, Mon Compte Formation, la TVA. Une étape ne te concerne pas ? Marque-la « Pas concerné ».",
   },
 ] as const;
 

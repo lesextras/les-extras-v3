@@ -4,7 +4,7 @@ import { descriptionSeo } from '@/lib/meta';
 import { titrePilote } from '../../../_pilote-seo';
 import { notFound } from 'next/navigation';
 import { chargerChemin, chargerEtape, tempsDe, TEINTES } from '../../_chemin';
-import { InfosObligation } from '../../../_shared/chemin-obligations';
+import { BadgeAnnuel, InfosObligation } from '../../../_shared/chemin-obligations';
 import { academieConnectee, apiAcademie, sessionAcademie } from '../../_session';
 import { Accent, CARTE, Encart, Pastille, Titre } from '../../_ui';
 import type { EspaceAcademie } from '../../_types';
@@ -39,6 +39,7 @@ export default async function EtapePage({ params }: Params) {
   let pasConcerne = false;
   let connectee = false;
   let faites = new Set<string>();
+  let cycle: { cycle: number | null; echeanceLe: string | null } | null = null;
   if (await academieConnectee()) {
     connectee = true;
     const s = await sessionAcademie(`/academie/chemin/${slug}`);
@@ -48,6 +49,7 @@ export default async function EtapePage({ params }: Params) {
     faite = Boolean(trouvee?.faite);
     automatique = Boolean(trouvee?.automatique);
     pasConcerne = Boolean(trouvee?.faite && trouvee?.pasConcerne);
+    cycle = trouvee ? { cycle: trouvee.cycle ?? null, echeanceLe: trouvee.echeanceLe ?? null } : null;
   }
 
   return (
@@ -67,7 +69,12 @@ export default async function EtapePage({ params }: Params) {
       </Titre>
 
       {/* Obligatoire ? Quand ? Quelle échéance ? Que faire avant ? */}
-      <InfosObligation etape={etape} etapes={chemin?.etapes ?? []} faites={connectee ? faites : undefined} theme="academie" />
+      <InfosObligation
+        etape={{ ...etape, echeanceLe: cycle?.echeanceLe ?? null }}
+        etapes={chemin?.etapes ?? []}
+        faites={connectee ? faites : undefined}
+        theme="academie"
+      />
 
       <div className={`${CARTE} mb-6 p-5 sm:p-6`}>
         <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-[#5E7A6E]">Pour passer à la suivante</h2>
@@ -75,9 +82,7 @@ export default async function EtapePage({ params }: Params) {
         {faite || etape.chaqueAnnee ? (
           <p className="mt-3 flex flex-wrap gap-2">
             {faite ? <Pastille ton="ok">{automatique ? "cochée d'elle-même" : pasConcerne ? 'pas concerné' : 'faite'}</Pastille> : null}
-            {etape.chaqueAnnee ? (
-              <span className="inline-flex items-center rounded-full bg-[#E0F4F3] px-2.5 py-0.5 text-xs font-bold text-[#115E59]">Chaque année</span>
-            ) : null}
+            {etape.chaqueAnnee ? <BadgeAnnuel cycle={cycle?.cycle} /> : null}
           </p>
         ) : null}
       </div>
@@ -109,6 +114,7 @@ export default async function EtapePage({ params }: Params) {
             pasConcerne={pasConcerne}
             peutNePasConcerner={Boolean(etape.peutNePasConcerner)}
             chaqueAnnee={Boolean(etape.chaqueAnnee)}
+            cycle={cycle?.cycle ?? null}
           />
         )
       ) : (

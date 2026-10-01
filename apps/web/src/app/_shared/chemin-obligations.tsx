@@ -25,6 +25,23 @@ export interface ObligationEtape {
   declencheur?: string;
   echeance?: EcheanceEtape;
   prerequis?: string[];
+  /** 1 = d'abord, 2 = ensuite, 3 = quand tu as le temps (01/10/2026). */
+  priorite?: Priorite;
+  /** Ce que l'étape ouvre comme financements : « FDVA », « CPF »… */
+  debloque?: string[];
+  /** Étape annuelle dont la structure choisit la date (la date de l'AG). */
+  dateChoisie?: { libelle: string; aide?: string };
+}
+
+export type Priorite = 1 | 2 | 3;
+
+/** Ce que l'espace connecté sait d'une étape annuelle : son cycle (« 2026 »), son échéance, la date choisie. */
+export interface CycleEtape {
+  cycle: number | null;
+  /** AAAA-MM-JJ. */
+  echeanceLe: string | null;
+  /** AAAA-MM-JJ. */
+  dateChoisie?: string | null;
 }
 
 export type Theme = 'association' | 'academie';
@@ -35,6 +52,82 @@ export interface EtapeRepere extends ObligationEtape {
   numero: number;
   titre: string;
   chaqueAnnee?: boolean;
+  /** L'échéance du cycle en cours, calculée par l'API (AAAA-MM-JJ). Prime sur `echeance.dateFixe`. */
+  echeanceLe?: string | null;
+}
+
+// --------------------------------------------- priorité, financements, cycle
+
+const STYLE_PRIORITE: Record<Priorite, string> = {
+  1: 'bg-[#FDE8EC] text-[#9F1239]',
+  2: 'bg-[#FEF3C7] text-[#92400E]',
+  3: 'bg-[#EEF0F4] text-[#3F4A5C]',
+};
+
+const AIDE_PRIORITE: Record<Priorite, string> = {
+  1: "À faire d'abord : une échéance légale, ou une subvention en dépend.",
+  2: 'À faire ensuite.',
+  3: 'Quand tu as le temps.',
+};
+
+export function BadgePriorite({ priorite }: { priorite?: Priorite }) {
+  if (!priorite) return null;
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold ${STYLE_PRIORITE[priorite]}`} title={AIDE_PRIORITE[priorite]}>
+      Priorité {priorite}
+    </span>
+  );
+}
+
+/** « Débloque : FDVA, Mécénat » en petites pastilles. */
+export function LigneDebloque({ debloque, theme, max = 3 }: { debloque?: string[]; theme: Theme; max?: number }) {
+  if (!Array.isArray(debloque) || !debloque.length) return null;
+  const visibles = debloque.slice(0, max);
+  const fond = theme === 'association' ? 'bg-[#FFF7E0] text-[#7C3E06] border-[#F5D6A8]' : 'bg-[#E3F5EC] text-[#0F5F3E] border-[#B7E4CE]';
+  return (
+    <p className={`mt-1.5 flex flex-wrap items-center gap-1 text-[11px] leading-snug ${COULEURS[theme].doux}`}>
+      <span className="font-bold">Débloque :</span>
+      {visibles.map((d) => (
+        <span key={d} className={`rounded-full border px-1.5 py-px font-bold ${fond}`}>
+          {d}
+        </span>
+      ))}
+      {debloque.length > visibles.length ? <span className="font-bold">+{debloque.length - visibles.length}</span> : null}
+    </p>
+  );
+}
+
+/** « Chaque année · 2026 » : le badge d'une étape annuelle, avec l'année de son cycle. */
+export function BadgeAnnuel({ cycle, maintenant = new Date() }: { cycle?: number | null; maintenant?: Date }) {
+  const annee = cycle ?? Number(new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', year: 'numeric' }).format(maintenant));
+  return <span className="inline-flex items-center rounded-full bg-[#E0F4F3] px-2 py-0.5 text-xs font-bold text-[#115E59]">Chaque année · {annee}</span>;
+}
+
+/**
+ * La prochaine étape : la première pas faite, par priorité puis par numéro,
+ * dont les prérequis sont faits ; à défaut, la première pas faite. Copie de
+ * `prochaineEtape` (apps/api/src/common/chemin-obligations.ts).
+ */
+export function prochaineEtape<T extends { slug: string; numero: number; priorite?: number; prerequis?: string[] }>(
+  etapes: readonly T[],
+  estFaite: (slug: string) => boolean,
+): T | null {
+  const restantes = etapes.filter((e) => !estFaite(e.slug)).sort((a, b) => (a.priorite ?? 2) - (b.priorite ?? 2) || a.numero - b.numero);
+  return restantes.find((e) => (e.prerequis ?? []).every((p) => estFaite(p))) ?? restantes[0] ?? null;
+}
+
+/** La première phrase d'un texte, pour une ligne courte (verso des cartes). */
+export function premierePhrase(texte?: string | null): string | undefined {
+  if (!texte) return undefined;
+  const m = /^(.+?[.!?])(\s|$)/.exec(texte.trim());
+  return m ? m[1] : texte.trim();
+}
+
+/** Une date AAAA-MM-JJ en jour à minuit UTC, ou null. */
+export function lireJour(texte?: string | null): Date | null {
+  if (!texte) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(texte);
+  return m ? new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) : null;
 }
 
 const COULEURS: Record<Theme, { lien: string; texte: string; doux: string; bord: string }> = {
@@ -116,18 +209,36 @@ export function formaterJour(d: Date): string {
 
 // ---------------------------------------------------------- lignes de carte
 
-/** « 30 avril 2027, à confirmer » quand la date est un repère. */
-function libelleDate(e: EcheanceEtape, chaqueAnnee: boolean, maintenant?: Date): { texte: string; depassee: boolean } | null {
+/**
+ * « 30 avril 2027, à confirmer » quand la date est un repère. `echeanceLe` :
+ * l'échéance du cycle en cours calculée par l'API (date choisie ou cycle
+ * passé à l'année suivante) ; elle prime sur le calcul local.
+ */
+function libelleDate(e: EcheanceEtape, chaqueAnnee: boolean, maintenant: Date = new Date(), echeanceLe?: string | null): { texte: string; depassee: boolean } | null {
+  const calculee = lireJour(echeanceLe);
+  if (calculee) {
+    return { texte: `${formaterJour(calculee)}${e.indicative && e.dateFixe ? ', à confirmer' : ''}`, depassee: calculee < aujourdhuiParis(maintenant) };
+  }
   if (!e.dateFixe) return null;
   const d = dateEcheance(e.dateFixe, chaqueAnnee, maintenant);
   if (!d) return null;
   return { texte: `${formaterJour(d.date)}${e.indicative ? ', à confirmer' : ''}`, depassee: d.depassee };
 }
 
-/** La ligne à l'horloge : l'échéance, et sa date quand elle est fixe. */
-export function LigneEcheance({ echeance, chaqueAnnee = false, theme }: { echeance?: EcheanceEtape; chaqueAnnee?: boolean; theme: Theme }) {
+/** La ligne à l'horloge : l'échéance, et sa date quand elle est fixe ou choisie. */
+export function LigneEcheance({
+  echeance,
+  chaqueAnnee = false,
+  theme,
+  echeanceLe,
+}: {
+  echeance?: EcheanceEtape;
+  chaqueAnnee?: boolean;
+  theme: Theme;
+  echeanceLe?: string | null;
+}) {
   if (!echeance) return null;
-  const date = libelleDate(echeance, chaqueAnnee);
+  const date = libelleDate(echeance, chaqueAnnee, undefined, echeanceLe);
   return (
     <p className={`mt-1.5 flex items-start gap-1.5 text-xs leading-snug ${COULEURS[theme].texte}`}>
       <IconeHorloge className="mt-px shrink-0 text-[#9F1239]" />
@@ -202,7 +313,15 @@ export function echeancesAVenir(etapes: EtapeRepere[], faites: Set<string> | str
   const fait = faites instanceof Set ? faites : new Set(faites);
   return etapes
     .filter((e) => e.echeance && !fait.has(e.slug) && (e.nature === 'OBLIGATOIRE' || (e.nature === 'SI_CONCERNE' && e.chaqueAnnee)))
-    .map((e) => ({ etape: e, date: e.echeance?.dateFixe ? dateEcheance(e.echeance.dateFixe, Boolean(e.chaqueAnnee), maintenant) : null }))
+    .map((e) => {
+      const calculee = lireJour(e.echeanceLe);
+      const date = calculee
+        ? { date: calculee, depassee: calculee < aujourdhuiParis(maintenant) }
+        : e.echeance?.dateFixe
+          ? dateEcheance(e.echeance.dateFixe, Boolean(e.chaqueAnnee), maintenant)
+          : null;
+      return { etape: e, date };
+    })
     .sort((a, b) => {
       if (a.date && b.date) return a.date.date.getTime() - b.date.date.getTime();
       if (a.date) return -1;
@@ -297,10 +416,10 @@ export function InfosObligation({
   faites?: Set<string>;
   theme: Theme;
 }) {
-  if (!etape.nature && !etape.declencheur && !etape.echeance && !etape.prerequis?.length) return null;
+  if (!etape.nature && !etape.declencheur && !etape.echeance && !etape.prerequis?.length && !etape.priorite && !etape.debloque?.length) return null;
   const c = COULEURS[theme];
   const base = theme === 'association' ? '/chemin/' : '/academie/chemin/';
-  const date = etape.echeance ? libelleDate(etape.echeance, Boolean(etape.chaqueAnnee)) : null;
+  const date = etape.echeance ? libelleDate(etape.echeance, Boolean(etape.chaqueAnnee), undefined, etape.echeanceLe) : null;
   const avant = (etape.prerequis ?? [])
     .map((s) => etapes.find((e) => e.slug === s))
     .filter((e): e is EtapeRepere => Boolean(e))
@@ -313,7 +432,23 @@ export function InfosObligation({
             <dt className={`text-xs font-bold uppercase tracking-[0.1em] ${c.doux}`}>Est-ce obligatoire ?</dt>
             <dd className="mt-1 flex flex-wrap items-center gap-2">
               <BadgeNature nature={etape.nature} />
+              <BadgePriorite priorite={etape.priorite} />
               <span className={c.doux}>{AIDE_NATURE[etape.nature]}</span>
+            </dd>
+          </div>
+        ) : null}
+        {Array.isArray(etape.debloque) && etape.debloque.length ? (
+          <div>
+            <dt className={`text-xs font-bold uppercase tracking-[0.1em] ${c.doux}`}>Ça débloque</dt>
+            <dd className="mt-1 flex flex-wrap gap-1.5">
+              {etape.debloque.map((d) => (
+                <span
+                  key={d}
+                  className={`rounded-full border px-2 py-0.5 text-xs font-bold ${theme === 'association' ? 'border-[#F5D6A8] bg-[#FFF7E0] text-[#7C3E06]' : 'border-[#B7E4CE] bg-[#E3F5EC] text-[#0F5F3E]'}`}
+                >
+                  {d}
+                </span>
+              ))}
             </dd>
           </div>
         ) : null}

@@ -254,6 +254,23 @@ export interface ActionAssociation {
   /** Avancement des tâches du projet (absent sur les anciennes réponses). */
   tachesTotal?: number;
   tachesFaites?: number;
+  /** Les formations d'une académie reliée qui servent ce projet (espaces interconnectés). */
+  formations?: FormationProjet[];
+  /** Vu d'une académie : à quel espace appartient le projet. */
+  proprietaire?: { type: 'ASSOCIATION' | 'ACADEMIE'; nom: string };
+}
+
+/** Une formation (cours) d'une académie, reliée à un projet. */
+export interface FormationProjet {
+  id: string;
+  titre: string;
+  academieId: string;
+  academieNom: string;
+}
+
+/** Une formation qu'on peut relier à un projet : le catalogue des académies du périmètre. */
+export interface FormationCatalogue extends FormationProjet {
+  statut?: string;
 }
 
 /** Les tâches d'un projet : qui fait quoi, et pour quand. */
@@ -383,6 +400,13 @@ export interface Espace {
       faiteLe?: string | null;
       chaqueAnnee?: boolean;
       peutNePasConcerner?: boolean;
+      /** 1 à 3 : l'ordre de « Prochaine étape ». */
+      priorite?: 1 | 2 | 3;
+      prerequis?: string[];
+      /** Étape annuelle : l'année du cycle en cours, son échéance, la date choisie (AAAA-MM-JJ). */
+      cycle?: number | null;
+      echeanceLe?: string | null;
+      dateChoisie?: string | null;
     }[];
     faites: number;
     total: number;

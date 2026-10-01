@@ -2,6 +2,8 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
+import { CarteAssociation } from '../_association';
+import type { AssociationReliee } from '../../_shared/liaisons/types';
 import { BTN_SECONDAIRE, CARTE, Encart, Pastille, SousTitre, Titre, formaterDate } from '../_ui';
 import { LIBELLES_QUALIOPI, type FicheAcademie } from '../_types';
 import { ReferentielQualiopi, type Referentiel } from './Referentiel';
@@ -31,10 +33,11 @@ export const metadata: Metadata = { title: 'Ma certification Qualiopi et EDOF', 
  */
 export default async function CertificationPage() {
   const s = await sessionAcademie('/academie/certification');
-  const [fiche, ref, edof] = await Promise.all([
+  const [fiche, ref, edof, reliees] = await Promise.all([
     apiAcademie<FicheAcademie>(s, '/academie/fiche'),
     apiAcademie<Referentiel>(s, '/academie/qualiopi'),
     apiAcademie<PreparationEdof>(s, '/academie/gestion/edof'),
+    apiAcademie<{ associations: AssociationReliee[] }>(s, '/academie/association'),
   ]);
   const e = edof.data;
   const eligibles = e ? e.formations.filter((f) => f.eligible || f.pret) : [];
@@ -56,6 +59,13 @@ export default async function CertificationPage() {
         <a href="#qualiopi" className="rounded-full border border-[#B7E4CE] bg-white px-4 py-2 text-[#12312A] no-underline hover:bg-[#E3F5EC]">Qualiopi</a>
         <a href="#edof" className="rounded-full border border-[#B7E4CE] bg-white px-4 py-2 text-[#12312A] no-underline hover:bg-[#E3F5EC]">EDOF · CPF</a>
       </nav>
+
+      {/* ------------------------- l'association reliée et ses agréments (lecture seule) */}
+      {reliees.data?.associations?.length ? (
+        <div className="mb-6 grid gap-4">
+          <CarteAssociation associations={reliees.data.associations} lienReglages={false} />
+        </div>
+      ) : null}
 
       {/* ------------------------------------------------- l'état administratif */}
       {a ? (

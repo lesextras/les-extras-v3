@@ -20,6 +20,6 @@ import { AssociationOuvertureController } from './association-ouverture.controll
 @Module({
   controllers: [AssociationPublicController, AssociationEspaceController, AssociationOuvertureController],
   providers: [AssociationService, EspaceService, TachesService, ClaudeService, MoteurService, MistralService],
-  exports: [AssociationService, EspaceService],
+  exports: [AssociationService, EspaceService, TachesService],
 })
 export class AssociationModule {}

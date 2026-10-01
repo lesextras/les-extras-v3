@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { LIBELLES_ETAT_ACTION, dateCourte, formaterEuros, type ActionAssociation, type EtatAction } from '../_types';
-import { FicheProjet } from './FicheProjet';
+import { FicheProjet } from '../../../_shared/projets/FicheProjet';
 
 type Onglet = 'TOUS' | EtatAction;
 

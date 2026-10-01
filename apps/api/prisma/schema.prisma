@@ -47,6 +47,7 @@ model User {
   profile                   Profile?
   memberships               Membership[]
   tachesProjet              TacheProjet[]             @relation("TacheProjetResponsable")
+  liaisonsDemandees         LiaisonEspace[]           @relation("LiaisonDemandeur")
   sentInvitations           Invitation[]              @relation("InvitationInviter")
   ownedAccounts             Account[]                 @relation("AccountOwner")
   documents                 Document[]
@@ -3761,6 +3762,8 @@ model Organisation {
   actions    ActionAssociation[]
   taches     TacheProjet[]
   mouvements MouvementAssociation[]
+  /// Les académies reliées à l'association (espaces interconnectés).
+  liaisons   LiaisonEspace[]
 
   @@index([siren])
   @@index([rna])
@@ -3904,17 +3907,25 @@ enum EtatAction {
 
 /// Les actions de l'association : ce qu'elle fait vraiment sur le terrain.
 /// C'est la matière du rapport d'activité et des dossiers de subvention.
+///
+/// PROPRIÉTAIRE (01/10/2026, espaces interconnectés) : un projet appartient
+/// soit à une association (`organisationId`), soit à une académie qui n'en a
+/// pas (`academieId`) — jamais aux deux (contrainte CHECK en base). Une
+/// académie reliée à une association lit et modifie les projets de
+/// l'association : ce sont les mêmes lignes, pas des copies.
 model ActionAssociation {
-  id              String        @id @default(cuid())
-  organisationId  String
-  organisation    Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  id              String            @id @default(cuid())
+  organisationId  String?
+  organisation    Organisation?     @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  academieId      String?
+  academie        Academie?         @relation(fields: [academieId], references: [id], onDelete: Cascade)
   intitule        String
   /// À quoi ça sert, pour qui, en deux phrases.
   resume          String?
   lieu            String?
   dateDebut       DateTime?
   dateFin         DateTime?
-  etat            EtatAction    @default(PREVUE)
+  etat            EtatAction        @default(PREVUE)
   /// Combien de personnes en ont profité.
   beneficiaires   Int?
   /// Combien de bénévoles, et combien d'heures données.
@@ -3926,12 +3937,15 @@ model ActionAssociation {
   partenaires     String?
   /// Ce qu'on en retient, une fois l'action finie.
   bilan           String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   /// Les tâches qui mènent le projet jusqu'au bout.
   taches          TacheProjet[]
+  /// Les formations de l'académie qui servent ce projet.
+  formations      ProjetFormation[]
 
   @@index([organisationId])
+  @@index([academieId])
 }
 
 /// Où en est une tâche d'un projet.
@@ -3953,10 +3967,14 @@ enum PrioriteTache {
 /// Le responsable est soit une personne de « Mon équipe » (le répertoire),
 /// soit une personne qui a un accès au compte. Son nom est recopié pour que la
 /// tâche reste lisible si la personne quitte l'équipe.
+///
+/// Même propriétaire que son projet : `organisationId` OU `academieId`.
 model TacheProjet {
   id                   String              @id @default(cuid())
-  organisationId       String
-  organisation         Organisation        @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  organisationId       String?
+  organisation         Organisation?       @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  academieId           String?
+  academie             Academie?           @relation(fields: [academieId], references: [id], onDelete: Cascade)
   actionId             String
   action               ActionAssociation   @relation(fields: [actionId], references: [id], onDelete: Cascade)
   titre                String
@@ -3978,6 +3996,7 @@ model TacheProjet {
   updatedAt            DateTime            @updatedAt
 
   @@index([organisationId, statut])
+  @@index([academieId, statut])
   @@index([actionId, statut, ordre])
   @@index([responsableContactId])
   @@index([responsableUserId])
@@ -4133,6 +4152,14 @@ model Academie {
 
   veilles      VeilleEntree[]
   reclamations Reclamation[]
+
+  /// Espaces interconnectés (01/10/2026) : les associations reliées, les
+  /// projets propres à l'académie (quand elle n'a pas d'association) et les
+  /// liens projets ↔ formations.
+  liaisons          LiaisonEspace[]
+  projets           ActionAssociation[]
+  tachesProjet      TacheProjet[]
+  projetsFormations ProjetFormation[]
 
   @@index([qualiopi])
 }
@@ -4394,6 +4421,8 @@ model Cours {
   classes      ClasseVirtuelle[]
   commentaires CommentaireCours[]
   reglage      ReglageCours?
+  /// Les projets (« Mes projets ») que cette formation sert.
+  projets      ProjetFormation[]
 
   @@index([accountId, statut])
   @@index([accountId, ordre])
@@ -6513,4 +6542,51 @@ enum OrigineFinancement {
   PARTICULIER
   AUTRE_ORGANISME
   AUTRES
+}
+
+/// ESPACES INTERCONNECTÉS (01/10/2026) : une association et une académie
+/// reliées lisent et écrivent les MÊMES lignes (projets, tâches, liens aux
+/// formations) — aucune copie.
+enum StatutLiaison {
+  EN_ATTENTE
+  ACTIVE
+  REFUSEE
+}
+
+/// Le lien entre une association et une académie. Il ne devient ACTIVE que
+/// quand un propriétaire ou administrateur de l'autre espace accepte — sauf
+/// si celui qui demande est propriétaire/administrateur des deux.
+model LiaisonEspace {
+  id                     String        @id @default(cuid())
+  organisationId         String
+  organisation           Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  academieId             String
+  academie               Academie      @relation(fields: [academieId], references: [id], onDelete: Cascade)
+  statut                 StatutLiaison @default(EN_ATTENTE)
+  /// Le compte (association ou académie) d'où vient la demande : c'est l'AUTRE qui accepte.
+  demandeDepuisAccountId String
+  demandeParUserId       String?
+  demandeParUser         User?         @relation("LiaisonDemandeur", fields: [demandeParUserId], references: [id], onDelete: SetNull)
+  accepteeLe             DateTime?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  @@unique([organisationId, academieId])
+  @@index([academieId, statut])
+}
+
+/// Un projet (ActionAssociation) servi par une formation (Cours) d'une académie.
+model ProjetFormation {
+  id         String            @id @default(cuid())
+  actionId   String
+  action     ActionAssociation @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  coursId    String
+  cours      Cours             @relation(fields: [coursId], references: [id], onDelete: Cascade)
+  academieId String
+  academie   Academie          @relation(fields: [academieId], references: [id], onDelete: Cascade)
+  createdAt  DateTime          @default(now())
+
+  @@unique([actionId, coursId])
+  @@index([coursId])
+  @@index([academieId])
 }

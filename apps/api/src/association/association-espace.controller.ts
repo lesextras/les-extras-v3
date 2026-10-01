@@ -33,6 +33,7 @@ import {
   ModifierMouvementDto,
   DocumentDto,
   DossierDto,
+  EtapeDateDto,
   EtapeFaiteDto,
   FabriqueDto,
   ModifierActionDto,
@@ -109,6 +110,12 @@ export class AssociationEspaceController {
   @Post('chemin/:slug')
   marquerEtape(@CurrentAccount() account: RequestAccount, @Param('slug') slug: string, @Body() dto: EtapeFaiteDto) {
     return this.espace.marquerEtape(account.id, slug, dto.faite, dto.pasConcerne === true);
+  }
+
+  /** La date choisie d'une étape annuelle (la date de l'AG). `date: null` l'efface. */
+  @Post('chemin/:slug/date')
+  choisirDateEtape(@CurrentAccount() account: RequestAccount, @Param('slug') slug: string, @Body() dto: EtapeDateDto) {
+    return this.espace.choisirDateEtape(account.id, slug, dto.date ?? null);
   }
 
   @Post('dossiers')

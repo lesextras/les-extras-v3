@@ -5,6 +5,9 @@ import { apiAcademie, sessionAcademie } from '../_session';
 import { BTN_DISCRET, CARTE, Encart, Pastille, Titre, formaterDate } from '../_ui';
 import { LIBELLES_QUALIOPI, type FicheAcademie } from '../_types';
 import { OngletsParametres } from './_onglets';
+import { CarteAssociation } from '../_association';
+import { EspacesRelies } from '../../_shared/liaisons/EspacesRelies';
+import type { AssociationReliee, ListeLiaisons } from '../../_shared/liaisons/types';
 
 export const metadata: Metadata = { title: 'Paramètres', robots: { index: false, follow: false } };
 
@@ -18,7 +21,11 @@ export const metadata: Metadata = { title: 'Paramètres', robots: { index: false
  */
 export default async function ParametresPage() {
   const s = await sessionAcademie('/academie/parametres');
-  const { data, error } = await apiAcademie<FicheAcademie>(s, '/academie/fiche');
+  const [{ data, error }, liaisons, reliees] = await Promise.all([
+    apiAcademie<FicheAcademie>(s, '/academie/fiche'),
+    apiAcademie<ListeLiaisons>(s, '/liaisons'),
+    apiAcademie<{ associations: AssociationReliee[] }>(s, '/academie/association'),
+  ]);
 
   if (!data) {
     return (
@@ -157,6 +164,13 @@ export default async function ParametresPage() {
             ))}
           </dl>
         </section>
+
+        {/* ------------------------------------------------ espaces reliés */}
+        <section className={`${CARTE} p-5`} id="espaces-relies">
+          <h2 className="mb-2 text-[18px] font-extrabold text-[#12312A]">Espaces reliés</h2>
+          <EspacesRelies espace="academie" initial={liaisons.data ?? null} />
+        </section>
+        <CarteAssociation associations={reliees.data?.associations} lienReglages={false} />
 
         {/* ------------------------------------------------------- l'accès */}
         <section className={`${CARTE} p-5`}>

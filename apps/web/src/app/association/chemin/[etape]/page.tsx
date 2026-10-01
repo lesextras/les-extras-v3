@@ -6,11 +6,12 @@ import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import { BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Pastille } from '../../_ui';
 import { chargerChemin, chargerEtape, chargerModeles, TEINTES_PARTIE } from '../../_chemin';
-import { InfosObligation } from '../../../_shared/chemin-obligations';
+import { BadgeAnnuel, InfosObligation, formaterJour, lireJour } from '../../../_shared/chemin-obligations';
 import { contexteChemin } from '../../_session';
 import { preremplissageDeBase } from '../../_fabrique';
 import { BoutonEtapeFaite } from '../../BoutonEtapeFaite';
 import { ActionsEtape, type LienEspace } from './ActionsEtape';
+import { ChoixDateEtape } from './ChoixDateEtape';
 
 export async function generateMetadata({ params }: { params: Promise<{ etape: string }> }): Promise<Metadata> {
   const { etape } = await params;
@@ -87,6 +88,11 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
   const faite = connecte?.faites.has(etape.slug) ?? false;
   const verifiee = connecte?.verifiees.has(etape.slug) ?? false;
   const pasConcerne = connecte?.pasConcernees.has(etape.slug) ?? false;
+  // Étape annuelle : l'année de son cycle, son échéance, la date choisie (l'API les calcule).
+  const cycle = connecte?.cycles[etape.slug];
+  const debloque = Array.isArray(etape.debloque) ? etape.debloque : undefined;
+  // Avant le 01/10/2026, la phrase courte s'appelait `debloque` : on lit les deux pendant le déploiement.
+  const apporte = etape.apporte ?? (typeof (etape as { debloque?: unknown }).debloque === 'string' ? ((etape as { debloque?: unknown }).debloque as string) : undefined);
   const modeles = modelesTous.filter((m) => m.etapes.includes(etape.slug));
   const prerempli = { ...preremplissageDeBase(), ...(connecte?.prerempli ?? {}) };
 
@@ -108,7 +114,7 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
           ) : (
             <Pastille ton="attention">À faire</Pastille>
           )}
-          {etape.chaqueAnnee ? <span className="inline-flex items-center rounded-full bg-[#E0F4F3] px-2.5 py-0.5 text-xs font-bold text-[#115E59]">Chaque année</span> : null}
+          {etape.chaqueAnnee ? <BadgeAnnuel cycle={cycle?.cycle} /> : null}
         </div>
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-[#6B6A8A]">
           <span>
@@ -120,7 +126,30 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
       </header>
 
       {/* ------------------------------ obligatoire ? quand ? échéance ? avant ? */}
-      <InfosObligation etape={etape} etapes={chemin?.etapes ?? []} faites={connecte?.faites} theme="association" />
+      <InfosObligation
+        etape={{ ...etape, debloque, echeanceLe: cycle?.echeanceLe ?? null }}
+        etapes={chemin?.etapes ?? []}
+        faites={connecte?.faites}
+        theme="association"
+      />
+
+      {/* --------------------------- la date choisie par l'association (l'AG) */}
+      {etape.dateChoisie ? (
+        connecte ? (
+          <ChoixDateEtape slug={etape.slug} libelle={etape.dateChoisie.libelle} aide={etape.dateChoisie.aide} valeur={cycle?.dateChoisie ?? null} />
+        ) : (
+          <p className="mb-6 text-sm text-[#6B6A8A]">
+            <span className="font-bold text-[#1D1B5C]">{etape.dateChoisie.libelle} : </span>
+            avec ton espace, tu la notes ici et l&apos;échéance suit.
+          </p>
+        )
+      ) : null}
+      {etape.chaqueAnnee && cycle?.echeanceLe && !etape.echeance ? (
+        <p className="mb-6 text-sm text-[#1D1B5C]">
+          <span className="font-bold">Échéance {cycle.cycle} : </span>
+          {formaterJour(lireJour(cycle.echeanceLe) ?? new Date())}
+        </p>
+      ) : null}
 
       {/* ---------------------------------------------- comment faire */}
       <section className={`${CARTE} mb-6 grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]`}>
@@ -177,6 +206,7 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
               pasConcerne={pasConcerne}
               peutNePasConcerner={Boolean(etape.peutNePasConcerner)}
               chaqueAnnee={Boolean(etape.chaqueAnnee)}
+              cycle={cycle?.cycle ?? null}
             />
           </div>
         ) : (
@@ -207,10 +237,10 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
         ) : null}
         <Repli titre="Pourquoi c’est important">
           <p className="text-sm leading-relaxed">{etape.pourquoi}</p>
-          {etape.debloque ? (
+          {apporte ? (
             <p className="mt-2 text-sm leading-relaxed">
-              <span className="font-bold text-[#6B6A8A]">Ça débloque : </span>
-              {etape.debloque}
+              <span className="font-bold text-[#6B6A8A]">Ça apporte : </span>
+              {apporte}
             </p>
           ) : null}
         </Repli>

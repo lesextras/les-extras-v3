@@ -51,6 +51,7 @@ import { AssociationModule } from './association/association.module';
 
 // --- Piloter mon académie (pilote.toulali.fr/academie) ---
 import { AcademieModule } from './academie/academie.module';
+import { LiaisonsModule } from './liaisons/liaisons.module';
 import { FacturesModule } from './factures/factures.module';
 import { FormulairesModule } from './formulaires/formulaires.module';
 import { EcoleModule } from './ecole/ecole.module';
@@ -125,6 +126,9 @@ import { AttestationsModule } from './attestations/attestations.module';
 
     // Piloter mon académie : fiche de l'organisme, chemin, veille, réclamations.
     AcademieModule,
+
+    // Espaces interconnectés : association ↔ académie (projets, formations, agréments).
+    LiaisonsModule,
     FacturesModule,
     FormulairesModule,
   EcoleModule,

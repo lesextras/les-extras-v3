@@ -82,6 +82,8 @@ export const ICONES = {
   fermer: i('M18 6L6 18M6 6l12 12'),
   /** La cible : les prospects à convaincre. */
   prospects: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'),
+  /** Les colonnes d'un tableau : « Mes projets » (partagés avec l'association reliée). */
+  projets: i('M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v13h-4z'),
   /** Le bâtiment à colonnes : le financeur (OPCO, France Travail, CPF). */
   financements: i('M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7M12 2l8 5H4z'),
 };
@@ -107,6 +109,7 @@ const MENU: Element[] = [
   { href: '/academie', libelle: 'Tableau de bord', icone: ICONES.toque, accent: true },
   { href: '/chemin', libelle: 'Le chemin', icone: ICONES.chemin, pastille: 'Commence ici' },
   { href: '/academie/mon-academie', libelle: 'Mon académie', icone: ICONES.academie },
+  { href: '/academie/projets', libelle: 'Mes projets', icone: ICONES.projets },
   {
     libelle: 'Formations',
     icone: ICONES.catalogue,

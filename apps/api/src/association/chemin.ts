@@ -7,20 +7,25 @@
  * côté, et à chaque étape les vrais formulaires (CERFA) et des documents
  * exemples qu'on peut recopier.
  *
- * Le chemin a six parties :
- *   1. Faire naître l'association (étapes 1 à 4)
- *   2. La faire vivre (étapes 5 à 7)
- *   3. Demander une subvention ou répondre à un appel à projets (8 à 12)
- *   4. Chaque année (13 à 17) : ce qui revient tous les ans. Ces étapes
- *      repassent dans « À faire » au 1er janvier (voir common/chemin-suivi.ts).
- *   5. Selon ton activité (18 à 24) : ce qui ne concerne que certaines
- *      associations. Chacune peut être marquée « Pas concerné ».
- *   6. Organiser un événement (25 et 26) : la buvette, la tombola. Chacune
- *      peut aussi être marquée « Pas concerné ».
- * La troisième est le but : c'est elle qu'on met en avant. Les parties 4 et 5
- * ont été ajoutées le 01/10/2026, puis complétées le même jour avec la
- * partie 6 ; les slugs ne bougent jamais (les coches enregistrées portent
- * les slugs, pas les numéros).
+ * Le chemin a sept parties (les numéros d'étape se recalculent, les slugs
+ * jamais : les coches enregistrées portent les slugs) :
+ *   1. Faire naître l'association
+ *   2. La faire vivre
+ *   3. Demander une subvention ou répondre à un appel à projets
+ *   4. Les agréments (01/10/2026) : ceux qui ouvrent des financements. Chacun
+ *      peut être marqué « Pas concerné ». L'agrément ESUS y est passé depuis
+ *      « Selon ton activité », avec le même slug.
+ *   5. Chaque année : ce qui revient tous les ans. Une étape annuelle revient
+ *      dans « À faire » quand son cycle change (voir common/chemin-suivi.ts).
+ *   6. Selon ton activité : ce qui ne concerne que certaines associations.
+ *   7. Organiser un événement : la buvette, la tombola.
+ * La troisième est le but : le chemin sert à obtenir des subventions, et
+ * chaque étape dit ce qu'elle débloque comme financement (`debloque`).
+ *
+ * Dans chaque partie, les étapes se rangent par priorité (1 = d'abord), puis
+ * dans l'ordre d'origine, sans passer devant ce qu'il faut faire avant
+ * (common/chemin-obligations.ts, `ordonnerEtapes`). Toute étape qui n'est pas
+ * obligatoire pour toutes les associations peut être « Pas concerné ».
  *
  * Chaque étape dit aussi si elle est obligatoire, ce qui la déclenche, son
  * échéance légale et ce qu'il faut avoir fait avant (common/chemin-obligations.ts).
@@ -32,13 +37,13 @@
  *  - le chemin est gratuit et le reste.
  */
 
-import type { ObligationEtape } from '../common/chemin-obligations';
+import { ordonnerEtapes, type ObligationEtape, type ReperesFinancement } from '../common/chemin-obligations';
 
-export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE' | 'EVENEMENT';
+export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'AGREMENTS' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE' | 'EVENEMENT';
 
 export interface DescriptionPartie {
   code: PartieChemin;
-  numero: 1 | 2 | 3 | 4 | 5 | 6;
+  numero: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   titre: string;
   /** Une phrase toute simple. */
   enUnMot: string;
@@ -69,22 +74,29 @@ export const PARTIES_CHEMIN: readonly DescriptionPartie[] = [
     resultat: 'Un dossier déposé chez un financeur, puis un compte rendu qui ouvre la porte au suivant.',
   },
   {
-    code: 'CHAQUE_ANNEE',
+    code: 'AGREMENTS',
     numero: 4,
+    titre: 'Les agréments',
+    enUnMot: "Un agrément, c'est l'État ou la CAF qui reconnaît ton association. Beaucoup de financements le demandent. Pas pour toi ? « Pas concerné ».",
+    resultat: 'Les agréments utiles à ton activité sont demandés, avec leur date de fin notée.',
+  },
+  {
+    code: 'CHAQUE_ANNEE',
+    numero: 5,
     titre: 'Chaque année',
-    enUnMot: 'Ce qui revient tous les ans. Ces étapes repassent dans « À faire » au 1er janvier.',
+    enUnMot: "Ce qui revient tous les ans. Une fois la date de l'année passée, l'étape revient dans « À faire » pour l'année suivante.",
     resultat: 'Une assemblée tenue, des changements déclarés, des comptes en règle.',
   },
   {
     code: 'SELON_ACTIVITE',
-    numero: 5,
+    numero: 6,
     titre: 'Selon ton activité',
     enUnMot: "Ce qui dépend de ce que fait l'association. Si une étape ne te concerne pas, tu le dis en un clic.",
     resultat: 'Chaque obligation qui te concerne est en place, les autres sont écartées.',
   },
   {
     code: 'EVENEMENT',
-    numero: 6,
+    numero: 7,
     titre: 'Organiser un événement',
     enUnMot: "Une fête, un vide-grenier, un loto : la buvette et la tombola se demandent à la mairie avant. Pas d'événement ? « Pas concerné ».",
     resultat: 'Chaque événement a ses autorisations, demandées à temps.',
@@ -123,7 +135,7 @@ export interface PasAPas {
   detail: string;
 }
 
-export interface EtapeChemin extends ObligationEtape {
+export interface EtapeChemin extends ObligationEtape, ReperesFinancement {
   numero: number;
   slug: string;
   titre: string;
@@ -148,8 +160,8 @@ export interface EtapeChemin extends ObligationEtape {
   renvois: Renvoi[];
   /** Quand c'est fini, tu as… */
   quandCestFini: string;
-  /** Ce que l'étape apporte une fois faite (version courte). */
-  debloque: string;
+  /** Ce que l'étape apporte une fois faite (version courte). S'appelait `debloque` avant le 01/10/2026. */
+  apporte: string;
   lexique: MotExplique[];
   /** Codes du référentiel des pièces que cette étape ajoute au classeur. */
   piecesAjoutees: string[];
@@ -161,9 +173,12 @@ export interface EtapeChemin extends ObligationEtape {
   peutNePasConcerner?: boolean;
 }
 
+/** Une étape telle qu'elle est écrite plus bas : la priorité et les financements viennent de `REPERES`. */
+type EtapeEcrite = Omit<EtapeChemin, keyof ReperesFinancement>;
+
 const MODELES = '/association/modeles';
 
-export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
+const ETAPES_ECRITES: readonly EtapeEcrite[] = [
   // ------------------------------------------------------------ 1. NAÎTRE
   {
     numero: 1,
@@ -258,7 +273,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       },
     ],
     quandCestFini: "Tu as un récépissé et un numéro RNA (il commence par W). Ton association existe officiellement.",
-    debloque: 'Le récépissé et le numéro RNA entrent dans ton classeur.',
+    apporte: 'Le récépissé et le numéro RNA entrent dans ton classeur.',
     lexique: [
       { mot: 'Statuts', explication: "Le règlement de l'association : son nom, son but, comment on décide." },
       { mot: 'Assemblée constitutive', explication: 'La toute première réunion, où on dit « oui » aux statuts et on choisit les responsables.' },
@@ -326,7 +341,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       },
     ],
     quandCestFini: 'Tu as un SIRET. Un financeur peut maintenant te verser une subvention.',
-    debloque: 'Le SIRET entre dans ton classeur. Tu peux demander une subvention.',
+    apporte: 'Le SIRET entre dans ton classeur. Tu peux demander une subvention.',
     lexique: [
       { mot: 'SIRET', explication: "14 chiffres qui identifient ton association à son adresse. C'est le numéro que les financeurs demandent." },
       { mot: 'SIREN', explication: 'Les 9 premiers chiffres du SIRET.' },
@@ -372,7 +387,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: 'Ton classeur contient les cinq papiers. Chaque dossier de subvention partira de là.',
-    debloque: 'Ton classeur est prêt à 40 %.',
+    apporte: 'Ton classeur est prêt à 40 %.',
     lexique: [
       { mot: 'Liste des dirigeants', explication: 'Les noms et les rôles des responsables (président, trésorier, secrétaire), comme déclarés en préfecture.' },
       { mot: 'RIB', explication: "Le papier de la banque avec le numéro du compte de l'association." },
@@ -426,7 +441,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "L'association a son compte en banque et son attestation d'assurance, datée.",
-    debloque: "L'attestation d'assurance entre dans le classeur, avec sa date de fin.",
+    apporte: "L'attestation d'assurance entre dans le classeur, avec sa date de fin.",
     lexique: [
       { mot: 'Responsabilité civile', explication: "Réparer ce qu'on a cassé ou le mal qu'on a causé à quelqu'un. L'assurance paie à la place de l'association." },
       { mot: 'Attestation', explication: "La page que l'assureur te donne pour prouver que tu es assuré." },
@@ -473,7 +488,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: 'Tu sais qui est membre, et qui est à jour.',
-    debloque: 'Ta liste des membres est ouverte.',
+    apporte: 'Ta liste des membres est ouverte.',
     lexique: [
       { mot: 'Membre (adhérent)', explication: "Une personne qui a rejoint l'association et, s'il y a une cotisation, l'a payée." },
       { mot: 'Cotisation', explication: "Ce qu'on paie chaque année pour être membre. Ça peut être zéro." },
@@ -526,7 +541,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "Tu peux dire, à n'importe quel moment, combien l'association a et où l'argent est passé.",
-    debloque: "Les comptes de l'année entreront dans le classeur.",
+    apporte: "Les comptes de l'année entreront dans le classeur.",
     lexique: [
       { mot: 'Recette', explication: "De l'argent qui entre (cotisation, subvention, vente)." },
       { mot: 'Dépense', explication: "De l'argent qui sort (achat, location, assurance)." },
@@ -610,7 +625,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       },
     ],
     quandCestFini: "Tu as un procès-verbal signé et un rapport d'activité. Les deux entrent dans le classeur.",
-    debloque: "Le procès-verbal et le rapport d'activité entrent dans le classeur.",
+    apporte: "Le procès-verbal et le rapport d'activité entrent dans le classeur.",
     lexique: [
       { mot: 'Assemblée générale (AG)', explication: "La réunion de tous les membres, au moins une fois par an." },
       { mot: 'Ordre du jour', explication: 'La liste de ce dont on va parler, envoyée avec la convocation.' },
@@ -659,7 +674,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: 'Tu as un texte prêt à copier dans tous les dossiers.',
-    debloque: 'Ton projet en une page est prêt.',
+    apporte: 'Ton projet en une page est prêt.',
     lexique: [
       { mot: 'Projet associatif', explication: "Le texte qui dit ce que l'association veut faire et pourquoi." },
       { mot: 'Appel à projets', explication: "Quand un financeur dit : « j'ai de l'argent pour tel sujet, envoyez-moi vos projets avant telle date »." },
@@ -713,7 +728,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: 'Tu as un budget équilibré, prêt à recopier dans le formulaire de demande.',
-    debloque: 'Le budget prévisionnel entre dans le classeur.',
+    apporte: 'Le budget prévisionnel entre dans le classeur.',
     lexique: [
       { mot: 'Budget prévisionnel', explication: "Le tableau des dépenses et des recettes prévues pour le projet ou pour l'année." },
       { mot: 'Équilibré', explication: 'Quand le total des recettes est égal au total des dépenses.' },
@@ -784,7 +799,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: 'Tu as au moins une piste avec une date limite, notée dans Mes dossiers.',
-    debloque: 'Un premier dossier est repéré, avec sa date limite.',
+    apporte: 'Un premier dossier est repéré, avec sa date limite.',
     lexique: [
       { mot: 'FDVA', explication: "Le fonds pour le développement de la vie associative : l'aide de l'État aux petites associations, département par département." },
       { mot: 'Dispositif', explication: "Un programme d'aide précis, avec son financeur, ses règles et sa date limite." },
@@ -870,7 +885,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       },
     ],
     quandCestFini: "Le dossier est déposé, la date est notée. Il ne reste qu'à attendre la réponse, puis à rendre compte.",
-    debloque: 'Le dossier est déposé. La date du compte rendu est notée pour toi.',
+    apporte: 'Le dossier est déposé. La date du compte rendu est notée pour toi.',
     lexique: [
       { mot: 'CERFA', explication: "Un formulaire officiel de l'administration. Chaque CERFA a un numéro." },
       { mot: 'CERFA 12156', explication: 'Le formulaire de demande de subvention, le même pour presque tous les financeurs publics.' },
@@ -939,7 +954,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "Le dossier est soldé. Tu peux redemander l'année suivante. La suite du chemin, c'est ce qui revient chaque année.",
-    debloque: "Le dossier est soldé. Le chemin continue avec ce qui revient chaque année.",
+    apporte: "Le dossier est soldé. Le chemin continue avec ce qui revient chaque année.",
     lexique: [
       { mot: 'Compte rendu financier', explication: "Le document qui montre au financeur comment sa subvention a été dépensée et ce qu'elle a permis." },
       { mot: 'Convention', explication: "Le contrat signé avec le financeur pour les grosses subventions : il fixe les engagements et les dates." },
@@ -1011,7 +1026,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       },
     ],
     quandCestFini: "Le procès-verbal de l'année est signé et les comptes sont approuvés. Les deux sont dans le classeur.",
-    debloque: "Le procès-verbal, le rapport d'activité et les comptes de l'année entrent dans le classeur. L'étape revient l'an prochain.",
+    apporte: "Le procès-verbal, le rapport d'activité et les comptes de l'année entrent dans le classeur. L'étape revient l'an prochain.",
     lexique: [
       { mot: 'Approuver les comptes', explication: "Les membres votent « oui » aux comptes présentés par le trésorier. C'est ce que les financeurs veulent voir." },
       { mot: 'Mandat', explication: "La durée pour laquelle un responsable est élu. Elle est écrite dans les statuts." },
@@ -1088,7 +1103,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       },
     ],
     quandCestFini: "Chaque changement de l'année est déclaré, ou tu as vérifié qu'il n'y en a pas eu.",
-    debloque: "La liste des dirigeants du classeur est à jour. L'étape revient l'an prochain.",
+    apporte: "La liste des dirigeants du classeur est à jour. L'étape revient l'an prochain.",
     lexique: [
       { mot: 'Greffe des associations', explication: "Le service de l'État qui enregistre les associations et leurs changements." },
       { mot: 'Récépissé de modification', explication: "Le papier qui prouve que le changement est enregistré." },
@@ -1152,7 +1167,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "Les deux chiffres de l'année sont déclarés, ou l'association n'a donné aucun reçu.",
-    debloque: "Tes reçus fiscaux sont en règle pour l'année. L'étape revient l'an prochain.",
+    apporte: "Tes reçus fiscaux sont en règle pour l'année. L'étape revient l'an prochain.",
     lexique: [
       { mot: 'Reçu fiscal', explication: "Le papier qui permet au donateur de déduire une partie de son don de ses impôts." },
       { mot: 'Exercice', explication: "L'année sur laquelle on fait les comptes, souvent du 1er janvier au 31 décembre." },
@@ -1223,7 +1238,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       },
     ],
     quandCestFini: "Les comptes de l'année sont publiés, ou l'association reste sous les seuils.",
-    debloque: "Les comptes certifiés entrent dans le classeur. L'étape revient l'an prochain.",
+    apporte: "Les comptes certifiés entrent dans le classeur. L'étape revient l'an prochain.",
     lexique: [
       { mot: 'Commissaire aux comptes', explication: "Un professionnel indépendant qui vérifie les comptes et dit s'ils sont justes." },
       { mot: 'Certifier', explication: "Le commissaire aux comptes signe un rapport qui dit que les comptes sont réguliers et sincères." },
@@ -1284,7 +1299,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "Les papiers de l'année sont rangés, et ceux qui avaient fait leur temps sont détruits.",
-    debloque: "Le classeur est en ordre pour un contrôle. L'étape revient l'an prochain.",
+    apporte: "Le classeur est en ordre pour un contrôle. L'étape revient l'an prochain.",
     lexique: [
       { mot: 'Durée de conservation', explication: 'Le temps minimum pendant lequel la loi demande de garder un papier.' },
       { mot: 'Pièce comptable', explication: "Une facture, un ticket ou un relevé qui prouve une ligne du cahier de comptes." },
@@ -1373,7 +1388,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: 'Le salarié est déclaré, couvert, suivi par la médecine du travail, et ses salaires sont déclarés chaque mois.',
-    debloque: "L'association est en règle comme employeur. Pas de salarié ? Choisis « Pas concerné ».",
+    apporte: "L'association est en règle comme employeur. Pas de salarié ? Choisis « Pas concerné ».",
     lexique: [
       { mot: 'DPAE', explication: "La déclaration préalable à l'embauche, à faire avant le premier jour de travail." },
       { mot: 'DSN', explication: 'La déclaration sociale nominative : chaque mois, les salaires et les cotisations déclarés en ligne.' },
@@ -1445,7 +1460,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "L'accueil est déclaré, l'équipe est vérifiée, le projet éducatif est écrit.",
-    debloque: "Ton accueil est en règle. Pas d'accueil de mineurs ? Choisis « Pas concerné ».",
+    apporte: "Ton accueil est en règle. Pas d'accueil de mineurs ? Choisis « Pas concerné ».",
     lexique: [
       { mot: 'Accueil collectif de mineurs', explication: 'Un accueil de loisirs, un séjour ou un accueil de jeunes, hors de la famille, à partir de 7 mineurs en général.' },
       { mot: 'SDJES', explication: "Le service départemental à la jeunesse, à l'engagement et aux sports : il reçoit les déclarations." },
@@ -1510,7 +1525,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: 'Ton registre est tenu, les durées sont fixées, les membres sont informés.',
-    debloque: "Les données de tes membres sont protégées. Aucun fichier de personnes ? Choisis « Pas concerné ».",
+    apporte: "Les données de tes membres sont protégées. Aucun fichier de personnes ? Choisis « Pas concerné ».",
     lexique: [
       { mot: 'RGPD', explication: 'Le règlement européen qui protège les données personnelles.' },
       { mot: 'Donnée personnelle', explication: "Tout ce qui permet de reconnaître une personne : nom, adresse, téléphone, photo." },
@@ -1586,7 +1601,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "Tu sais si ce que vend l'association est imposable, et pourquoi.",
-    debloque: "Tes ventes sont en règle. L'association ne vend rien ? Choisis « Pas concerné ».",
+    apporte: "Tes ventes sont en règle. L'association ne vend rien ? Choisis « Pas concerné ».",
     lexique: [
       { mot: 'Gestion désintéressée', explication: "Les responsables ne s'enrichissent pas grâce à l'association." },
       { mot: 'Lucratif', explication: "Qui rapporte de l'argent comme une entreprise." },
@@ -1645,7 +1660,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: 'Chaque frais de bénévole est remboursé sur justificatif, ou transformé en don avec un reçu.',
-    debloque: "Les frais des bénévoles sont en règle. Pas de frais ? Choisis « Pas concerné ».",
+    apporte: "Les frais des bénévoles sont en règle. Pas de frais ? Choisis « Pas concerné ».",
     lexique: [
       { mot: 'Note de frais', explication: "Le tableau où le bénévole liste ce qu'il a payé, avec les tickets." },
       { mot: 'Abandon de frais', explication: "Le bénévole renonce par écrit à être remboursé : la somme devient un don." },
@@ -1722,7 +1737,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "Le local est assuré, la sécurité est en place, le registre d'accessibilité est à l'accueil.",
-    debloque: "Ton local est en règle. Pas de local ouvert au public ? Choisis « Pas concerné ».",
+    apporte: "Ton local est en règle. Pas de local ouvert au public ? Choisis « Pas concerné ».",
     lexique: [
       { mot: 'ERP', explication: 'Établissement recevant du public : tout lieu où des personnes extérieures entrent, même sur invitation.' },
       { mot: 'Registre de sécurité', explication: 'Le cahier où sont notées les vérifications et les formations à la sécurité.' },
@@ -1775,16 +1790,560 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "La campagne est déclarée et le compte d'emploi est tenu, ou l'association reste sous le seuil.",
-    debloque: "Ta collecte est en règle. Pas de grande campagne ? Choisis « Pas concerné ».",
+    apporte: "Ta collecte est en règle. Pas de grande campagne ? Choisis « Pas concerné ».",
     lexique: [
       { mot: 'Appel à la générosité du public', explication: "Une campagne qui demande des dons à tout le monde, et pas seulement aux membres." },
       { mot: "Compte d'emploi des ressources", explication: "Le tableau annuel qui montre d'où viennent les dons et à quoi ils ont servi." },
     ],
     piecesAjoutees: [],
   },
-  // --------------------------------------------- 6. ORGANISER UN ÉVÉNEMENT
   {
     numero: 25,
+    slug: 'agrement-esus',
+    titre: "Obtenir l'agrément ESUS",
+    nature: 'SI_CONCERNE',
+    declencheur: "Pour accéder aux financements solidaires (épargne salariale solidaire, investisseurs solidaires), ou quand un financeur le demande.",
+    echeance: { texte: "Valable 5 ans, ou 2 ans si l'association a moins de 3 ans : à redemander avant la fin." },
+    prerequis: ['obtenir-le-siret', 'les-cinq-pieces-d-identite'],
+    partie: 'AGREMENTS',
+    peutNePasConcerner: true,
+    enUnMot: "Un agrément de l'État qui reconnaît que l'association est une entreprise solidaire d'utilité sociale (ESUS).",
+    pourquoi:
+      "L'agrément ESUS (article L3332-17-1 du code du travail) ouvre l'accès à l'épargne salariale solidaire (les fonds dits 90/10), à une réduction d'impôt majorée pour ceux qui investissent chez toi, et à certains financements solidaires. Certains financeurs le demandent.",
+    ilTeFaut: [
+      'Le SIRET et les statuts à jour.',
+      "Les comptes du dernier exercice, ou un budget prévisionnel si l'association est jeune.",
+      "Une présentation de ton utilité sociale : qui tu aides, comment, avec quels moyens.",
+    ],
+    commentFaire: [
+      {
+        titre: "Regarde si tu l'as de plein droit",
+        detail:
+          "Certaines structures sont agréées de plein droit, en remplissant quand même le dossier : structures d'insertion par l'activité économique, entreprises adaptées, ESAT, aide sociale à l'enfance, centres d'hébergement et de réinsertion sociale, régies de quartier, associations reconnues d'utilité publique qui poursuivent une utilité sociale, entre autres. La plupart des associations n'en font pas partie et montrent les conditions une à une.",
+      },
+      {
+        titre: 'Vérifie les conditions',
+        detail:
+          "L'utilité sociale est le but principal (publics fragiles, cohésion territoriale, éducation à la citoyenneté, développement durable) et pèse dans les comptes. Les salaires sont plafonnés : la moyenne des cinq plus hauts sous 7 SMIC, le plus haut sous 10 SMIC. Les statuts écrivent ces règles : modifie-les en assemblée si besoin.",
+      },
+      {
+        titre: 'Dépose la demande en ligne',
+        detail:
+          "La demande se fait sur la plateforme ESUS, par le représentant légal. C'est la direction départementale du siège (DDETS) qui instruit. Note la date de fin de l'agrément pour le redemander à temps.",
+      },
+    ],
+    quoiFaire: [
+      "Regarde si l'association est agréée de plein droit.",
+      'Vérifie les conditions et, si besoin, adapte les statuts.',
+      'Dépose la demande sur la plateforme ESUS.',
+    ],
+    dureeEstimee: "Une demi-journée pour le dossier, puis quelques semaines d'instruction.",
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'La plateforme de demande ESUS',
+        lien: 'https://esus.economie.gouv.fr/',
+        genre: 'SITE',
+        aQuoiCaSert: "C'est là que la demande se dépose et se suit, puis se renouvelle.",
+      },
+    ],
+    renvois: [
+      {
+        nom: "L'agrément ESUS (economie.gouv.fr)",
+        lien: 'https://www.economie.gouv.fr/entreprises/agrement-entreprise-solidaire-utilite-sociale-ess',
+        pourQuoi: 'Les conditions, la durée et ce que l\'agrément apporte.',
+      },
+      {
+        nom: "Demander l'agrément ESUS en Île-de-France (DRIEETS)",
+        lien: 'https://idf.drieets.gouv.fr/Vous-souhaitez-faire-une-demande-d-agrement-ESUS',
+        pourQuoi: 'Les contacts de chaque département francilien.',
+      },
+    ],
+    quandCestFini: "L'association a son agrément ESUS, et sa date de fin est notée.",
+    apporte: "Les financements solidaires te sont ouverts. Pas besoin de ces financements ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'ESUS', explication: "Entreprise solidaire d'utilité sociale : un agrément de l'État pour les structures de l'économie sociale et solidaire qui ont une forte utilité sociale." },
+      { mot: 'Fonds 90/10', explication: "Des fonds d'épargne salariale qui placent 5 à 10 % de leur argent dans des structures agréées ESUS." },
+      { mot: 'DDETS', explication: "La direction départementale de l'emploi, du travail et des solidarités : le service de l'État qui instruit la demande." },
+    ],
+    piecesAjoutees: [],
+  },
+  // ------------------------------------------------------- 4. LES AGRÉMENTS
+  // Ajoutés le 01/10/2026 (l'agrément ESUS, plus haut, y est rangé aussi).
+  // Sources vérifiées le 01/10/2026 : associations.gouv.fr (liste des
+  // agréments, JEP, sport), servicesalapersonne.gouv.fr, caf.fr,
+  // service-civique.gouv.fr, jeunes.gouv.fr, impots.gouv.fr.
+  {
+    numero: 28,
+    slug: 'rescrit-interet-general',
+    titre: 'Demander le rescrit « intérêt général »',
+    nature: 'CONSEILLE',
+    declencheur: 'Avant de délivrer tes premiers reçus fiscaux pour des dons.',
+    echeance: { texte: "L'administration a 6 mois pour répondre. Sans réponse, c'est un accord." },
+    prerequis: ['declarer-l-association', 'obtenir-le-siret'],
+    partie: 'AGREMENTS',
+    enUnMot: "Tu demandes aux impôts de confirmer que tes donateurs ont droit à une réduction d'impôt.",
+    pourquoi:
+      "Un reçu fiscal délivré à tort coûte cher : une amende de 25 % des sommes écrites sur le reçu. Le rescrit te met à l'abri : si l'administration dit oui, ou ne répond pas dans les 6 mois, elle ne peut plus revenir dessus tant que rien ne change. Les donateurs et les entreprises mécènes sont aussi plus confiants.",
+    ilTeFaut: [
+      'Les statuts à jour.',
+      "Une description précise de tes activités : pour qui, quoi, où, gratuitement ou non.",
+      'Les comptes du dernier exercice, ou un budget si l\'association est jeune.',
+    ],
+    commentFaire: [
+      {
+        titre: 'Vérifie les conditions',
+        detail:
+          "L'association agit en France (sauf action humanitaire), dans un domaine reconnu (social, culturel, éducatif, sportif, familial, humanitaire…), avec une gestion désintéressée, et elle ne profite pas à un cercle restreint de personnes.",
+      },
+      {
+        titre: 'Dépose la demande',
+        detail:
+          "En ligne avec le formulaire de rescrit mécénat, ou par la messagerie de ton espace professionnel sur impots.gouv.fr, ou par courrier recommandé à la direction des finances publiques de ton siège. Décris tes activités en détail.",
+      },
+      {
+        titre: 'Garde la réponse',
+        detail:
+          "La réponse arrive dans les 6 mois ; sans réponse, la demande vaut accord. Range la réponse avec les statuts : elle prouve ton droit aux reçus fiscaux.",
+      },
+    ],
+    quoiFaire: ['Vérifie les conditions.', 'Dépose la demande de rescrit mécénat.', 'Garde la réponse dans le classeur.'],
+    dureeEstimee: 'Une heure pour la demande, puis jusqu\'à 6 mois de réponse.',
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'Le formulaire de demande de rescrit mécénat',
+        lien: 'https://demarche.numerique.gouv.fr/commencer/d996ffa8-c0a9-45fb-82bf-23431d5b125f',
+        genre: 'SITE',
+        aQuoiCaSert: 'La demande en ligne, la plus simple.',
+      },
+    ],
+    renvois: [
+      {
+        nom: 'Dons et réduction d\'impôt (impots.gouv.fr)',
+        lien: 'https://www.impots.gouv.fr/professionnel/dons-et-reduction-dimpot',
+        pourQuoi: 'Les conditions, les façons de demander le rescrit, le délai de 6 mois.',
+      },
+      {
+        nom: 'Le rescrit mécénat : le silence vaut accord (service-public.gouv.fr)',
+        lien: 'https://www.service-public.gouv.fr/demarches-silence-vaut-accord/demarches/784',
+        pourQuoi: 'La règle officielle du silence qui vaut accord.',
+      },
+    ],
+    quandCestFini: "Tu as la réponse des impôts, ou les 6 mois sont passés sans réponse.",
+    apporte: 'Tes reçus fiscaux sont sûrs. Pas de dons ? Choisis « Pas concerné ».',
+    lexique: [
+      { mot: 'Rescrit', explication: "Une question écrite aux impôts. Leur réponse les engage pour l'avenir." },
+      { mot: 'Reçu fiscal', explication: "Le papier remis au donateur. Il lui donne une réduction d'impôt." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 29,
+    slug: 'agrement-jeunesse-education-populaire',
+    titre: "Demander l'agrément Jeunesse et éducation populaire",
+    nature: 'CONSEILLE',
+    declencheur: "Pour une association qui agit avec et pour les jeunes, ou dans l'éducation populaire, depuis au moins 3 ans en général.",
+    echeance: { texte: 'Valable 5 ans : à redemander avant la fin.' },
+    prerequis: ['declarer-l-association', 'la-premiere-assemblee-generale'],
+    partie: 'AGREMENTS',
+    enUnMot: "L'État reconnaît que ton association fait de l'éducation populaire ou travaille pour la jeunesse.",
+    pourquoi:
+      "L'agrément JEP permet de bénéficier de financements particuliers de l'État et de participer aux instances de concertation. Il donne aussi des tarifs réduits à la SACEM. Les postes FONJEP de la jeunesse et de l'éducation populaire se demandent avec lui.",
+    ilTeFaut: [
+      "En général, 3 ans d'existence.",
+      'Les statuts, la liste des dirigeants, les derniers procès-verbaux d\'assemblée.',
+      "Les rapports d'activité et les comptes des dernières années.",
+      'Le contrat d\'engagement républicain signé.',
+    ],
+    commentFaire: [
+      {
+        titre: 'Vérifie le socle commun',
+        detail:
+          "Tout agrément demande le même socle : un objet d'intérêt général, un fonctionnement démocratique, une gestion transparente. Relis tes statuts avec le guide du tronc commun d'agrément.",
+      },
+      {
+        titre: 'Contacte ton SDJES',
+        detail:
+          "Pour une association locale, c'est le service départemental à la jeunesse, à l'engagement et aux sports (SDJES) qui décide. Chaque département a sa façon de déposer le dossier : demande-la.",
+      },
+      {
+        titre: 'Dépose le dossier et note la date de fin',
+        detail: "L'agrément vaut 5 ans. Note sa date de fin pour le renouveler à temps.",
+      },
+    ],
+    quoiFaire: ['Relis tes statuts avec le tronc commun.', 'Contacte le SDJES de ton département.', 'Dépose le dossier, note la date de fin.'],
+    dureeEstimee: 'Une journée pour le dossier, puis quelques mois d\'instruction.',
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: "Le tronc commun d'agrément (associations.gouv.fr)",
+        lien: 'https://associations.gouv.fr/un-socle-commun-dagrement-pour-les-associations',
+        genre: 'SITE',
+        aQuoiCaSert: "Les critères que tout agrément vérifie, avec le guide pratique.",
+      },
+    ],
+    renvois: [
+      {
+        nom: "L'agrément JEP, trois façons de l'obtenir (associations.gouv.fr)",
+        lien: 'https://associations.gouv.fr/lagrement-jep-trois-modalites-pour-en-beneficier',
+        pourQuoi: 'Départemental, national, ou par extension d\'un réseau agréé.',
+      },
+      {
+        nom: 'Les contacts des SDJES (associations.gouv.fr)',
+        lien: 'https://associations.gouv.fr/agrement-jep-departemental-attribue-aux-associations-locales-liste-des-contacts',
+        pourQuoi: 'À qui écrire dans ton département.',
+      },
+    ],
+    quandCestFini: "L'association a son agrément JEP, et sa date de fin est notée.",
+    apporte: "Ton association est reconnue par l'État pour la jeunesse et l'éducation populaire.",
+    lexique: [
+      { mot: 'SDJES', explication: "Le service de l'État, dans chaque département, pour la jeunesse, l'engagement et le sport." },
+      { mot: 'FONJEP', explication: "Une aide de l'État, versée chaque année, pour payer une partie d'un poste salarié." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 30,
+    slug: 'agrement-espace-de-vie-sociale',
+    titre: "Demander l'agrément Espace de vie sociale à la CAF",
+    nature: 'SI_CONCERNE',
+    declencheur: "Pour une association de quartier ou de village qui veut porter un espace de vie sociale financé par la CAF.",
+    echeance: { texte: "Agrément de 4 ans au plus : prépare le renouvellement avant la fin." },
+    prerequis: ['obtenir-le-siret', 'la-premiere-assemblee-generale'],
+    partie: 'AGREMENTS',
+    enUnMot: "La CAF reconnaît ton association comme un lieu de vie et de lien pour les habitants : un espace de vie sociale (EVS).",
+    pourquoi:
+      "L'agrément « animation de la vie sociale » ouvre la prestation de service « animation locale » de la CAF, versée chaque année pendant la durée de l'agrément. Seules des associations locales peuvent porter un EVS, avec les habitants au cœur du projet.",
+    ilTeFaut: [
+      'Un territoire sans centre social ni autre EVS qui fait déjà la même chose.',
+      'Des habitants prêts à construire le projet avec toi.',
+      'Un premier contact avec la CAF de ton département.',
+    ],
+    commentFaire: [
+      {
+        titre: 'Prends contact avec la CAF',
+        detail:
+          "Appelle le service animation de la vie sociale de ta CAF. Il te dit si ton territoire est prioritaire dans le schéma départemental, et il t'accompagne.",
+      },
+      {
+        titre: 'Fais le diagnostic avec les habitants',
+        detail:
+          "Qui vit là, de quoi les gens ont besoin, ce qui existe déjà. Les habitants participent : c'est la condition de l'agrément.",
+      },
+      {
+        titre: 'Écris le projet social et dépose-le',
+        detail:
+          "Le projet social dit tes axes d'action pour les familles, les jeunes, les liens entre voisins. Le conseil d'administration de la CAF décide, pour 4 ans au plus.",
+      },
+    ],
+    quoiFaire: ['Contacte la CAF de ton département.', 'Fais le diagnostic avec les habitants.', 'Écris et dépose le projet social.'],
+    dureeEstimee: 'Plusieurs mois : le diagnostic et le projet se font avec les habitants.',
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'Le guide méthodologique des EVS (CAF)',
+        lien: 'https://www.caf.fr/sites/default/files/medias/661/Espace-Partenaires/Documents-Partenaires/AVS/ProjetEVS/Guide-methodologique-EVS.pdf',
+        genre: 'MODELE',
+        aQuoiCaSert: 'Les étapes du diagnostic et du projet social, pas à pas.',
+      },
+    ],
+    renvois: [
+      {
+        nom: 'Les espaces de vie sociale (CAF du Calvados)',
+        lien: 'https://www.caf.fr/professionnels/offres-et-services/caf-du-calvados/partenaires-locaux/centres-sociaux-et-espaces-de-vie-sociale/les-espaces-de-vie-sociale',
+        pourQuoi: "Ce qu'est un EVS, l'agrément de 4 ans au plus, la prestation « animation locale ».",
+      },
+      {
+        nom: "Le schéma de l'animation de la vie sociale (CAF de Seine-et-Marne)",
+        lien: 'https://www.caf.fr/professionnels/offres-et-services/caf-de-seine-et-marne/partenaires-locaux/l-animation-de-la-vie-sociale/le-schema-directeur-de-l-animation-de-la-vie-sociale',
+        pourQuoi: 'Un exemple de schéma départemental : chaque CAF a le sien.',
+      },
+    ],
+    quandCestFini: "La CAF a agréé ton espace de vie sociale, et la date de fin de l'agrément est notée.",
+    apporte: "Ton espace de vie sociale est agréé et financé par la CAF. Pas d'EVS ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'EVS', explication: 'Espace de vie sociale : un lieu porté par une association locale, pour créer du lien entre habitants.' },
+      { mot: 'Projet social', explication: 'Le document qui dit, avec les habitants, ce que fera l\'EVS pendant la durée de l\'agrément.' },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 31,
+    slug: 'agrement-service-civique',
+    titre: "Demander l'agrément Service civique",
+    nature: 'SI_CONCERNE',
+    declencheur: 'Pour accueillir des jeunes volontaires en Service civique.',
+    echeance: { texte: "L'agrément vaut 5 ans au plus, puis se renouvelle." },
+    prerequis: ['declarer-l-association', 'le-compte-bancaire-et-l-assurance'],
+    partie: 'AGREMENTS',
+    enUnMot: "L'Agence du Service civique t'autorise à accueillir des volontaires, sur des missions d'intérêt général.",
+    pourquoi:
+      "Avec l'agrément, l'État verse l'indemnité mensuelle des volontaires et paie leur protection sociale. L'agrément dit combien de volontaires tu peux accueillir. En échange, tu nommes un tuteur et tu rends compte chaque année.",
+    ilTeFaut: [
+      "Une ou plusieurs missions d'intérêt général, qui ne remplacent pas un emploi.",
+      'Un tuteur dans l\'association pour chaque volontaire.',
+      'Les statuts et les comptes de l\'association.',
+    ],
+    commentFaire: [
+      {
+        titre: 'Écris les missions',
+        detail:
+          "Une mission dit ce que le jeune fera, pour qui, et ce qu'il y apprendra. Elle complète le travail des salariés et des bénévoles, elle ne le remplace pas.",
+      },
+      {
+        titre: 'Fais la demande en ligne',
+        detail:
+          "La demande se fait depuis l'espace organisme du site du Service civique. Les services de l'État de ta région ou de ton département l'instruisent, en deux mois en général.",
+      },
+      {
+        titre: 'Prépare le tutorat',
+        detail: 'Nomme un tuteur, prévois la formation civique et citoyenne du volontaire, et le bilan annuel.',
+      },
+    ],
+    quoiFaire: ['Écris les missions.', 'Fais la demande en ligne.', 'Nomme un tuteur.'],
+    dureeEstimee: 'Une demi-journée pour la demande, puis environ deux mois.',
+    cout: 'Gratuit. Une petite part de l\'indemnité reste à la charge de l\'association.',
+    documents: [],
+    renvois: [
+      {
+        nom: "Réaliser les démarches d'agrément (service-civique.gouv.fr)",
+        lien: 'https://www.service-civique.gouv.fr/accueillir-un-volontaire/etape02-realiser-les-demarches-d-agrement',
+        pourQuoi: 'Qui peut être agréé, comment demander, ce que l\'État prend en charge.',
+      },
+      {
+        nom: 'La liste des agréments (associations.gouv.fr)',
+        lien: 'https://associations.gouv.fr/liste-des-agrements-existants',
+        pourQuoi: 'Le Service civique et les autres agréments, en une page.',
+      },
+    ],
+    quandCestFini: "L'association est agréée, et le nombre de volontaires autorisé est noté.",
+    apporte: 'Tu peux accueillir des volontaires en Service civique. Pas de volontaire prévu ? Choisis « Pas concerné ».',
+    lexique: [
+      { mot: 'Service civique', explication: "Un engagement de 6 à 12 mois pour les 16 à 25 ans (30 ans en situation de handicap), indemnisé par l'État." },
+      { mot: 'Tuteur', explication: "La personne de l'association qui accompagne le volontaire pendant sa mission." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 32,
+    slug: 'agrement-sport',
+    titre: "Avoir l'agrément Sport",
+    nature: 'SI_CONCERNE',
+    declencheur: "Pour une association sportive qui veut une aide de l'État : sans agrément, pas d'aide de l'État.",
+    prerequis: ['declarer-l-association'],
+    partie: 'AGREMENTS',
+    enUnMot: "Une association sportive affiliée à une fédération agréée est agréée d'office. Les autres le demandent au préfet.",
+    pourquoi:
+      "Le code du sport (article L121-4) réserve l'aide de l'État aux associations sportives agréées. L'agrément ouvre aussi des règles de cotisations sociales propres au sport et l'ouverture exceptionnelle de buvettes dans les équipements sportifs.",
+    ilTeFaut: [
+      "L'affiliation à une fédération sportive agréée par l'État, si ton association pratique un sport.",
+      "Sinon : des statuts qui garantissent un fonctionnement démocratique, une gestion transparente et l'égal accès des femmes et des hommes aux instances dirigeantes.",
+    ],
+    commentFaire: [
+      {
+        titre: 'Affilie-toi à une fédération agréée',
+        detail:
+          "Si ton association pratique un sport, l'affiliation à une fédération agréée par l'État vaut agrément : il n'y a pas d'autre démarche. Garde l'attestation d'affiliation de l'année.",
+      },
+      {
+        titre: 'Sinon, demande au préfet',
+        detail:
+          "Une association qui développe ou promeut le sport sans le pratiquer elle-même demande l'agrément au préfet du département, par le SDJES. Les statuts doivent contenir les clauses du code du sport.",
+      },
+    ],
+    quoiFaire: ['Affilie l\'association à une fédération agréée.', 'Ou demande l\'agrément au préfet par le SDJES.'],
+    dureeEstimee: "Le temps de l'affiliation, ou quelques semaines d'instruction.",
+    cout: "Gratuit. L'affiliation à la fédération a son prix, fixé par elle.",
+    documents: [],
+    renvois: [
+      {
+        nom: "L'agrément des associations sportives non affiliées (associations.gouv.fr)",
+        lien: 'https://associations.gouv.fr/lagrement-des-associations-sportives-non-affiliees',
+        pourQuoi: "La règle de l'affiliation qui vaut agrément, et ce que les statuts doivent contenir.",
+      },
+    ],
+    quandCestFini: "L'association est affiliée à une fédération agréée, ou le préfet lui a donné l'agrément.",
+    apporte: "L'aide de l'État t'est ouverte. Pas d'activité sportive ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'Affiliation', explication: "L'adhésion de ton club à une fédération sportive." },
+      { mot: 'Fédération agréée', explication: "Une fédération reconnue par le ministère des Sports." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 33,
+    slug: 'services-a-la-personne',
+    titre: 'Déclarer les services à la personne, et demander l\'agrément',
+    nature: 'SI_CONCERNE',
+    declencheur:
+      "Pour rendre des services à domicile (ménage, soutien scolaire, garde d'enfants…) avec l'avantage fiscal pour tes clients. L'agrément, lui, est obligatoire auprès des publics fragiles.",
+    echeance: { texte: "L'agrément vaut 5 ans et se renouvelle. La déclaration n'a pas de date de fin." },
+    prerequis: ['obtenir-le-siret'],
+    partie: 'AGREMENTS',
+    enUnMot:
+      "La déclaration donne à tes clients un crédit d'impôt. L'agrément est obligatoire pour les enfants de moins de 3 ans, et pour les personnes âgées ou handicapées en mode mandataire.",
+    pourquoi:
+      "Déclarée, l'association fait profiter ses clients d'un crédit d'impôt de 50 % et accepte le CESU. Sans l'agrément, elle ne peut pas garder des enfants de moins de 3 ans à domicile. L'aide aux personnes âgées ou handicapées en mode prestataire demande, elle, une autorisation du conseil départemental.",
+    ilTeFaut: [
+      'Le SIRET et les statuts.',
+      'La liste des activités que tu veux exercer, et en quel mode : prestataire ou mandataire.',
+      "Pour l'agrément : le respect du cahier des charges (personnel qualifié, livret d'accueil, devis).",
+    ],
+    commentFaire: [
+      {
+        titre: 'Repère tes activités',
+        detail:
+          "Il y a 26 activités de services à la personne. Regarde, pour chacune des tiennes, si elle demande une simple déclaration, un agrément ou une autorisation.",
+      },
+      {
+        titre: 'Fais la déclaration sur NOVA',
+        detail:
+          "La déclaration se fait en ligne sur NOVA. En principe, la structure ne doit faire que des services à la personne : demande aux services de l'État de ton département si tu peux en être dispensée.",
+      },
+      {
+        titre: "Demande l'agrément si tu en as besoin",
+        detail:
+          "Pour les publics fragiles, l'agrément se demande aussi sur NOVA. C'est la direction départementale de l'emploi, du travail et des solidarités (DDETS, en Île-de-France l'unité départementale de la DRIEETS) qui instruit.",
+      },
+    ],
+    quoiFaire: ['Repère tes activités et leur régime.', 'Déclare-toi sur NOVA.', "Demande l'agrément pour les publics fragiles."],
+    dureeEstimee: 'Une heure pour la déclaration. Plusieurs semaines pour un agrément.',
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'NOVA, le site des démarches',
+        lien: 'https://nova.entreprises.gouv.fr/',
+        genre: 'SITE',
+        aQuoiCaSert: "C'est là que la déclaration et la demande d'agrément se déposent.",
+      },
+    ],
+    renvois: [
+      {
+        nom: 'Les 26 activités de services à la personne (servicesalapersonne.gouv.fr)',
+        lien: 'https://www.servicesalapersonne.gouv.fr/tout-savoir-sur-les-services-la-personne/les-26-activites-de-services-la-personne',
+        pourQuoi: 'Pour chaque activité : déclaration, agrément ou autorisation.',
+      },
+      {
+        nom: 'La liste des agréments (associations.gouv.fr)',
+        lien: 'https://associations.gouv.fr/liste-des-agrements-existants',
+        pourQuoi: "Les publics fragiles qui demandent l'agrément.",
+      },
+    ],
+    quandCestFini: "L'association est déclarée sur NOVA, et agréée si elle s'adresse à des publics fragiles.",
+    apporte: 'Tes clients ont droit au crédit d\'impôt. Pas de services à domicile ? Choisis « Pas concerné ».',
+    lexique: [
+      { mot: 'Mode prestataire', explication: "L'association emploie l'intervenant et facture le client." },
+      { mot: 'Mode mandataire', explication: "Le client est l'employeur ; l'association s'occupe des démarches pour lui." },
+      { mot: 'CESU', explication: 'Le chèque emploi service universel, pour payer des services à domicile.' },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 34,
+    slug: 'agrement-education-nationale',
+    titre: "Demander l'agrément de l'Éducation nationale",
+    nature: 'CONSEILLE',
+    declencheur: "Pour une association qui intervient dans les écoles, les collèges ou les lycées publics, ou autour d'eux.",
+    echeance: { texte: 'Valable 5 ans. Le dépôt se fait aux dates fixées par ton académie.' },
+    prerequis: ['declarer-l-association', 'la-premiere-assemblee-generale'],
+    partie: 'AGREMENTS',
+    enUnMot: "Le rectorat reconnaît ton association comme « association éducative complémentaire de l'enseignement public ».",
+    pourquoi:
+      "L'agrément garantit aux écoles que ton association respecte les principes de l'enseignement public. Il n'est pas obligatoire pour intervenir dans une classe, mais il rassure les équipes et facilite les partenariats.",
+    ilTeFaut: [
+      "En général, au moins deux ans d'activité.",
+      "Les statuts, la liste des dirigeants, les rapports d'activité et les comptes.",
+      'Les CV des personnes qui interviennent.',
+    ],
+    commentFaire: [
+      {
+        titre: 'Choisis le bon niveau',
+        detail:
+          "Une association qui agit dans une seule académie demande l'agrément académique au recteur. Une association présente dans plusieurs académies le demande au ministère.",
+      },
+      {
+        titre: 'Dépose aux dates de ton académie',
+        detail: 'Chaque académie fixe ses périodes de dépôt. Regarde la page de ton rectorat et envoie le dossier complet.',
+      },
+    ],
+    quoiFaire: ['Choisis agrément académique ou national.', 'Dépose le dossier aux dates de ton académie.'],
+    dureeEstimee: 'Une journée pour le dossier, puis quelques mois.',
+    cout: 'Gratuit.',
+    documents: [],
+    renvois: [
+      {
+        nom: 'La liste des agréments (associations.gouv.fr)',
+        lien: 'https://associations.gouv.fr/liste-des-agrements-existants',
+        pourQuoi: "Ce que garantit l'agrément de l'Éducation nationale.",
+      },
+      {
+        nom: "L'agrément académique, l'exemple de Montpellier",
+        lien: 'https://www.ac-montpellier.fr/agrement-des-associations-educatives-complementaires-de-l-enseignement-public-121802',
+        pourQuoi: 'Les pièces, les périodes de dépôt, la durée de 5 ans.',
+      },
+    ],
+    quandCestFini: "L'association a son agrément, et sa date de fin est notée.",
+    apporte: "Les écoles savent que tu respectes les principes de l'enseignement public. Pas d'action avec l'école ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'Rectorat', explication: "Le service de l'Éducation nationale qui dirige une académie." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 35,
+    slug: 'habilitation-bafa-bafd',
+    titre: "Demander l'habilitation BAFA ou BAFD",
+    nature: 'SI_CONCERNE',
+    declencheur: 'Pour organiser toi-même des sessions de formation au BAFA ou au BAFD.',
+    echeance: { texte: "Par campagnes de 3 ans, avec une date limite de dépôt (souvent le 15 septembre) : regarde celle de ta région." },
+    prerequis: ['declarer-l-association', 'la-premiere-assemblee-generale'],
+    partie: 'AGREMENTS',
+    enUnMot: "L'État autorise ton association à former des animateurs (BAFA) ou des directeurs (BAFD) d'accueils de mineurs.",
+    pourquoi:
+      "Sans habilitation, pas de session BAFA ou BAFD. L'habilitation est donnée pour une période de 3 ans, après examen d'un projet éducatif, d'une équipe de formateurs et de leur formation. Elle est régionale (moins de 8 régions) ou nationale.",
+    ilTeFaut: [
+      'Un projet éducatif qui respecte les valeurs de la République et la laïcité.',
+      'Une équipe de formateurs et de directeurs de session qualifiés.',
+      'Une implantation réelle dans la région, et des lieux de formation.',
+    ],
+    commentFaire: [
+      {
+        titre: 'Repère la prochaine campagne',
+        detail:
+          "Les habilitations se demandent par campagnes. La DRAJES de ta région (direction régionale académique à la jeunesse, à l'engagement et aux sports) publie la date limite et le dossier.",
+      },
+      {
+        titre: 'Monte le dossier',
+        detail: 'Le formulaire officiel, le projet éducatif, les dossiers des formateurs, le calendrier des sessions. Chaque critère demande sa preuve.',
+      },
+      {
+        titre: 'Dépose à temps',
+        detail: 'Envoie le dossier complet à la DRAJES avant la date limite. La décision arrive avant le début de la période.',
+      },
+    ],
+    quoiFaire: ['Repère la date de la prochaine campagne.', 'Monte le dossier, critère par critère.', 'Dépose-le à la DRAJES avant la date limite.'],
+    dureeEstimee: 'Plusieurs semaines de préparation.',
+    cout: 'Gratuit.',
+    documents: [],
+    renvois: [
+      {
+        nom: "L'habilitation des organismes de formation BAFA BAFD (jeunes.gouv.fr)",
+        lien: 'https://www.jeunes.gouv.fr/l-habilitation-des-organismes-de-formation-preparant-aux-bafa-bafd-325',
+        pourQuoi: 'Les règles de l\'habilitation et les campagnes.',
+      },
+    ],
+    quandCestFini: "L'association est habilitée pour la période, et la date de la prochaine campagne est notée.",
+    apporte: "Tu peux organiser tes sessions BAFA ou BAFD. Pas de formation d'animateurs ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'BAFA', explication: "Le brevet d'aptitude aux fonctions d'animateur en accueil collectif de mineurs." },
+      { mot: 'DRAJES', explication: "Le service régional de l'État pour la jeunesse, l'engagement et le sport." },
+    ],
+    piecesAjoutees: [],
+  },
+  // --------------------------------------------- 7. ORGANISER UN ÉVÉNEMENT
+  {
+    numero: 26,
     slug: 'tenir-une-buvette',
     titre: 'Ouvrir une buvette',
     nature: 'SI_CONCERNE',
@@ -1839,7 +2398,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "L'autorisation du maire est reçue avant l'événement.",
-    debloque: "Ta buvette est en règle. Pas de buvette ? Choisis « Pas concerné ».",
+    apporte: "Ta buvette est en règle. Pas de buvette ? Choisis « Pas concerné ».",
     lexique: [
       { mot: 'Débit de boissons temporaire', explication: "Une buvette ouverte le temps d'un événement, avec l'accord du maire." },
       { mot: 'Groupe 3', explication: "Les boissons fermentées jusqu'à 18° : vin, bière, cidre." },
@@ -1847,7 +2406,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     piecesAjoutees: [],
   },
   {
-    numero: 26,
+    numero: 27,
     slug: 'organiser-une-tombola',
     titre: 'Organiser une tombola ou un loto',
     nature: 'SI_CONCERNE',
@@ -1891,7 +2450,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     renvois: [],
     quandCestFini: "La tombola est autorisée avant la vente des billets, ou le loto respecte les conditions.",
-    debloque: "Ton jeu est en règle. Pas de tombola ni de loto ? Choisis « Pas concerné ».",
+    apporte: "Ton jeu est en règle. Pas de tombola ni de loto ? Choisis « Pas concerné ».",
     lexique: [
       { mot: 'Tombola (loterie)', explication: 'Un tirage au sort de lots, avec des billets vendus à l\'avance.' },
       { mot: 'Loto traditionnel', explication: 'Le loto de salle avec des cartons, entre membres et proches, pour de petites mises.' },
@@ -1899,6 +2458,78 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     piecesAjoutees: [],
   },
 ];
+
+/**
+ * PRIORITÉ ET FINANCEMENTS, étape par étape (01/10/2026). Priorité 1 : une
+ * obligation avec une échéance légale, ou une étape qui bloque une
+ * subvention. `debloque` : seulement ce qui est exact.
+ */
+const REPERES: Record<string, ReperesFinancement> = {
+  // 1. Naître
+  'declarer-l-association': { priorite: 1, debloque: ['Subventions publiques', 'Dons', 'Cotisations'] },
+  'obtenir-le-siret': { priorite: 1, debloque: ['Subventions publiques', 'FDVA', 'Subvention de la mairie'] },
+  'les-cinq-pieces-d-identite': { priorite: 1, debloque: ['Dossiers de subvention'] },
+  'le-compte-bancaire-et-l-assurance': { priorite: 1, debloque: ['Versement des subventions', 'Dons en ligne'] },
+  // 2. Vivre
+  'les-adherents-et-les-cotisations': { priorite: 1, debloque: ['Cotisations'] },
+  'tenir-des-comptes-simples': { priorite: 1, debloque: ['Subventions publiques'] },
+  'la-premiere-assemblee-generale': { priorite: 1, debloque: ['Dossiers de subvention'] },
+  // 3. Subvention
+  'le-projet-en-une-page': { priorite: 1, debloque: ['FDVA', 'Subvention de la mairie', 'Appels à projets', 'Mécénat'] },
+  'le-premier-budget': { priorite: 1, debloque: ['Subventions publiques', 'Fondations'] },
+  'trouver-le-premier-financeur': { priorite: 1, debloque: ['FDVA', 'Subvention de la mairie', 'Fondations', 'Mécénat'] },
+  'constituer-et-deposer-le-dossier': { priorite: 1, debloque: ['Subvention'] },
+  'rendre-compte': { priorite: 1, debloque: ['Renouvellement de la subvention'] },
+  // 4. Agréments
+  'rescrit-interet-general': { priorite: 2, debloque: ['Dons défiscalisés', 'Mécénat'] },
+  'agrement-jeunesse-education-populaire': { priorite: 2, debloque: ['Postes FONJEP', "Aides de l'État", 'SACEM à tarif réduit'] },
+  'agrement-espace-de-vie-sociale': { priorite: 2, debloque: ['CAF', 'Prestation animation locale'] },
+  'agrement-service-civique': { priorite: 2, debloque: ['Service civique', "Indemnité payée par l'État"] },
+  'agrement-esus': { priorite: 3, debloque: ['Épargne solidaire', 'Investisseurs solidaires'] },
+  'agrement-sport': { priorite: 3, debloque: ["Aides de l'État au sport"] },
+  'services-a-la-personne': { priorite: 3, debloque: ["Crédit d'impôt des clients", 'CESU'] },
+  'agrement-education-nationale': { priorite: 3, debloque: ['Partenariats avec les écoles'] },
+  'habilitation-bafa-bafd': { priorite: 3, debloque: ['Recettes de formation BAFA'] },
+  // 5. Chaque année
+  'assemblee-generale-de-l-annee': {
+    priorite: 1,
+    debloque: ['Renouvellement des subventions'],
+    dateChoisie: { libelle: "Date de l'AG", aide: 'Celle que fixent tes statuts. Elle revient chaque année au même jour : change-la si besoin.' },
+  },
+  'declarer-les-changements': { priorite: 1 },
+  'declarer-les-recus-fiscaux': { priorite: 1, debloque: ['Dons défiscalisés', 'Mécénat'] },
+  'publier-les-comptes': { priorite: 1, debloque: ['Subventions au-delà de 153 000 €'] },
+  'garder-les-papiers': { priorite: 2 },
+  // 6. Selon ton activité
+  'le-premier-salarie': { priorite: 1, debloque: ["Aides à l'embauche", 'Postes FONJEP'] },
+  'accueillir-des-mineurs': { priorite: 1, debloque: ['CAF (accueil de loisirs)'] },
+  'les-donnees-des-membres': { priorite: 2 },
+  'vendre-des-activites': { priorite: 2 },
+  'les-frais-des-benevoles': { priorite: 3, debloque: ['Dons défiscalisés'] },
+  'ouvrir-un-local-au-public': { priorite: 2 },
+  'appel-a-la-generosite': { priorite: 2, debloque: ['Dons du public'] },
+  // 7. Événement
+  'tenir-une-buvette': { priorite: 1, debloque: ['Recettes de buvette'] },
+  'organiser-une-tombola': { priorite: 2, debloque: ['Recettes de tombola'] },
+};
+
+const RANG_PARTIE = (code: PartieChemin) => PARTIES_CHEMIN.findIndex((p) => p.code === code);
+
+/**
+ * Le chemin tel qu'on le sert : rangé partie par partie, puis par priorité,
+ * renuméroté de 1 à N. Toute étape qui n'est pas obligatoire pour toutes les
+ * associations peut être marquée « Pas concerné ».
+ */
+export const ETAPES_CHEMIN: readonly EtapeChemin[] = ordonnerEtapes(
+  [...ETAPES_ECRITES]
+    .sort((a, b) => RANG_PARTIE(a.partie) - RANG_PARTIE(b.partie) || a.numero - b.numero)
+    .map((e): EtapeChemin => ({
+      ...e,
+      ...(REPERES[e.slug] ?? { priorite: 2 }),
+      peutNePasConcerner: e.peutNePasConcerner ?? e.nature !== 'OBLIGATOIRE',
+    })),
+  (e) => e.partie,
+);
 
 export function trouverEtape(slugOuNumero: string): EtapeChemin | undefined {
   const n = Number(slugOuNumero);

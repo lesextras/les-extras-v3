@@ -15,6 +15,7 @@ export function BoutonEtapeFaite({
   pasConcerne = false,
   peutNePasConcerner = false,
   chaqueAnnee = false,
+  cycle = null,
 }: {
   slug: string;
   faite: boolean;
@@ -22,6 +23,8 @@ export function BoutonEtapeFaite({
   pasConcerne?: boolean;
   peutNePasConcerner?: boolean;
   chaqueAnnee?: boolean;
+  /** Étape annuelle : l'année du cycle en cours (« 2026 »). */
+  cycle?: number | null;
 }) {
   const router = useRouter();
   const [enCours, setEnCours] = useState(false);
@@ -91,10 +94,10 @@ export function BoutonEtapeFaite({
       ) : null}
       {faite ? (
         <p className="mt-2 text-center text-xs text-[#6B6A8A]">
-          {chaqueAnnee ? 'Cochée pour cette année. Elle revient au 1er janvier. ' : ''}Clique encore pour décocher.
+          {chaqueAnnee ? `Cochée pour ${cycle ?? 'cette année'}. Elle revient pour l'année suivante. ` : ''}Clique encore pour décocher.
         </p>
       ) : chaqueAnnee ? (
-        <p className="mt-2 text-center text-xs text-[#6B6A8A]">Une fois cochée, elle compte pour l&apos;année en cours.</p>
+        <p className="mt-2 text-center text-xs text-[#6B6A8A]">Une fois cochée, elle compte pour {cycle ?? "l'année en cours"}.</p>
       ) : null}
       {erreur ? <p className="mt-2 text-sm text-[#8A2419]">{erreur}</p> : null}
     </div>

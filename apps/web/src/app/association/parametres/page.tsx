@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import { apiEspace, sessionAssociation } from '../_session';
 import { BTN_DISCRET, CARTE, Encart, Pastille, Titre, formaterDate } from '../_ui';
 import type { Espace } from '../espace/_types';
+import { EspacesRelies } from '../../_shared/liaisons/EspacesRelies';
+import type { ListeLiaisons } from '../../_shared/liaisons/types';
 
 export const metadata: Metadata = { title: 'Paramètres', robots: { index: false, follow: false } };
 
@@ -46,7 +48,10 @@ const NIVEAUX: Record<string, { titre: string; quoi: string }> = {
  */
 export default async function ParametresPage() {
   const s = await sessionAssociation('/parametres');
-  const { data, error } = await apiEspace<Espace>(s, '/association/espace');
+  const [{ data, error }, liaisons] = await Promise.all([
+    apiEspace<Espace>(s, '/association/espace'),
+    apiEspace<ListeLiaisons>(s, '/liaisons'),
+  ]);
 
   if (!data) {
     return (
@@ -132,6 +137,12 @@ export default async function ParametresPage() {
               Le répertoire
             </Link>
           </div>
+        </section>
+
+        {/* ----------------------------------------------- espaces reliés */}
+        <section className={`${CARTE} p-5`} id="espaces-relies">
+          <h2 className="mb-2 text-[18px] font-extrabold text-[#1D1B5C]">Espaces reliés</h2>
+          <EspacesRelies espace="association" initial={liaisons.data ?? null} />
         </section>
 
         {/* ------------------------------------------------------ l'accès */}

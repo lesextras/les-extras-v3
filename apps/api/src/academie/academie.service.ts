@@ -14,6 +14,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RepertoiresFormationService, prerempliDepuis } from './repertoires';
 import { ETAPES_ACADEMIE, VERSION_CHEMIN_ACADEMIE, trouverEtapeAcademie } from './chemin';
 import { etatEtape, lireSuivi, marquerSuivi } from '../common/chemin-suivi';
+import { prochaineEtape } from '../common/chemin-obligations';
 import type {
   ModifierAcademieDto,
   ModifierReclamationDto,
@@ -225,17 +226,23 @@ export class AcademieService {
         faiteLe: etat.faiteLe,
         chaqueAnnee: Boolean(e.chaqueAnnee),
         peutNePasConcerner: Boolean(e.peutNePasConcerner),
+        priorite: e.priorite,
+        prerequis: e.prerequis,
+        // Étape annuelle : l'année du cycle en cours et son échéance.
+        cycle: etat.cycle,
+        echeanceLe: etat.echeanceLe,
       };
     });
     const faites = etapes.filter((e) => e.faite).length;
+    const faitesIci = new Set(etapes.filter((e) => e.faite).map((e) => e.slug));
     return {
       version: VERSION_CHEMIN_ACADEMIE,
       etapes,
       faites,
       total: etapes.length,
-      // La première étape non faite, dans l'ordre des numéros : le chemin
-      // linéaire d'abord, puis ce qui revient chaque année, puis le reste.
-      courante: etapes.find((e) => !e.faite)?.slug ?? null,
+      // La prochaine étape : par priorité puis par numéro, prérequis faits
+      // (common/chemin-obligations.ts, `prochaineEtape`).
+      courante: prochaineEtape(etapes, (slug) => faitesIci.has(slug))?.slug ?? null,
     };
   }
 
@@ -246,7 +253,10 @@ export class AcademieService {
       throw new BadRequestException('Cette étape ne peut pas être marquée « Pas concerné ».');
     }
     const fiche = await this.fiche(accountId);
-    const suite = marquerSuivi(fiche.etapesFaites, lireSuivi(fiche.etapesSuivi), slug, faite, pasConcerne);
+    const suivi = lireSuivi(fiche.etapesSuivi);
+    // Une étape annuelle se coche pour son cycle en cours (« 2026 », ou « 2027 » une fois la date passée).
+    const { cycle } = etatEtape(etape, fiche.etapesFaites, suivi);
+    const suite = marquerSuivi(fiche.etapesFaites, suivi, slug, faite, pasConcerne, new Date(), cycle);
     const majouree = await this.prisma.academie.update({
       where: { id: fiche.id },
       data: { etapesFaites: suite.faites, etapesSuivi: suite.suivi as unknown as Prisma.InputJsonValue },

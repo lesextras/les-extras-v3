@@ -4,11 +4,11 @@ import type { ObligationEtape } from '../_shared/chemin-obligations';
 
 /** Les types du chemin, tels que l'API les renvoie (voir apps/api/src/association/chemin.ts). */
 
-export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE' | 'EVENEMENT';
+export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'AGREMENTS' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE' | 'EVENEMENT';
 
 export interface DescriptionPartie {
   code: PartieChemin;
-  numero: 1 | 2 | 3 | 4 | 5 | 6;
+  numero: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   titre: string;
   enUnMot: string;
   resultat: string;
@@ -24,7 +24,10 @@ export interface DocumentEtape {
   aQuoiCaSert: string;
 }
 
-/** Avec, pour chaque étape : obligatoire ou non, déclencheur, échéance, prérequis (01/10/2026). */
+/**
+ * Avec, pour chaque étape : obligatoire ou non, déclencheur, échéance,
+ * prérequis, priorité, financements débloqués, date choisie (01/10/2026).
+ */
 export interface EtapeChemin extends ObligationEtape {
   numero: number;
   slug: string;
@@ -40,7 +43,10 @@ export interface EtapeChemin extends ObligationEtape {
   documents: DocumentEtape[];
   renvois: { nom: string; lien: string; pourQuoi: string }[];
   quandCestFini: string;
-  debloque: string;
+  /** Ce que l'étape apporte une fois faite (phrase courte). S'appelait `debloque` avant le 01/10/2026. */
+  apporte?: string;
+  /** Les financements que l'étape ouvre (voir ObligationEtape). */
+  debloque?: string[];
   lexique: { mot: string; explication: string }[];
   piecesAjoutees: string[];
   verifiableAvec?: 'RNA' | 'SIRENE';
@@ -90,7 +96,7 @@ export const LIBELLES_GENRE: Record<GenreDocument, string> = {
 
 /**
  * Les couleurs de chaque partie du chemin : une teinte par partie, la troisième
- * en indigo, « Chaque année » en sarcelle, « Selon ton activité » en ardoise,
+ * en indigo, « Les agréments » en framboise, « Chaque année » en sarcelle, « Selon ton activité » en ardoise,
  * « Organiser un événement » en bleu ciel.
  * Copie dans chemin/KanbanChemin.tsx : les deux tables bougent ensemble.
  */
@@ -98,6 +104,7 @@ export const TEINTES_PARTIE: Record<PartieChemin, { fond: string; texte: string;
   NAITRE: { fond: 'bg-[#E3F5EC]', texte: 'text-[#0F5F3E]', bord: 'border-[#BFE6D2]', pastille: 'bg-[#1E9E6A]' },
   VIVRE: { fond: 'bg-[#FEF3E2]', texte: 'text-[#7C3E06]', bord: 'border-[#F5D6A8]', pastille: 'bg-[#F5B400]' },
   SUBVENTION: { fond: 'bg-[#ECEBFC]', texte: 'text-[#4338CA]', bord: 'border-[#C7C4F2]', pastille: 'bg-[#4F46E5]' },
+  AGREMENTS: { fond: 'bg-[#FCE7F3]', texte: 'text-[#9D174D]', bord: 'border-[#FBCFE8]', pastille: 'bg-[#DB2777]' },
   CHAQUE_ANNEE: { fond: 'bg-[#E0F4F3]', texte: 'text-[#115E59]', bord: 'border-[#A7DCD8]', pastille: 'bg-[#0D9488]' },
   SELON_ACTIVITE: { fond: 'bg-[#EEF0F4]', texte: 'text-[#3F4A5C]', bord: 'border-[#D3D8E2]', pastille: 'bg-[#64748B]' },
   EVENEMENT: { fond: 'bg-[#E0F2FE]', texte: 'text-[#075985]', bord: 'border-[#BAE6FD]', pastille: 'bg-[#0284C7]' },

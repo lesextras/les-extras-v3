@@ -146,7 +146,7 @@ describe('Tâches des projets : le service', () => {
   });
 
   it("crée une tâche au bout de sa colonne, avec le nom du responsable recopié", async () => {
-    prisma.actionAssociation.findFirst.mockResolvedValue({ id: 'p1' });
+    prisma.actionAssociation.findFirst.mockResolvedValue({ id: 'p1', organisationId: 'org1', academieId: null });
     prisma.contactAssociation.findFirst.mockResolvedValue({ id: 'c1', prenom: 'Awa', nom: 'Diallo', roles: [RoleContact.BENEVOLE] });
     prisma.tacheProjet.findFirst.mockResolvedValue({ ordre: 4 });
     const t = await service.creerTache('acc1', {
@@ -173,7 +173,7 @@ describe('Tâches des projets : le service', () => {
     prisma.actionAssociation.findFirst.mockResolvedValue(null);
     await expect(service.creerTache('acc1', { actionId: 'autre', titre: 'x' })).rejects.toBeInstanceOf(NotFoundException);
 
-    prisma.actionAssociation.findFirst.mockResolvedValue({ id: 'p1' });
+    prisma.actionAssociation.findFirst.mockResolvedValue({ id: 'p1', organisationId: 'org1', academieId: null });
     prisma.contactAssociation.findFirst.mockResolvedValue({ id: 'c9', prenom: 'Max', nom: 'Mairie', roles: [RoleContact.PARTENAIRE] });
     await expect(service.creerTache('acc1', { actionId: 'p1', titre: 'x', responsable: 'contact:c9' })).rejects.toBeInstanceOf(BadRequestException);
 

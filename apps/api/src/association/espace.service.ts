@@ -50,7 +50,7 @@ import {
   type TypeDePiece,
 } from './referentiel-pieces';
 import { ETAPES_CHEMIN } from './chemin';
-import { etatEtape, lireSuivi, marquerSuivi } from '../common/chemin-suivi';
+import { choisirDate, dateValide, etatEtape, lireSuivi, marquerSuivi } from '../common/chemin-suivi';
 import { progressionParProjet } from './taches';
 import type {
   ActionDto,
@@ -500,12 +500,31 @@ export class EspaceService {
       throw new BadRequestException('Cette étape ne peut pas être marquée « Pas concerné ».');
     }
     const organisation = await this.organisationDuCompte(accountId);
-    const suite = marquerSuivi(organisation.etapesFaites, lireSuivi(organisation.etapesSuivi), slug, faite, pasConcerne);
+    const suivi = lireSuivi(organisation.etapesSuivi);
+    // Une étape annuelle se coche pour son cycle en cours (« 2026 », ou « 2027 » une fois la date passée).
+    const { cycle } = etatEtape(etape, organisation.etapesFaites, suivi);
+    const suite = marquerSuivi(organisation.etapesFaites, suivi, slug, faite, pasConcerne, new Date(), cycle);
     await this.prisma.organisation.update({
       where: { id: organisation.id },
       data: { etapesFaites: suite.faites, etapesSuivi: suite.suivi as unknown as Prisma.InputJsonValue },
     });
     return { etapesFaites: suite.faites };
+  }
+
+  /** La date choisie d'une étape annuelle (la date de l'AG), AAAA-MM-JJ, ou null pour l'effacer. */
+  async choisirDateEtape(accountId: string, slug: string, date: string | null) {
+    const etape = ETAPES_CHEMIN.find((e) => e.slug === slug);
+    if (!etape) throw new NotFoundException("Cette étape n'existe pas.");
+    if (!etape.dateChoisie) throw new BadRequestException("Cette étape n'a pas de date à choisir.");
+    if (date !== null && !dateValide(date)) throw new BadRequestException("Cette date n'existe pas.");
+    const organisation = await this.organisationDuCompte(accountId);
+    const suivi = choisirDate(lireSuivi(organisation.etapesSuivi), slug, date);
+    await this.prisma.organisation.update({
+      where: { id: organisation.id },
+      data: { etapesSuivi: suivi as unknown as Prisma.InputJsonValue },
+    });
+    const etat = etatEtape(etape, organisation.etapesFaites, suivi);
+    return { slug, dateChoisie: etat.dateChoisie, cycle: etat.cycle, echeanceLe: etat.echeanceLe, faite: etat.faite };
   }
 
   // ------------------------------------------------------------------ dossiers
@@ -812,12 +831,23 @@ export class EspaceService {
 
   // ----------------------------------------------------------------- actions
 
-  /** Les actions de l'association, la plus récente d'abord, avec l'avancement de leurs tâches. */
+  /**
+   * Les actions de l'association, la plus récente d'abord, avec l'avancement
+   * de leurs tâches et les formations des académies reliées qui les servent
+   * (un lien retiré emporte ces liens : il ne reste que ceux d'académies reliées).
+   */
   async actions(accountId: string) {
     const organisation = await this.organisationDuCompte(accountId);
-    const [actions, groupes] = await Promise.all([
+    const [brutes, groupes] = await Promise.all([
       this.prisma.actionAssociation.findMany({
         where: { organisationId: organisation.id },
+        include: {
+          formations: {
+            where: { academie: { liaisons: { some: { organisationId: organisation.id, statut: 'ACTIVE' } } } },
+            select: { academieId: true, cours: { select: { id: true, titre: true } }, academie: { select: { nom: true } } },
+            orderBy: { createdAt: 'asc' },
+          },
+        },
         orderBy: [{ dateDebut: 'desc' }, { createdAt: 'desc' }],
       }),
       this.prisma.tacheProjet.groupBy({
@@ -827,6 +857,10 @@ export class EspaceService {
       }),
     ]);
     const progression = progressionParProjet(groupes);
+    const actions = brutes.map(({ formations, ...a }) => ({
+      ...a,
+      formations: formations.map((f) => ({ id: f.cours.id, titre: f.cours.titre, academieId: f.academieId, academieNom: f.academie.nom })),
+    }));
     return {
       actions: actions.map((a) => ({ ...a, ...(progression.get(a.id) ?? { tachesTotal: 0, tachesFaites: 0 }) })),
       resume: this.resumeActions(actions),
@@ -1249,6 +1283,12 @@ export class EspaceService {
         faiteLe: etat.faiteLe,
         chaqueAnnee: Boolean(e.chaqueAnnee),
         peutNePasConcerner: Boolean(e.peutNePasConcerner),
+        priorite: e.priorite,
+        prerequis: e.prerequis,
+        // Étape annuelle : l'année du cycle en cours et son échéance ; la date choisie (AG).
+        cycle: etat.cycle,
+        echeanceLe: etat.echeanceLe,
+        dateChoisie: etat.dateChoisie,
       };
     });
     const etapesFaites = etapes.filter((e) => e.faite).length;

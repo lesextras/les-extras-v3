@@ -4,6 +4,7 @@ import { apiEspace, sessionAssociation } from '../_session';
 import { nomCourt } from '../_nom';
 import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Carte, Encart, Info, Pastille, SousTitre } from '../_ui';
 import { BlocInstaller } from '../../_shared/BlocInstaller';
+import { prochaineEtape as choisirProchaine } from '../../_shared/chemin-obligations';
 import { LIBELLES_ETAT, LIBELLES_ETAT_ACTION, dateCourte, formaterEuros, type Espace } from './_types';
 
 /** L'anneau de progression, comme un compteur de configuration. */
@@ -43,7 +44,9 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
 
   const { organisation, lundi, chemin, dossiers, configuration, vieStatutaire, actions, resumeActions, budget } = data;
   const prenom = s.session.user.firstName ?? '';
-  const prochaineEtape = chemin.etapes.find((e) => !e.faite) ?? null;
+  // Par priorité puis par numéro, prérequis faits (comme sur le chemin).
+  const faitesChemin = new Set(chemin.etapes.filter((e) => e.faite).map((e) => e.slug));
+  const prochaineEtape = choisirProchaine(chemin.etapes, (slug) => faitesChemin.has(slug));
   const prochaineConfig = configuration.etapes.find((e) => !e.faite) ?? null;
   const urgences = lundi.perime.length + lundi.du.length + (vieStatutaire.agEnRetard ? 1 : 0) + vieStatutaire.mandatsExpires.length;
   const demande = dossiers.reduce((t, d) => t + (d.montantDemande ?? 0), 0);

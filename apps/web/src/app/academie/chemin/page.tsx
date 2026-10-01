@@ -5,7 +5,19 @@ import { academieConnectee, apiAcademie, sessionAcademie } from '../_session';
 import { Accent, CARTE, Encart, SousTitre, Titre } from '../_ui';
 import type { EspaceAcademie } from '../_types';
 import { KanbanCheminAcademie } from './KanbanCheminAcademie';
-import { BadgeNature, BandeauEcheances, LigneEcheance, LignePrerequis, type EtapeRepere } from '../../_shared/chemin-obligations';
+import {
+  BadgeAnnuel,
+  BadgeNature,
+  BadgePriorite,
+  BandeauEcheances,
+  LigneDebloque,
+  LigneEcheance,
+  LignePrerequis,
+  premierePhrase,
+  prochaineEtape,
+  type EtapeRepere,
+} from '../../_shared/chemin-obligations';
+import { CarteRetournable } from '../../_shared/CarteRetournable';
 
 export const metadata: Metadata = {
   title: 'Le chemin',
@@ -36,6 +48,8 @@ export default async function CheminPage() {
   let faites = new Set<string>();
   let automatiques = new Set<string>();
   let pasConcernees = new Set<string>();
+  // Les étapes annuelles : l'année de leur cycle et leur échéance (l'API les calcule).
+  let cycles: Record<string, { cycle: number | null; echeanceLe: string | null }> = {};
   let nom: string | null = null;
   if (await academieConnectee()) {
     const s = await sessionAcademie('/academie/chemin');
@@ -44,12 +58,14 @@ export default async function CheminPage() {
       faites = new Set(data.chemin.etapes.filter((e) => e.faite).map((e) => e.slug));
       automatiques = new Set(data.chemin.etapes.filter((e) => e.automatique).map((e) => e.slug));
       pasConcernees = new Set(data.chemin.etapes.filter((e) => e.faite && e.pasConcerne).map((e) => e.slug));
+      cycles = Object.fromEntries(data.chemin.etapes.map((e) => [e.slug, { cycle: e.cycle ?? null, echeanceLe: e.echeanceLe ?? null }]));
       nom = data.academie.nom;
     }
   }
 
   const total = chemin.etapes.length;
-  const prochaine = chemin.etapes.find((e) => !faites.has(e.slug)) ?? null;
+  // La prochaine étape : par priorité puis par numéro, prérequis faits.
+  const prochaine = prochaineEtape(chemin.etapes, (slug) => faites.has(slug));
   // Ce qu'il faut pour parler d'une étape ailleurs : badge, échéance, « il faut d'abord ».
   const reperes: EtapeRepere[] = chemin.etapes.map((e) => ({
     slug: e.slug,
@@ -60,6 +76,9 @@ export default async function CheminPage() {
     declencheur: e.declencheur,
     echeance: e.echeance,
     prerequis: e.prerequis,
+    priorite: e.priorite,
+    debloque: e.debloque,
+    echeanceLe: cycles[e.slug]?.echeanceLe ?? null,
   }));
 
   return (
@@ -121,10 +140,15 @@ export default async function CheminPage() {
             nature: e.nature,
             echeance: e.echeance,
             prerequis: e.prerequis,
+            priorite: e.priorite,
+            debloque: e.debloque,
+            resume: e.resume,
+            declencheur: e.declencheur,
           }))}
           faites={[...faites]}
           automatiques={[...automatiques]}
           pasConcernees={[...pasConcernees]}
+          cycles={cycles}
         />
       ) : (
       <div className="space-y-10">
@@ -159,61 +183,75 @@ export default async function CheminPage() {
                   const estProchaine = prochaine?.slug === e.slug;
                   return (
                     <li key={e.slug} className="h-full">
-                      <Link
-                        href={`/academie/chemin/${e.slug}`}
-                        className={`${CARTE} group flex h-full flex-col p-5 no-underline transition hover:-translate-y-0.5 hover:border-[#1E9E6A] hover:shadow-[0_12px_28px_-20px_rgba(15,95,62,0.8)] ${
-                          estProchaine && nom ? 'border-2 border-[#1E9E6A]' : ''
-                        }`}
-                      >
-                        <span className="flex items-center justify-between gap-3">
-                          <span
-                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-extrabold ${
-                              faite ? 'bg-[#1E9E6A] text-white' : `${teinte.fond} ${teinte.texte}`
+                      <CarteRetournable
+                        theme="academie"
+                        titre={e.titre}
+                        className="h-full"
+                        verso={{
+                          cestQuoi: premierePhrase(e.resume),
+                          pourquoi: e.declencheur,
+                          comment: [e.pourPasser, e.echeance?.texte].filter(Boolean).join(' '),
+                          debloque: e.debloque,
+                          href: `/academie/chemin/${e.slug}`,
+                        }}
+                        recto={
+                          <Link
+                            href={`/academie/chemin/${e.slug}`}
+                            className={`${CARTE} group flex h-full flex-col p-5 pb-10 no-underline transition hover:-translate-y-0.5 hover:border-[#1E9E6A] hover:shadow-[0_12px_28px_-20px_rgba(15,95,62,0.8)] ${
+                              estProchaine && nom ? 'border-2 border-[#1E9E6A]' : ''
                             }`}
-                            aria-label={faite ? 'Étape faite' : undefined}
                           >
-                            {faite ? '✓' : e.numero}
-                          </span>
-                          {faite && pasConcernees.has(e.slug) ? (
-                            <span className="rounded-full bg-[#EEF0F4] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#3F4A5C]">
-                              Pas concerné
+                            <span className="flex items-center justify-between gap-3">
+                              <span
+                                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-extrabold ${
+                                  faite ? 'bg-[#1E9E6A] text-white' : `${teinte.fond} ${teinte.texte}`
+                                }`}
+                                aria-label={faite ? 'Étape faite' : undefined}
+                              >
+                                {faite ? '✓' : e.numero}
+                              </span>
+                              {faite && pasConcernees.has(e.slug) ? (
+                                <span className="rounded-full bg-[#EEF0F4] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#3F4A5C]">
+                                  Pas concerné
+                                </span>
+                              ) : faite && automatiques.has(e.slug) ? (
+                                <span className="rounded-full bg-[#E3F5EC] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#0F5F3E]">
+                                  Auto
+                                </span>
+                              ) : faite ? (
+                                <span className="rounded-full bg-[#E3F5EC] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#0F5F3E]">
+                                  Fait
+                                </span>
+                              ) : estProchaine && nom ? (
+                                <span className="rounded-full bg-[#DDEBE4] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#0F5F3E]">
+                                  Prochaine
+                                </span>
+                              ) : e.chaqueAnnee ? (
+                                <BadgeAnnuel cycle={cycles[e.slug]?.cycle} />
+                              ) : null}
                             </span>
-                          ) : faite && automatiques.has(e.slug) ? (
-                            <span className="rounded-full bg-[#E3F5EC] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#0F5F3E]">
-                              Auto
+                            <span className="mt-3 block text-lg font-extrabold leading-snug text-[#12312A] group-hover:text-[#0F5F3E]">
+                              {e.titre}
                             </span>
-                          ) : faite ? (
-                            <span className="rounded-full bg-[#E3F5EC] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#0F5F3E]">
-                              Fait
+                            <span className="mt-2 flex flex-wrap gap-1.5">
+                              <BadgePriorite priorite={e.priorite} />
+                              <BadgeNature nature={e.nature} />
                             </span>
-                          ) : estProchaine && nom ? (
-                            <span className="rounded-full bg-[#DDEBE4] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#0F5F3E]">
-                              Prochaine
+                            <span className="mt-1 block text-sm leading-relaxed text-[#5E7A6E]">{e.resume}</span>
+                            {faite ? null : (
+                              <>
+                                <LigneEcheance echeance={e.echeance} chaqueAnnee={e.chaqueAnnee} echeanceLe={cycles[e.slug]?.echeanceLe} theme="academie" />
+                                <LignePrerequis prerequis={e.prerequis} etapes={reperes} faites={faites} theme="academie" liens={false} />
+                                <LigneDebloque debloque={e.debloque} theme="academie" />
+                              </>
+                            )}
+                            <span className="mt-3 block rounded-lg bg-[#F4F9F6] px-3 py-2 text-[13px] leading-snug text-[#334A42]">
+                              <span className="font-bold text-[#0F5F3E]">Pour passer :</span> {e.pourPasser}
                             </span>
-                          ) : e.chaqueAnnee ? (
-                            <span className="rounded-full bg-[#E0F4F3] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#115E59]">
-                              Chaque année
-                            </span>
-                          ) : null}
-                        </span>
-                        <span className="mt-3 block text-lg font-extrabold leading-snug text-[#12312A] group-hover:text-[#0F5F3E]">
-                          {e.titre}
-                        </span>
-                        <span className="mt-2 flex flex-wrap gap-1.5">
-                          <BadgeNature nature={e.nature} />
-                        </span>
-                        <span className="mt-1 block text-sm leading-relaxed text-[#5E7A6E]">{e.resume}</span>
-                        {faite ? null : (
-                          <>
-                            <LigneEcheance echeance={e.echeance} chaqueAnnee={e.chaqueAnnee} theme="academie" />
-                            <LignePrerequis prerequis={e.prerequis} etapes={reperes} faites={faites} theme="academie" liens={false} />
-                          </>
-                        )}
-                        <span className="mt-3 block rounded-lg bg-[#F4F9F6] px-3 py-2 text-[13px] leading-snug text-[#334A42]">
-                          <span className="font-bold text-[#0F5F3E]">Pour passer :</span> {e.pourPasser}
-                        </span>
-                        <span className="mt-auto pt-4 text-sm font-bold text-[#1E9E6A]">Ouvrir l&apos;étape →</span>
-                      </Link>
+                            <span className="mt-auto pt-4 text-sm font-bold text-[#1E9E6A]">Ouvrir l&apos;étape →</span>
+                          </Link>
+                        }
+                      />
                     </li>
                   );
                 })}

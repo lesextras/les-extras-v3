@@ -7,7 +7,19 @@ import { AVANTAGES, FAMILLES_AVANTAGES, VERIFIE_LE } from '../_avantages';
 import { CarteAvantage } from '../CarteAvantage';
 import { FamillesAvantages } from '../FamillesAvantages';
 import { KanbanChemin } from './KanbanChemin';
-import { BadgeNature, BandeauEcheances, LigneEcheance, LignePrerequis, type EtapeRepere } from '../../_shared/chemin-obligations';
+import {
+  BadgeAnnuel,
+  BadgeNature,
+  BadgePriorite,
+  BandeauEcheances,
+  LigneDebloque,
+  LigneEcheance,
+  LignePrerequis,
+  premierePhrase,
+  prochaineEtape,
+  type EtapeRepere,
+} from '../../_shared/chemin-obligations';
+import { CarteRetournable } from '../../_shared/CarteRetournable';
 import { LIBELLES_COUT } from '../_avantages';
 
 export const metadata: Metadata = {
@@ -49,8 +61,10 @@ export default async function CheminPage() {
   const parties = chemin?.parties ?? [];
   const etapes = chemin?.etapes ?? [];
   const faites = connecte?.faites ?? new Set<string>();
-  const prochaine = etapes.find((e) => !faites.has(e.slug)) ?? null;
-  // Ce qu'il faut pour parler d'une étape ailleurs : badge, échéance, « il faut d'abord ».
+  const cycles = connecte?.cycles ?? {};
+  // La prochaine étape : par priorité puis par numéro, prérequis faits.
+  const prochaine = prochaineEtape(etapes, (slug) => faites.has(slug));
+  // Ce qu'il faut pour parler d'une étape ailleurs : badge, échéance (celle du cycle en cours), « il faut d'abord ».
   const reperes: EtapeRepere[] = etapes.map((e) => ({
     slug: e.slug,
     numero: e.numero,
@@ -60,6 +74,9 @@ export default async function CheminPage() {
     declencheur: e.declencheur,
     echeance: e.echeance,
     prerequis: e.prerequis,
+    priorite: e.priorite,
+    debloque: e.debloque,
+    echeanceLe: cycles[e.slug]?.echeanceLe ?? null,
   }));
 
   return (
@@ -126,11 +143,19 @@ export default async function CheminPage() {
             nature: e.nature,
             echeance: e.echeance,
             prerequis: e.prerequis,
+            priorite: e.priorite,
+            debloque: Array.isArray(e.debloque) ? e.debloque : undefined,
+            dateChoisie: e.dateChoisie,
+            enUnMot: e.enUnMot,
+            pourquoi: e.pourquoi,
+            declencheur: e.declencheur,
+            premiereAction: e.quoiFaire?.[0],
           }))}
           parties={parties.map((p) => ({ code: p.code, titre: p.titre }))}
           faites={[...faites]}
           verifiees={[...connecte.verifiees]}
           pasConcernees={[...connecte.pasConcernees]}
+          cycles={cycles}
         />
       ) : (
         <div id="partie-1" className="scroll-mt-24">
@@ -146,7 +171,7 @@ export default async function CheminPage() {
                   {p.code === 'SUBVENTION' ? <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] text-[#1D1B5C]">Le but</span> : null}
                   {connecte ? <span className="ml-auto text-[#6B6A8A]">{faitesIci} / {siennes.length}</span> : null}
                 </h2>
-                {p.code === 'CHAQUE_ANNEE' || p.code === 'SELON_ACTIVITE' || p.code === 'EVENEMENT' ? <p className="-mt-1 mb-3 text-sm text-[#6B6A8A]">{p.enUnMot}</p> : null}
+                {p.code === 'AGREMENTS' || p.code === 'CHAQUE_ANNEE' || p.code === 'SELON_ACTIVITE' || p.code === 'EVENEMENT' ? <p className="-mt-1 mb-3 text-sm text-[#6B6A8A]">{p.enUnMot}</p> : null}
 
                 <ol className="relative ml-5 border-l-2 border-[#E6E4F3]">
                   {siennes.map((e) => {
@@ -162,36 +187,49 @@ export default async function CheminPage() {
                         >
                           {faite ? '✓' : e.numero}
                         </span>
-                        <Link
-                          href={`/chemin/${e.slug}`}
-                          className={`group flex items-center gap-3 rounded-xl px-4 py-3 no-underline transition ${
-                            estProchaine
-                              ? 'border-2 border-[#4F46E5] bg-white shadow-[0_12px_28px_-20px_rgba(29,27,92,0.8)]'
-                              : 'hover:bg-white'
-                          }`}
-                        >
-                          <span className="min-w-0 flex-1">
-                            <span className={`block font-extrabold leading-snug ${faite ? 'text-[#6B6A8A]' : 'text-[#1D1B5C]'} group-hover:text-[#4F46E5]`}>
-                              {e.titre}
-                              {e.chaqueAnnee ? (
-                                <span className="ml-2 inline-block rounded-full bg-[#E0F4F3] px-2 py-0.5 align-middle text-[11px] font-bold text-[#115E59]">Chaque année</span>
-                              ) : null}
-                            </span>
-                            <span className="mt-1 flex flex-wrap gap-1.5">
-                              <BadgeNature nature={e.nature} />
-                            </span>
-                            {estProchaine ? <span className="mt-0.5 block text-sm text-[#6B6A8A]">{e.enUnMot}</span> : null}
-                            {faite ? null : (
-                              <>
-                                <LigneEcheance echeance={e.echeance} chaqueAnnee={e.chaqueAnnee} theme="association" />
-                                <LignePrerequis prerequis={e.prerequis} etapes={reperes} faites={faites} theme="association" liens={false} />
-                              </>
-                            )}
-                          </span>
-                          <span className={`shrink-0 text-sm font-bold ${estProchaine ? 'rounded-lg bg-[#4F46E5] px-3 py-1.5 text-white' : 'text-[#9A99B5] group-hover:text-[#4F46E5]'}`}>
-                            {estProchaine ? 'Ouvrir' : faite ? 'Revoir' : '→'}
-                          </span>
-                        </Link>
+                        <CarteRetournable
+                          theme="association"
+                          titre={e.titre}
+                          verso={{
+                            cestQuoi: e.enUnMot,
+                            pourquoi: e.declencheur ?? premierePhrase(e.pourquoi),
+                            comment: [e.quoiFaire?.[0], e.echeance?.texte].filter(Boolean).join(' '),
+                            debloque: Array.isArray(e.debloque) ? e.debloque : undefined,
+                            href: `/chemin/${e.slug}`,
+                          }}
+                          recto={
+                            <Link
+                              href={`/chemin/${e.slug}`}
+                              className={`group flex h-full items-center gap-3 rounded-xl px-4 py-3 pr-10 no-underline transition ${
+                                estProchaine
+                                  ? 'border-2 border-[#4F46E5] bg-white shadow-[0_12px_28px_-20px_rgba(29,27,92,0.8)]'
+                                  : 'hover:bg-white'
+                              }`}
+                            >
+                              <span className="min-w-0 flex-1">
+                                <span className={`block font-extrabold leading-snug ${faite ? 'text-[#6B6A8A]' : 'text-[#1D1B5C]'} group-hover:text-[#4F46E5]`}>
+                                  {e.titre}
+                                </span>
+                                <span className="mt-1 flex flex-wrap gap-1.5">
+                                  <BadgePriorite priorite={e.priorite} />
+                                  {e.chaqueAnnee ? <BadgeAnnuel cycle={cycles[e.slug]?.cycle} /> : null}
+                                  <BadgeNature nature={e.nature} />
+                                </span>
+                                {estProchaine ? <span className="mt-0.5 block text-sm text-[#6B6A8A]">{e.enUnMot}</span> : null}
+                                {faite ? null : (
+                                  <>
+                                    <LigneEcheance echeance={e.echeance} chaqueAnnee={e.chaqueAnnee} echeanceLe={cycles[e.slug]?.echeanceLe} theme="association" />
+                                    <LignePrerequis prerequis={e.prerequis} etapes={reperes} faites={faites} theme="association" liens={false} />
+                                    <LigneDebloque debloque={Array.isArray(e.debloque) ? e.debloque : undefined} theme="association" />
+                                  </>
+                                )}
+                              </span>
+                              <span className={`shrink-0 text-sm font-bold ${estProchaine ? 'rounded-lg bg-[#4F46E5] px-3 py-1.5 text-white' : 'text-[#9A99B5] group-hover:text-[#4F46E5]'}`}>
+                                {estProchaine ? 'Ouvrir' : faite ? 'Revoir' : '→'}
+                              </span>
+                            </Link>
+                          }
+                        />
                       </li>
                     );
                   })}

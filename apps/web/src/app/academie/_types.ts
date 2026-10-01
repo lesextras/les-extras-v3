@@ -76,6 +76,12 @@ export interface EtapeAcademie {
   chaqueAnnee?: boolean;
   /** Peut être marquée « Pas concerné ». */
   peutNePasConcerner?: boolean;
+  /** 1 à 3 : l'ordre de « Prochaine étape ». */
+  priorite?: 1 | 2 | 3;
+  prerequis?: string[];
+  /** Étape annuelle : l'année du cycle en cours et son échéance (AAAA-MM-JJ). */
+  cycle?: number | null;
+  echeanceLe?: string | null;
 }
 
 export interface CheminAcademie {

@@ -135,6 +135,14 @@ export class EtapeFaiteDto {
   pasConcerne?: boolean;
 }
 
+/** La date choisie d'une étape annuelle (la date de l'AG), AAAA-MM-JJ. Absente ou null : on l'efface. */
+export class EtapeDateDto {
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'La date doit être au format AAAA-MM-JJ.' })
+  date?: string | null;
+}
+
 export class DossierDto {
   @IsOptional() @IsEnum(NatureDossier) nature?: NatureDossier;
   @IsOptional() @IsString() @MaxLength(4000) description?: string | null;
