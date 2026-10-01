@@ -44,6 +44,11 @@ export function FormulaireConnexion({ destination }: { destination: string }) {
           className={CHAMP}
         />
       </label>
+      <p className="-mt-2 text-right">
+        <a href="/mot-de-passe-oublie" className="text-sm font-bold text-[#0F5F3E] underline underline-offset-4">
+          Mot de passe oublié ?
+        </a>
+      </p>
       {erreur ? <p role="alert" className="rounded-xl border border-[#F3B0C2] bg-[#FDE7EC] px-4 py-3 text-sm font-bold text-[#8A1B3D]">{erreur}</p> : null}
       <button type="submit" disabled={enCours} className={`${BTN_PRIMAIRE} w-full`}>
         {enCours ? 'Connexion…' : 'Ouvrir mon espace'}

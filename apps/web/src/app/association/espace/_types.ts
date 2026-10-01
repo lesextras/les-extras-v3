@@ -368,7 +368,7 @@ export const LIBELLES_ETAT: Record<EtatDossier, string> = {
 };
 
 export const LIBELLES_SITUATION: Record<SituationPiece, string> = {
-  DEDUITE: 'Prouvée par les répertoires',
+  DEDUITE: 'Trouvée au registre, justificatif à joindre',
   A_JOUR: 'À jour',
   BIENTOT_PERIMEE: 'Expire bientôt',
   PERIMEE: 'Périmée',

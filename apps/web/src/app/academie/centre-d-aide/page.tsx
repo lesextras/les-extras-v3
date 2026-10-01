@@ -279,8 +279,8 @@ const SECTIONS = [
     texte: 'text-[#334A42]',
     questions: [
       {
-        q: 'C’est vraiment gratuit ?',
-        r: 'Oui. Pas d’essai limité, pas de carte bancaire. Porté par ADéPA avec Toulali ; un don est possible, jamais demandé.',
+        q: 'C’est gratuit ?',
+        r: 'Oui pour démarrer : pas d’essai limité, pas de carte bancaire. Une option Premium existe (Mes factures) : son prix est affiché avant tout paiement, et rien ne se débloque sans ton accord.',
       },
       {
         q: 'Faut-il installer quelque chose ?',

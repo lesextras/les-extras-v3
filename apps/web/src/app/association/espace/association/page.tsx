@@ -239,8 +239,8 @@ export default async function MonAssociationPage() {
             <div>
               <p className="text-xl font-extrabold text-[#1D1B5C]">Gratuit</p>
               <p className="mt-1 text-sm leading-relaxed">
-                Tout l&apos;espace est gratuit pendant que l&apos;outil se construit : le classeur, les dossiers, le répertoire, les
-                documents, le chemin. Rien à payer, pas de carte à donner.
+                Le classeur, les dossiers, le répertoire, les documents et le chemin sont gratuits. Option Premium (Mes
+                factures) : prix affiché avant tout paiement.
               </p>
             </div>
             <Pastille ton="ok">Actif</Pastille>

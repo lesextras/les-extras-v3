@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: { params: Promise<{ siren: st
   if (!fiche) return { title: 'Association introuvable' };
   return {
     title: `${fiche.association.nom} : où en est-elle ?`,
-    description: `Papiers prouvés par les répertoires publics et papiers à réunir pour une demande de subvention de ${fiche.association.nom}.`,
+    description: `Informations trouvées dans les registres publics et papiers à réunir pour une demande de subvention de ${fiche.association.nom}.`,
     robots: { index: false, follow: true },
   };
 }
@@ -130,7 +130,7 @@ export default async function FichePage({ params }: { params: Promise<{ siren: s
         </Carte>
 
         <div className={`rounded-2xl border p-5 sm:p-6 ${deduites.length >= 3 ? 'border-[#BFE6D2] bg-[#E3F5EC]' : 'border-[#F5D6A8] bg-[#FEF3E2]'}`}>
-          <p className="mb-2 text-sm font-extrabold uppercase tracking-[0.12em] text-[#6B6A8A]">Déjà prouvé par les répertoires</p>
+          <p className="mb-2 text-sm font-extrabold uppercase tracking-[0.12em] text-[#6B6A8A]">Retrouvé dans les registres publics</p>
           <p className="text-3xl font-extrabold tabular-nums text-[#1D1B5C]">
             {deduites.length} papier{deduites.length > 1 ? 's' : ''} sur {classeur.length}
           </p>
@@ -139,7 +139,7 @@ export default async function FichePage({ params }: { params: Promise<{ siren: s
               .filter((p) => p.type.categorie === 'IDENTITE')
               .map((p) => (
                 <li key={p.type.code} className="flex items-start gap-2">
-                  <Pastille ton={p.etat === 'DEDUITE' ? 'ok' : 'neutre'}>{p.etat === 'DEDUITE' ? 'Prouvé' : 'À fournir'}</Pastille>
+                  <Pastille ton={p.etat === 'DEDUITE' ? 'ok' : 'neutre'}>{p.etat === 'DEDUITE' ? 'Trouvé au registre' : 'À fournir'}</Pastille>
                   <span className="text-[#1D1B5C]">
                     {p.type.libelle}
                     {p.preuve ? <span className="text-[#6B6A8A]"> · {p.preuve}</span> : null}
@@ -168,7 +168,7 @@ export default async function FichePage({ params }: { params: Promise<{ siren: s
       <section className="mt-10">
         <SousTitre>Face aux premiers financeurs</SousTitre>
         <p className="mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Pour chaque dossier, la part des papiers exigés déjà prouvée par les répertoires. Le reste est à réunir : la liste du bas
+          Pour chaque dossier, ce que les registres publics confirment déjà. Le justificatif reste à joindre au dossier ; la liste du bas
           dit où trouver chacun.
         </p>
         <div className="grid gap-4 md:grid-cols-3">
@@ -177,7 +177,7 @@ export default async function FichePage({ params }: { params: Promise<{ siren: s
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#6B6A8A]">{c.dispositif.financeur}</p>
               <h3 className="mt-1 font-extrabold leading-snug text-[#1D1B5C]">{c.dispositif.nom}</h3>
               <p className="mt-3 text-sm tabular-nums">
-                {c.deduites} papier{c.deduites > 1 ? 's' : ''} prouvé{c.deduites > 1 ? 's' : ''} sur {c.exigees} exigés
+                {c.deduites} information{c.deduites > 1 ? 's' : ''} trouvée{c.deduites > 1 ? 's' : ''} au registre sur {c.exigees} exigées
               </p>
               <div className="mt-2">
                 <Barre pourcentage={c.pourcentage} ton="ok" />
@@ -204,7 +204,7 @@ export default async function FichePage({ params }: { params: Promise<{ siren: s
                 {pieces.map((p) => (
                   <li key={p.type.code} className="px-5 py-4">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Pastille ton={p.etat === 'DEDUITE' ? 'ok' : 'neutre'}>{p.etat === 'DEDUITE' ? 'Prouvé' : 'À fournir'}</Pastille>
+                      <Pastille ton={p.etat === 'DEDUITE' ? 'ok' : 'neutre'}>{p.etat === 'DEDUITE' ? 'Trouvé au registre' : 'À fournir'}</Pastille>
                       <span className="font-extrabold text-[#1D1B5C]">{p.type.libelle}</span>
                       {p.type.dureeValiditeMois ? <span className="text-xs text-[#6B6A8A]">valable {p.type.dureeValiditeMois} mois</span> : null}
                       {p.type.parExercice ? <span className="text-xs text-[#6B6A8A]">à refaire chaque année</span> : null}
@@ -216,7 +216,7 @@ export default async function FichePage({ params }: { params: Promise<{ siren: s
                         {p.type.ouLaTrouver}
                       </p>
                     ) : (
-                      <p className="mt-1 text-sm text-[#6B6A8A]">Prouvé par : {p.preuve}</p>
+                      <p className="mt-1 text-sm text-[#6B6A8A]">Trouvé dans : {p.preuve} · justificatif à joindre</p>
                     )}
                   </li>
                 ))}

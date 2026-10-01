@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       title: { absolute: 'Piloter mon association, par Toulali' },
       description:
-        "Le chemin en 12 étapes, le classeur qui prévient, les subventions, la comptabilité et les agréments. Gratuit, pendant que l'outil se construit.",
+        "Le chemin en 12 étapes, le classeur qui prévient, les subventions, la comptabilité et les agréments. Gratuit pour démarrer.",
       alternates: { canonical: '/association' },
     };
   }
@@ -65,7 +65,7 @@ function Plateforme() {
         <span className="pilote-bulle pilote-bulle-2" aria-hidden="true" />
         <span className="pilote-bulle pilote-bulle-3" aria-hidden="true" />
 
-        <p className="relative mb-4 text-sm font-extrabold uppercase tracking-[0.18em] text-white/70">Gratuit · par Toulali</p>
+        <p className="relative mb-4 text-sm font-extrabold uppercase tracking-[0.18em] text-white/70">Gratuit pour démarrer · par Toulali</p>
         <h1 className="relative text-[2.6rem] font-extrabold leading-[1.02] tracking-tight text-white [text-wrap:balance] sm:text-[4.2rem]">
           Un outil.
           <br />
@@ -175,12 +175,12 @@ function Plateforme() {
           <div className="min-w-0">
             <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#8A1B3D]">Qui porte cet outil</p>
             <h2 className="mt-2 text-3xl font-extrabold leading-[1.1] tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-4xl">
-              Cet outil est gratuit. Il a un <Accent>porteur</Accent>.
+              Gratuit pour démarrer. Il a un <Accent>porteur</Accent>.
             </h2>
             <p className="mt-3 max-w-[58ch] text-lg leading-relaxed text-[#3B3A66]">
               <span className="font-bold text-[#1D1B5C]">ADéPA</span>, association éducative de Melun, porte ce dispositif
-              avec <span className="font-bold text-[#1D1B5C]">Toulali</span>, le logiciel qu&apos;elle a créé pour les créateurs d&apos;activité. Pas d&apos;actionnaire,
-              pas d&apos;abonnement : ce que tu construis ici t&apos;appartient.
+              avec <span className="font-bold text-[#1D1B5C]">Toulali</span>, le logiciel qu&apos;elle a créé pour les créateurs d&apos;activité. Pas d&apos;actionnaire :
+              ce que tu construis ici t&apos;appartient.
             </p>
 
             <ul className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -375,10 +375,10 @@ const POURQUOI = [
 
 const PORTES = [
   {
-    href: '/association',
+    href: '/inscription?type=association',
     titre: 'Mon association',
     phrase: 'Ses papiers, ses subventions, ses comptes.',
-    action: 'Ouvrir mon espace association',
+    action: 'Créer mon espace association',
     icone: 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01M9 14h.01M15 14h.01',
     fond: 'border-2 border-[#C7C4F2] bg-[#ECEBFC]',
     halo: 'bg-[#4F46E5]',
@@ -393,7 +393,7 @@ const PORTES = [
     href: '/academie',
     titre: 'Mon académie',
     phrase: 'Sa certification, son catalogue, ses apprenants.',
-    action: 'Ouvrir mon espace académie',
+    action: 'Découvrir l’espace académie',
     icone: 'M22 10L12 5 2 10l10 5 10-5zM6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5',
     fond: 'border-2 border-[#B7E4CE] bg-[#E3F5EC]',
     halo: 'bg-[#1E9E6A]',
@@ -421,8 +421,8 @@ const DEDANS = [
 
 const SOUTIENS = [
   {
-    titre: 'Gratuit, et sans compteur',
-    detail: "Pas d'abonnement, pas de limite de dossiers, pas de version payante qui arriverait plus tard.",
+    titre: 'Gratuit pour démarrer',
+    detail: "Pas de limite de dossiers. Option Premium : prix affiché avant tout paiement.",
     icone: 'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
   },
   {

@@ -221,8 +221,14 @@ export function BarreLaterale({ compte }: { compte: CompteAffiche | null }) {
 
   // Sans espace, on ne montre que ce qui s'ouvre vraiment ; avec un espace,
   // « Le chemin » ouvre celui de l'espace, pas la page des deux parcours.
+  // Sans compte, « Tableau de bord » n'a pas de sens : on arrive sur une
+  // présentation. L'entrée s'appelle « Accueil » tant qu'aucun espace n'est ouvert.
   const entrees = (compte?.espaceOuvert ? MENU : MENU.filter((e) => PUBLIC.includes(e.href))).map((e) =>
-    e.href === CHEMIN_COMMUN && compte?.espaceOuvert ? { ...e, href: CHEMIN_ESPACE } : e,
+    e.href === CHEMIN_COMMUN && compte?.espaceOuvert
+      ? { ...e, href: CHEMIN_ESPACE }
+      : e.libelle === 'Tableau de bord' && !compte?.espaceOuvert
+        ? { ...e, libelle: 'Accueil' }
+        : e,
   );
 
   const contenu = (

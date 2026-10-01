@@ -108,6 +108,9 @@ export function FormulaireConnexion({ suivant }: { suivant: string }) {
           className={CHAMP}
         />
       </label>
+      <a href="/mot-de-passe-oublie" className="-mt-1 self-end text-sm font-bold text-[#4F46E5] underline underline-offset-4">
+        Mot de passe oublié ?
+      </a>
       {erreur ? (
         <p role="alert" className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">
           {erreur}

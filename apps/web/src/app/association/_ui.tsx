@@ -89,7 +89,7 @@ export function Coque({
                   Toulali
                 </a>
                 , centre de formation. Les informations sur les associations viennent des répertoires publics (RNA,
-                SIRENE). Gratuit, pour toutes les associations, pendant que l&apos;outil se construit.
+                SIRENE). Gratuit pour démarrer · option Premium au prix affiché avant tout paiement.
               </p>
               <p className="mt-2 max-w-[70ch] leading-relaxed">
                 Le dispositif est porté par l&apos;association{' '}

@@ -95,7 +95,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
             {type.parExercice ? <span className="text-xs text-[#6B6A8A]">chaque année</span> : null}
           </div>
           <p className="mt-1 text-sm text-[#3B3A66]">{type.pourquoi}</p>
-          {piece?.preuve && situation === 'DEDUITE' ? <p className="mt-1 text-sm text-[#6B6A8A]">Prouvée par : {piece.preuve}</p> : null}
+          {piece?.preuve && situation === 'DEDUITE' ? <p className="mt-1 text-sm text-[#6B6A8A]">Trouvée dans : {piece.preuve} · dépose le justificatif pour l’avoir sous la main</p> : null}
           {piece?.fileId ? (
             <p className="mt-1 text-sm text-[#6B6A8A]">
               <a href={`/api/proxy/files/${piece.fileId}`} target="_blank" rel="noopener" className="underline underline-offset-4">
