@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
 import { nomCourt } from '../../_nom';
@@ -32,7 +33,7 @@ export default async function MonAssociationPage() {
       ok: identiteOk,
       detail: identiteOk
         ? [o.rna ? `RNA ${o.rna}` : null, o.siret ? `SIRET ${o.siret}` : o.siren ? `SIREN ${o.siren}` : null].filter(Boolean).join(' · ')
-        : 'Numéros RNA et SIRET à rattacher',
+        : 'RNA et SIRET à rattacher',
       href: '#identite',
       action: identiteOk ? 'Modifier' : 'Compléter',
     },
@@ -41,14 +42,14 @@ export default async function MonAssociationPage() {
       ok: bureauOk,
       detail: bureauOk
         ? repertoire.bureau.map((b) => `${b.nom} (${b.roles.filter((r) => r !== 'MEMBRE').map((r) => LIBELLES_ROLE[r]).join(', ')})`).join(' · ')
-        : 'Président·e et trésorier·ère à noter dans le répertoire',
+        : 'Président·e et trésorier·ère à noter',
       href: '/espace/repertoire',
       action: bureauOk ? 'Voir' : 'Compléter',
     },
     {
       titre: 'Coordonnées bancaires',
       ok: ribOk,
-      detail: ribOk ? "Le RIB de l'association est dans le classeur" : "Le RIB de l'association manque au classeur",
+      detail: ribOk ? 'RIB au classeur' : 'RIB manquant',
       href: '/espace/classeur#RIB',
       action: ribOk ? 'Voir' : 'Compléter',
     },
@@ -60,8 +61,8 @@ export default async function MonAssociationPage() {
     {
       href: '/espace/secretariat',
       titre: 'Mon secrétariat',
-      detail: `Les obligations à tenir, les documents à fabriquer, et tous tes papiers : les ${classeur.length} pièces du classeur (${papiersPrets} déjà prêtes) et tes autres documents.`,
-      bouton: 'Ouvrir mon secrétariat',
+      detail: `Obligations, documents · ${papiersPrets} / ${classeur.length} pièces prêtes`,
+      bouton: 'Ouvrir',
       bordure: 'border-[#C7C4F2] hover:border-[#4F46E5]',
       fond: 'bg-[#ECEBFC]',
       pastille: 'bg-[#4F46E5]',
@@ -71,9 +72,8 @@ export default async function MonAssociationPage() {
     {
       href: '/espace/comptabilite',
       titre: 'Ma comptabilité',
-      detail:
-        "Le cahier de comptes, le prévisionnel, les dons et leurs reçus fiscaux, la billetterie et les ventes. C'est ce qu'on présente en assemblée générale.",
-      bouton: 'Ouvrir ma comptabilité',
+      detail: 'Comptes, prévisionnel, dons, ventes',
+      bouton: 'Ouvrir',
       bordure: 'border-[#F3B0C2] hover:border-[#D6335C]',
       fond: 'bg-[#FDE7EC]',
       pastille: 'bg-[#D6335C]',
@@ -83,8 +83,8 @@ export default async function MonAssociationPage() {
     {
       href: '/agrements',
       titre: 'Nos agréments',
-      detail: `Les ${NOMBRE_AGREMENTS} reconnaissances officielles qu'une association peut demander, ce que chacune ouvre et où la demander.`,
-      bouton: 'Voir les agréments',
+      detail: `${NOMBRE_AGREMENTS} agréments possibles`,
+      bouton: 'Voir',
       bordure: 'border-[#B7E4CE] hover:border-[#1E9E6A]',
       fond: 'bg-[#E3F5EC]',
       pastille: 'bg-[#1E9E6A]',
@@ -95,7 +95,7 @@ export default async function MonAssociationPage() {
 
   return (
     <>
-      <Titre surtitre="Mon association" sousTitre="Ce que les financeurs vérifient en premier : qui vous êtes, qui décide, où verser l'argent, et tous vos papiers au même endroit.">
+      <Titre surtitre="Mon association" sousTitre="Ce que les financeurs vérifient en premier.">
         {nomCourt(o.nom)}
       </Titre>
 
@@ -124,7 +124,7 @@ export default async function MonAssociationPage() {
       {/* --------------------------------------------------- dossier d'identité */}
       <section>
         <div className="mb-3 flex flex-wrap items-center gap-3">
-          <SousTitre>Le dossier d&apos;identité</SousTitre>
+          <SousTitre>Identité</SousTitre>
           <Pastille ton={complets === 3 ? 'ok' : 'attention'}>{complets === 3 ? 'Complet' : `${complets} sur 3`}</Pastille>
         </div>
         <div className={`${CARTE} divide-y divide-[#E6E4F3]`}>
@@ -147,7 +147,7 @@ export default async function MonAssociationPage() {
 
       {/* -------------------------------------------------------- identité */}
       <section id="identite" className="mt-10 scroll-mt-24">
-        <SousTitre>Ce que disent les répertoires publics</SousTitre>
+        <SousTitre info="Données RNA et SIRENE.">Répertoires publics</SousTitre>
         <Carte>
           {o.rna || o.siret ? (
             <dl className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm [&_dt]:font-bold [&_dt]:text-[#6B6A8A]">
@@ -165,10 +165,10 @@ export default async function MonAssociationPage() {
               <dd>{dateCourte(o.dateCreation)}</dd>
             </dl>
           ) : (
-            <p className="text-sm">Pas encore rattachée. Retrouve-la : ses numéros rempliront le classeur tout seuls.</p>
+            <p className="text-sm">Pas encore rattachée.</p>
           )}
           <div className="mt-4">
-            <p className="mb-2 text-sm text-[#6B6A8A]">{o.rna || o.siret ? 'Ce n’est pas la bonne ? Rattaches-en une autre :' : ''}</p>
+            <p className="mb-2 text-sm text-[#6B6A8A]">{o.rna || o.siret ? 'Changer d’association :' : ''}</p>
             <Rattacher valeurInitiale={o.rna || o.siret ? '' : o.nom} />
           </div>
         </Carte>
@@ -180,17 +180,12 @@ export default async function MonAssociationPage() {
       {/* ---------------------------------------------------------- projet */}
       <section id="projet" className="mt-10 scroll-mt-24">
         <div className="mb-3 flex flex-wrap items-center gap-3">
-          <SousTitre>Le projet en une page</SousTitre>
-          <Pastille ton={projet.complet ? 'ok' : 'attention'}>{projet.complet ? 'Prêt' : `${projet.remplis} réponse${projet.remplis > 1 ? 's' : ''} sur 4`}</Pastille>
-        </div>
-        <p className="mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Quatre questions, quatre réponses courtes. C&apos;est le texte que tu recopies dans chaque demande de subvention et chaque appel
-          à projets.{' '}
-          <Link href="/chemin/le-projet-en-une-page" className="font-bold text-[#4F46E5] underline underline-offset-4">
-            Voir l&apos;étape 8 du chemin
+          <SousTitre info="Quatre réponses courtes, à recopier dans chaque demande.">Projet en une page</SousTitre>
+          <Pastille ton={projet.complet ? 'ok' : 'attention'}>{projet.complet ? 'Prêt' : `${projet.remplis} / 4`}</Pastille>
+          <Link href="/chemin/le-projet-en-une-page" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
+            Étape 8
           </Link>
-          .
-        </p>
+        </div>
         <Carte>
           <FormulaireProjet projet={projet} />
         </Carte>
@@ -198,7 +193,7 @@ export default async function MonAssociationPage() {
 
       {/* ------------------------------------------------------------ vie */}
       <section id="vie" className="mt-10 scroll-mt-24">
-        <SousTitre>La vie de l&apos;association</SousTitre>
+        <SousTitre>Vie statutaire</SousTitre>
         <Carte>
           <div className="mb-4 flex flex-wrap gap-2">
             {vie.dateDerniereAG ? (
@@ -207,7 +202,7 @@ export default async function MonAssociationPage() {
                 {vie.agEnRetard ? ', il y a plus d’un an' : vie.prochaineAG ? `, prochaine avant le ${dateCourte(vie.prochaineAG)}` : ''}
               </Pastille>
             ) : (
-              <Pastille ton="attention">Date de la dernière AG inconnue</Pastille>
+              <Pastille ton="attention">Dernière AG : date ?</Pastille>
             )}
             {vie.mandatsExpires.map((m) => (
               <Pastille key={m.id} ton="alerte">
@@ -222,11 +217,10 @@ export default async function MonAssociationPage() {
           </div>
           <FormulaireVieStatutaire vie={vie} />
           <p className="mt-4 text-sm text-[#6B6A8A]">
-            Une assemblée générale par an, au moins. Le procès-verbal va dans le classeur.{' '}
+            1 AG par an minimum · PV au classeur ·{' '}
             <Link href="/chemin/la-premiere-assemblee-generale" className="font-bold text-[#4F46E5] underline underline-offset-4">
-              Comment faire (étape 7)
+              Étape 7
             </Link>
-            .
           </p>
         </Carte>
       </section>
@@ -238,10 +232,7 @@ export default async function MonAssociationPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xl font-extrabold text-[#1D1B5C]">Gratuit</p>
-              <p className="mt-1 text-sm leading-relaxed">
-                Le classeur, les dossiers, le répertoire, les documents et le chemin sont gratuits. Option Premium (Mes
-                factures) : prix affiché avant tout paiement.
-              </p>
+              <p className="mt-1 text-sm leading-relaxed">Premium (Mes factures) : prix affiché avant paiement.</p>
             </div>
             <Pastille ton="ok">Actif</Pastille>
           </div>
@@ -253,10 +244,10 @@ export default async function MonAssociationPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-extrabold text-[#1D1B5C]">Ce que les autres voient</h2>
-              <p className="mt-1 text-sm text-[#6B6A8A]">Ta fiche dans les répertoires publics (RNA, SIRENE) : nom, adresse, activité, date de création.</p>
+              <p className="mt-1 text-sm text-[#6B6A8A]">Ta fiche RNA / SIRENE</p>
             </div>
             <Link href="/verifier" className={BTN_SECONDAIRE}>
-              Vérifier ma fiche publique →
+              Vérifier →
             </Link>
           </div>
         </Carte>

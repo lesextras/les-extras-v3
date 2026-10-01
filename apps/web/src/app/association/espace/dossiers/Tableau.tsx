@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type DragEvent } from 'react';
 import Link from 'next/link';
@@ -66,7 +67,7 @@ export function Tableau({ dossiers, montrerNature }: { dossiers: Dossier[]; mont
   return (
     <div className="space-y-3">
       {erreur ? <p className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">{erreur}</p> : null}
-      <p className="text-sm text-[#6B6A8A]">Attrape une carte et pose-la dans une autre colonne. Sur téléphone, utilise « Déplacer vers » en bas de la carte.</p>
+      <p className="text-sm text-[#6B6A8A]">Glisse une carte pour changer son état.</p>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {COLONNES.map((col) => {

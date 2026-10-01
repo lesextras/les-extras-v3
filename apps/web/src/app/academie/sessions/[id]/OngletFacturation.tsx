@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
@@ -39,8 +40,8 @@ export function OngletFacturation({ ctx }: { ctx: ContexteFiche }) {
     try {
       const r = await appel<{ crees: number; sansPrix: number }>(`/academie/gestion/sessions/${s.id}/facturer`, { method: 'POST', body: { regroupement, type } });
       setInfo(
-        `${r.crees} brouillon${r.crees > 1 ? 's' : ''} préparé${r.crees > 1 ? 's' : ''}. Relis-les puis émets-les.${
-          r.sansPrix ? ` ⚠ ${r.sansPrix} stagiaire${r.sansPrix > 1 ? 's' : ''} sans prix : fixe le prix de la session ou le sien avant d'émettre.` : ''
+        `${r.crees} brouillon${r.crees > 1 ? 's' : ''} prêt${r.crees > 1 ? 's' : ''} à relire.${
+          r.sansPrix ? ` ⚠ ${r.sansPrix} stagiaire${r.sansPrix > 1 ? 's' : ''} sans prix.` : ''
         }`,
       );
       await lire();
@@ -53,7 +54,7 @@ export function OngletFacturation({ ctx }: { ctx: ContexteFiche }) {
 
   return (
     <>
-      <Bloc titre="Préparer les factures ou les devis de la session" aide="Chaque stagiaire n'est facturé qu'une fois : les suivants se préparent pour ceux qui n'ont encore rien.">
+      <Bloc titre="Factures et devis" aide="Chaque stagiaire n'est facturé qu'une fois.">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block">
             <span className="mb-1.5 block text-sm font-bold text-[#12312A]">Document</span>
@@ -71,13 +72,13 @@ export function OngletFacturation({ ctx }: { ctx: ContexteFiche }) {
             </select>
           </label>
           <button type="button" className={BTN_PRIMAIRE} disabled={occupe} onClick={() => void preparer()}>
-            Préparer les brouillons
+            Préparer
           </button>
           <Link href="/academie/facturation" className={BTN_SECONDAIRE}>
-            Toute la facturation
+            Facturation
           </Link>
         </div>
-        <p className="mt-3 text-[14px] text-[#5E7A6E]">Les particuliers reçoivent toujours leur propre facture. Le prix vient de la fiche du stagiaire, sinon de la session.</p>
+        <p className="mt-3 text-[14px] text-[#5E7A6E]">Particuliers : facture individuelle.</p>
       </Bloc>
 
       {erreur ? (

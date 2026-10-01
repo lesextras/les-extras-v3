@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import type { Metadata } from 'next';
 import { apiEspace, sessionAssociation } from '../../_session';
 import { Encart, ORIGINE_SITE, Titre } from '../../_ui';
@@ -21,10 +22,10 @@ export default async function FormulairesPage() {
   return (
     <>
       <Titre
-        surtitre="Mes formulaires"
-        sousTitre="Une inscription, un sondage, une demande d'adhésion, un retour après une action : tu écris les questions, tu publies, tu partages le lien. Les réponses arrivent ici."
+        surtitre="Outils"
+        sousTitre="Inscriptions, sondages, adhésions."
       >
-        Poser une question, à plusieurs
+        Mes formulaires
       </Titre>
       <Liste formulaires={data} teinte={TEINTE_ASSOCIATION} base="/espace/formulaires" origine={ORIGINE_SITE} />
     </>

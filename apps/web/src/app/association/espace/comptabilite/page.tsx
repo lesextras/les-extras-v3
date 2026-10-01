@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
 import { nomCourt } from '../../_nom';
@@ -28,27 +29,27 @@ const PLATEFORMES = [
   {
     nom: 'HelloAsso',
     lien: 'https://www.helloasso.com/',
-    enUnMot: 'Dons, adhésions et billetterie. Aucune commission : la plateforme vit des pourboires laissés par les donateurs.',
+    enUnMot: 'Dons, adhésions, billetterie · sans commission',
   },
   {
     nom: 'Ulule',
     lien: 'https://fr.ulule.com/',
-    enUnMot: 'Collecte à objectif, avec contreparties. Pensée pour un projet précis qu’on raconte.',
+    enUnMot: 'Collecte à objectif, contreparties',
   },
   {
     nom: 'KissKissBankBank',
     lien: 'https://www.kisskissbankbank.com/',
-    enUnMot: 'Collecte à objectif elle aussi, très visible sur les projets culturels et solidaires.',
+    enUnMot: 'Collecte à objectif · culture, solidarité',
   },
   {
     nom: 'Leetchi',
     lien: 'https://www.leetchi.com/fr',
-    enUnMot: 'Cagnotte simple à ouvrir, pour une collecte ponctuelle entre proches et sympathisants.',
+    enUnMot: 'Cagnotte simple, ponctuelle',
   },
   {
     nom: 'Dartagnans',
     lien: 'https://dartagnans.fr/',
-    enUnMot: 'Spécialisée patrimoine et culture, avec un accompagnement de la campagne.',
+    enUnMot: 'Patrimoine et culture, accompagnée',
   },
 ];
 
@@ -83,50 +84,45 @@ export default async function ComptabilitePage() {
   const optimiste = attendu + subventionsDemandees;
 
   const previsionnel = [
-    { libelle: 'Déjà encaissé cette année', montant: recettesAnnee, detail: `Tout ce qui est entré depuis le 1ᵉʳ janvier ${annee}`, ton: 'ok' as const },
+    { libelle: 'Déjà encaissé cette année', montant: recettesAnnee, detail: `depuis le 1ᵉʳ janvier ${annee}`, ton: 'ok' as const },
     {
       libelle: 'Subventions accordées, pas encore versées',
       montant: resteAEncaisser,
-      detail: accordes.length ? `${accordes.length} subvention${accordes.length > 1 ? 's' : ''} accordée${accordes.length > 1 ? 's' : ''}` : 'Aucune subvention accordée pour l’instant',
+      detail: accordes.length ? `${accordes.length} subvention${accordes.length > 1 ? 's' : ''}` : 'aucune',
       ton: 'attente' as const,
     },
     {
       libelle: 'Demandes en cours',
       montant: subventionsDemandees,
-      detail: enAttente.length ? `${enAttente.length} dossier${enAttente.length > 1 ? 's' : ''} déposé${enAttente.length > 1 ? 's' : ''} ou en écriture` : 'Aucune demande en cours',
+      detail: enAttente.length ? `${enAttente.length} dossier${enAttente.length > 1 ? 's' : ''}` : 'aucune',
       ton: 'espoir' as const,
     },
-    { libelle: 'Déjà dépensé cette année', montant: -depensesAnnee, detail: `Tout ce qui est sorti depuis le 1ᵉʳ janvier ${annee}`, ton: 'sortie' as const },
+    { libelle: 'Déjà dépensé cette année', montant: -depensesAnnee, detail: `depuis le 1ᵉʳ janvier ${annee}`, ton: 'sortie' as const },
   ];
 
   return (
     <>
       <Titre
         surtitre={nomCourt(organisation.nom)}
-        sousTitre="Tout l'argent de l'association au même endroit : ce qui est là, ce qui est attendu, ce qui reste à trouver. Le cahier de comptes se présente en assemblée générale ; le prévisionnel se joint à une demande de subvention."
+        sousTitre="Ce qui est là, attendu, à trouver."
       >
         Ma comptabilité
       </Titre>
 
       <section className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Tuile libelle="Solde" valeur={formaterEuros(budget?.solde ?? 0)} detail={`${budget?.lignes ?? 0} ligne${(budget?.lignes ?? 0) > 1 ? 's' : ''} notée${(budget?.lignes ?? 0) > 1 ? 's' : ''}`} ton={(budget?.solde ?? 0) < 0 ? 'alerte' : 'ok'} />
-        <Tuile libelle={`Entré en ${annee}`} valeur={formaterEuros(recettesAnnee)} detail="Dons, adhésions, ventes, subventions" ton="ok" />
-        <Tuile libelle={`Sorti en ${annee}`} valeur={formaterEuros(depensesAnnee)} detail="Achats, local, assurance, déplacements" />
+        <Tuile libelle="Solde" valeur={formaterEuros(budget?.solde ?? 0)} detail={`${budget?.lignes ?? 0} ligne${(budget?.lignes ?? 0) > 1 ? 's' : ''}`} ton={(budget?.solde ?? 0) < 0 ? 'alerte' : 'ok'} />
+        <Tuile libelle={`Entré en ${annee}`} valeur={formaterEuros(recettesAnnee)} ton="ok" />
+        <Tuile libelle={`Sorti en ${annee}`} valeur={formaterEuros(depensesAnnee)} />
         <Tuile
           libelle="Reçus fiscaux à faire"
           valeur={donsSansRecu.length}
-          detail={donsSansRecu.length ? 'Un donateur attend son reçu' : 'Tous les dons ont leur reçu'}
           ton={donsSansRecu.length ? 'attention' : 'ok'}
         />
       </section>
 
       {/* ------------------------------------------------------ le prévisionnel */}
       <section id="previsionnel" className="mb-10 scroll-mt-24">
-        <SousTitre>Le prévisionnel financier</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Ce que l&apos;association a déjà, ce qu&apos;elle attend, ce qu&apos;elle espère. Il se remplit tout seul depuis le cahier de comptes et depuis tes
-          demandes de subvention : rien à recopier.
-        </p>
+        <SousTitre info="Rempli tout seul depuis le cahier de comptes et tes demandes.">Prévisionnel</SousTitre>
         <div className={`${CARTE} divide-y divide-[#E6E4F3]`}>
           {previsionnel.map((l) => (
             <div key={l.libelle} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
@@ -146,34 +142,29 @@ export default async function ComptabilitePage() {
           <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F5F4FC] px-5 py-4">
             <div>
               <p className="font-extrabold text-[#1D1B5C]">Si tout ce qui est accordé rentre</p>
-              <p className="mt-0.5 text-sm text-[#6B6A8A]">Le prudent : ce qui est encaissé, plus ce qui est promis.</p>
+              <p className="mt-0.5 text-sm text-[#6B6A8A]">Prudent : encaissé + promis</p>
             </div>
             <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(attendu - depensesAnnee)}</p>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
             <div>
               <p className="font-extrabold text-[#1D1B5C]">Si toutes les demandes aboutissent</p>
-              <p className="mt-0.5 text-sm text-[#6B6A8A]">L&apos;optimiste : à ne jamais écrire dans un dossier comme une certitude.</p>
+              <p className="mt-0.5 text-sm text-[#6B6A8A]">Optimiste : jamais comme une certitude</p>
             </div>
             <p className="text-xl font-extrabold tabular-nums text-[#6B6A8A]">{formaterEuros(optimiste - depensesAnnee)}</p>
           </div>
         </div>
         <p className="mt-3 text-sm text-[#6B6A8A]">
-          Les montants viennent de{' '}
+          Source :{' '}
           <Link href="/espace/dossiers" className="font-bold text-[#4F46E5] underline underline-offset-4">
-            mes subventions et appels à projet
+            mes dossiers
           </Link>
-          . Corrige-les là-bas, ils se mettent à jour ici.
         </p>
       </section>
 
       {/* ------------------------------------------------- les versements attendus */}
       <section id="versements" className="mb-10 scroll-mt-24">
-        <SousTitre>Les versements attendus</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Une subvention accordée n&apos;est pas une subvention versée : il y a souvent un acompte, puis un solde après le
-          compte rendu. Cette liste dit, dossier par dossier, ce qui a été promis et ce qui manque encore sur le compte.
-        </p>
+        <SousTitre info="Accordée ≠ versée : souvent un acompte, puis le solde après le compte rendu.">Versements attendus</SousTitre>
 
         {accordes.length ? (
           <>
@@ -198,7 +189,7 @@ export default async function ComptabilitePage() {
                 <div>
                   <p className="font-extrabold text-[#1D1B5C]">Reste à encaisser</p>
                   <p className="mt-0.5 text-sm text-[#6B6A8A]">
-                    {formaterEuros(subventionsAccordees)} accordés, {formaterEuros(subventionsEncaissees)} déjà notés au cahier de comptes.
+                    {formaterEuros(subventionsAccordees)} accordés · {formaterEuros(subventionsEncaissees)} notés
                   </p>
                 </div>
                 <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(resteAEncaisser)}</p>
@@ -206,28 +197,23 @@ export default async function ComptabilitePage() {
             </div>
             <Encart ton={resteAEncaisser > 0 ? 'attention' : 'ok'}>
               {resteAEncaisser > 0
-                ? "Quand l'argent arrive sur le compte, note-le en recette « Subvention » dans le cahier de comptes ci-dessous : cette ligne se met à jour toute seule."
-                : 'Tout ce qui a été accordé est noté au cahier de comptes. Rien ne traîne.'}
+                ? 'Argent reçu ? Note-le en recette « Subvention » ci-dessous.'
+                : 'Tout est noté.'}
             </Encart>
           </>
         ) : (
           <Encart>
-            Aucune subvention accordée pour l&apos;instant. Dès qu&apos;un financeur dit oui, note le montant dans{' '}
+            Aucune subvention accordée.{' '}
             <Link href="/espace/dossiers" className="font-bold underline underline-offset-4">
-              le dossier concerné
-            </Link>{' '}
-            : le versement attendu apparaîtra ici.
+              Mes dossiers
+            </Link>
           </Encart>
         )}
       </section>
 
       {/* -------------------------------------------------------------- les dons */}
       <section id="dons" className="mb-10 scroll-mt-24">
-        <SousTitre>Les dons</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Chaque don noté ici peut donner droit à un reçu fiscal : le donateur récupère 66 % de la somme sur ses impôts. C&apos;est souvent ce qui décide
-          quelqu&apos;un à donner davantage.
-        </p>
+        <SousTitre info="Reçu fiscal : le donateur récupère 66 % sur ses impôts.">Dons</SousTitre>
         <div className="grid gap-4 md:grid-cols-3">
           <div className={`${CARTE} px-5 py-4`}>
             <p className="text-sm font-bold text-[#6B6A8A]">Dons reçus</p>
@@ -237,12 +223,12 @@ export default async function ComptabilitePage() {
           <div className={`${CARTE} px-5 py-4`}>
             <p className="text-sm font-bold text-[#6B6A8A]">Mécénat d&apos;entreprise</p>
             <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(montant('MECENAT'))}</p>
-            <p className="text-sm text-[#6B6A8A]">Une entreprise récupère 60 %</p>
+            <p className="text-sm text-[#6B6A8A]">60 % déductibles</p>
           </div>
           <div className={`${CARTE} px-5 py-4`}>
             <p className="text-sm font-bold text-[#6B6A8A]">Adhésions</p>
             <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(budget?.adhesions ?? 0)}</p>
-            <p className="text-sm text-[#6B6A8A]">Cotisations encaissées</p>
+            <p className="text-sm text-[#6B6A8A]">Cotisations</p>
           </div>
         </div>
 
@@ -252,11 +238,8 @@ export default async function ComptabilitePage() {
               <p className="font-extrabold">
                 {donsSansRecu.length} don{donsSansRecu.length > 1 ? 's' : ''} sans reçu fiscal.
               </p>
-              <p className="mt-1 text-sm leading-relaxed">
-                Le reçu se fabrique en deux minutes, et il se range tout seul dans tes documents.
-              </p>
               <Link href="/espace/secretariat#documents" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">
-                Fabriquer un reçu fiscal →
+                Fabriquer un reçu →
               </Link>
             </Encart>
           </div>
@@ -270,7 +253,7 @@ export default async function ComptabilitePage() {
                   <span className="block font-bold text-[#1D1B5C]">{d.tiers ?? d.libelle}</span>
                   <span className="block text-sm text-[#6B6A8A]">
                     {dateCourte(d.date)}
-                    {d.recuFiscal ? ' · reçu fiscal établi' : ' · reçu fiscal à faire'}
+                    {d.recuFiscal ? ' · reçu fait' : ' · reçu à faire'}
                   </span>
                 </span>
                 <span className="font-extrabold tabular-nums text-[#0F5F3E]">+ {formaterEuros(d.montant)}</span>
@@ -282,11 +265,7 @@ export default async function ComptabilitePage() {
 
       {/* ---------------------------------------------------------- la collecte */}
       <section id="collecte" className="mb-10 scroll-mt-24">
-        <SousTitre>Collecter en ligne</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Une page de collecte permet de recevoir des dons par carte, sans manipuler d&apos;argent. Ouvre-la sur la plateforme qui te convient, puis note ici ce
-          qu&apos;elle te verse : le cahier de comptes reste la référence.
-        </p>
+        <SousTitre info="Dons par carte. Note ici ce que la plateforme te verse.">Collecter en ligne</SousTitre>
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {PLATEFORMES.map((p) => (
             <li key={p.nom}>
@@ -294,24 +273,18 @@ export default async function ComptabilitePage() {
                 <span className="text-lg font-extrabold text-[#1D1B5C]">{p.nom}</span>
                 <span className="mt-1 block text-sm leading-relaxed text-[#6B6A8A]">{p.enUnMot}</span>
                 <a href={p.lien} target="_blank" rel="noopener" className="mt-auto pt-4 text-sm font-bold text-[#4F46E5] underline underline-offset-4">
-                  Ouvrir le site ↗
+                  Ouvrir ↗
                 </a>
               </div>
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-sm text-[#6B6A8A]">
-          Les frais et les conditions changent : vérifie-les sur le site de la plateforme avant d&apos;ouvrir une collecte.
-        </p>
+        <p className="mt-3 text-sm text-[#6B6A8A]">Frais à vérifier sur chaque site.</p>
       </section>
 
       {/* ------------------------------------------------- billetterie et ventes */}
       <section id="billetterie" className="mb-10 scroll-mt-24">
         <SousTitre>Billetterie et ventes</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Les entrées d&apos;un événement, la buvette, les gâteaux, les objets vendus : chaque recette rentre dans le cahier de comptes et compte dans le
-          prévisionnel.
-        </p>
         <div className="grid gap-4 md:grid-cols-3">
           <div className={`${CARTE} px-5 py-4`}>
             <p className="text-sm font-bold text-[#6B6A8A]">Billetterie</p>
@@ -330,17 +303,16 @@ export default async function ComptabilitePage() {
           </div>
         </div>
         <p className="mt-3 text-sm text-[#6B6A8A]">
-          Ces recettes se rattachent à{' '}
+          Rattachées à{' '}
           <Link href="/espace/projets" className="font-bold text-[#4F46E5] underline underline-offset-4">
-            tes projets
-          </Link>{' '}
-          : on sait alors ce que chaque action a rapporté et ce qu&apos;elle a coûté.
+            mes projets
+          </Link>
         </p>
       </section>
 
       {/* -------------------------------------------------- ce qui entre et sort */}
       <section id="repartition" className="mb-10 scroll-mt-24">
-        <SousTitre>Ce qui entre, ce qui sort</SousTitre>
+        <SousTitre>Entrées et sorties</SousTitre>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <Carte>
             <p className="font-extrabold text-[#0F5F3E]">Les entrées</p>
@@ -351,7 +323,7 @@ export default async function ComptabilitePage() {
                   <span className="font-bold tabular-nums text-[#1D1B5C]">{formaterEuros(montant(n))}</span>
                 </li>
               ))}
-              {NATURES_RECETTE_AFFICHEES.every((n) => montant(n) === 0) ? <li className="text-[#6B6A8A]">Rien de noté pour l&apos;instant.</li> : null}
+              {NATURES_RECETTE_AFFICHEES.every((n) => montant(n) === 0) ? <li className="text-[#6B6A8A]">Aucune entrée.</li> : null}
             </ul>
             <p className="mt-3 flex items-center justify-between border-t border-[#E6E4F3] pt-3 font-extrabold text-[#1D1B5C]">
               <span>Total</span>
@@ -367,7 +339,7 @@ export default async function ComptabilitePage() {
                   <span className="font-bold tabular-nums text-[#1D1B5C]">{formaterEuros(montant(n))}</span>
                 </li>
               ))}
-              {NATURES_DEPENSE_AFFICHEES.every((n) => montant(n) === 0) ? <li className="text-[#6B6A8A]">Rien de noté pour l&apos;instant.</li> : null}
+              {NATURES_DEPENSE_AFFICHEES.every((n) => montant(n) === 0) ? <li className="text-[#6B6A8A]">Aucune sortie.</li> : null}
             </ul>
             <p className="mt-3 flex items-center justify-between border-t border-[#E6E4F3] pt-3 font-extrabold text-[#1D1B5C]">
               <span>Total</span>
@@ -379,20 +351,15 @@ export default async function ComptabilitePage() {
 
       {/* ------------------------------------------------- le cahier de comptes */}
       <section id="cahier" className="scroll-mt-24">
-        <SousTitre>Le cahier de comptes</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Une ligne par mouvement, dans l&apos;ordre. Tu peux chercher, filtrer par période et tout sortir en tableur pour l&apos;assemblée générale ou pour un
-          financeur.
-        </p>
+        <SousTitre info="Une ligne par mouvement. Recherche, filtre et export tableur.">Cahier de comptes</SousTitre>
         <Mouvements mouvements={mouvements} />
       </section>
 
       <p className="mt-8 text-sm text-[#6B6A8A]">
-        Les obligations à tenir et les documents à fabriquer sont dans{' '}
+        Obligations et documents :{' '}
         <Link href="/espace/secretariat" className="font-bold text-[#4F46E5] underline underline-offset-4">
           mon secrétariat
         </Link>
-        .
       </p>
     </>
   );

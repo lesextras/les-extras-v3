@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState } from 'react';
 import { CARTE, Encart } from '../../_ui';
@@ -37,8 +38,7 @@ export function Commandes({ initiales }: { initiales: Commande[] }) {
   if (!commandes.length) {
     return (
       <Encart>
-        Aucune commande pour l&apos;instant. Elles apparaîtront ici dès qu&apos;un paiement sera
-        confirmé, rien n&apos;est enregistré avant.
+        Aucune commande.
       </Encart>
     );
   }
@@ -151,8 +151,7 @@ export function Commandes({ initiales }: { initiales: Commande[] }) {
                     ) : null}
                   </div>
                   <p className="text-xs text-[#6B6A8A]">
-                    Noter une commande remboursée ici ne rembourse pas l&apos;acheteur : le
-                    remboursement se fait depuis le tableau de bord du compte d&apos;encaissement.
+                    Ne rembourse pas l&apos;acheteur : à faire depuis le compte d&apos;encaissement.
                   </p>
                 </div>
               ) : null}

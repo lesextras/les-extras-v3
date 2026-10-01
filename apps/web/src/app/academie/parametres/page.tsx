@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
@@ -95,10 +96,7 @@ export default async function ParametresPage() {
           <div className="flex flex-wrap items-start gap-3">
             <div className="min-w-[240px] flex-1">
               <h2 className="text-[18px] font-extrabold text-[#12312A]">Les deux référents</h2>
-              <p className="mt-1 text-[15px] leading-relaxed text-[#334A42]">
-                Le référentiel national qualité demande de savoir qui, chez toi, accueille un apprenant en situation
-                de handicap, et qui répond de la pédagogie. Ce peut être la même personne, mais il faut un nom.
-              </p>
+              <p className="mt-1 text-[15px] text-[#334A42]">Handicap et pédagogie · un nom requis</p>
             </div>
             <Link href="/academie/mon-academie" className={BTN_DISCRET}>
               Modifier
@@ -144,9 +142,7 @@ export default async function ParametresPage() {
           <div className="flex flex-wrap items-start gap-3">
             <div className="min-w-[240px] flex-1">
               <h2 className="text-[18px] font-extrabold text-[#12312A]">Comment on te joint</h2>
-              <p className="mt-1 text-[14px] text-[#5E7A6E]">
-                Ces coordonnées apparaissent sur les conventions et les attestations.
-              </p>
+              <p className="mt-1 text-[14px] text-[#5E7A6E]">Sur conventions et attestations</p>
             </div>
             <Link href="/academie/mon-academie" className={BTN_DISCRET}>
               Modifier
@@ -186,10 +182,7 @@ export default async function ParametresPage() {
         {/* ---------------------------------------------------- tes données */}
         <section className={`${CARTE} p-5`}>
           <h2 className="text-[18px] font-extrabold text-[#12312A]">Tes données</h2>
-          <p className="mt-1 text-[15px] leading-relaxed text-[#334A42]">
-            Tes formations, tes sessions, tes preuves et tes apprenants t&apos;appartiennent. Tu peux les ressortir
-            quand tu veux, et demander la fermeture de l&apos;espace à tout moment.
-          </p>
+          <p className="mt-1 text-[15px] text-[#334A42]">Elles t&apos;appartiennent : export et fermeture à tout moment.</p>
           <div className="mt-3 flex flex-wrap gap-3">
             <Link href="/academie/nous-contacter" className={BTN_DISCRET}>
               Demander la fermeture

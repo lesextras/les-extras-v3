@@ -1,8 +1,9 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { appel } from '../../_client';
-import { BTN_PRIMAIRE, CARTE, CHAMP } from '../../_ui';
+import { BTN_PRIMAIRE, CARTE, CHAMP, Info } from '../../_ui';
 import type { ContexteFiche } from './Fiche';
 
 const NATURES: Record<string, string> = {
@@ -36,8 +37,10 @@ export const Champ = ({ libelle, aide, children }: { libelle: string; aide?: str
 export function Bloc({ titre, children, aide }: { titre: string; aide?: string; children: React.ReactNode }) {
   return (
     <section className={`${CARTE} mb-6 p-5 sm:p-6`}>
-      <h2 className="text-[19px] font-extrabold text-[#12312A]">{titre}</h2>
-      {aide ? <p className="mt-1 max-w-[70ch] text-[15px] leading-relaxed text-[#5E7A6E]">{aide}</p> : null}
+      <div className="flex items-center gap-2">
+        <h2 className="text-[19px] font-extrabold text-[#12312A]">{titre}</h2>
+        {aide ? <Info>{aide}</Info> : null}
+      </div>
       <div className="mt-4">{children}</div>
     </section>
   );
@@ -49,16 +52,16 @@ function Preparation({ ctx, aller }: { ctx: ContexteFiche; aller: (o: 'planning'
   const actifs = s.inscriptions.filter((i) => i.status !== 'CANCELLED');
   const passee = new Date(s.endDate ?? s.startDate).getTime() < Date.now();
   const points: { ok: boolean; libelle: string; o: Parameters<typeof aller>[0] }[] = [
-    { ok: s.creneaux.length > 0, libelle: 'Le planning est posé (créneaux, formateur, salle)', o: 'planning' },
-    { ok: actifs.length > 0, libelle: 'Les stagiaires sont inscrits', o: 'stagiaires' },
-    { ok: actifs.length > 0 && actifs.every((i) => i.convocationEnvoyeeLe), libelle: 'Chaque stagiaire a reçu sa convocation', o: 'documents' },
-    { ok: s.seances.length > 0, libelle: "L'émargement est ouvert à chaque demi-journée", o: 'emargement' },
-    { ok: passee && actifs.length > 0 && actifs.every((i) => i.heuresRealisees > 0), libelle: 'Chaque stagiaire a des heures réalisées', o: 'emargement' },
-    { ok: actifs.length > 0 && actifs.every((i) => i.satisfactionAt), libelle: 'Les enquêtes de fin sont revenues', o: 'qualite' },
+    { ok: s.creneaux.length > 0, libelle: 'Planning posé', o: 'planning' },
+    { ok: actifs.length > 0, libelle: 'Stagiaires inscrits', o: 'stagiaires' },
+    { ok: actifs.length > 0 && actifs.every((i) => i.convocationEnvoyeeLe), libelle: 'Convocations envoyées', o: 'documents' },
+    { ok: s.seances.length > 0, libelle: 'Émargement ouvert', o: 'emargement' },
+    { ok: passee && actifs.length > 0 && actifs.every((i) => i.heuresRealisees > 0), libelle: 'Heures réalisées saisies', o: 'emargement' },
+    { ok: actifs.length > 0 && actifs.every((i) => i.satisfactionAt), libelle: 'Enquêtes de fin revenues', o: 'qualite' },
   ];
   const faits = points.filter((p) => p.ok).length;
   return (
-    <Bloc titre={`Préparation de la session : ${faits} sur ${points.length}`} aide="Ce que demanderont un OPCO, la Caisse des dépôts ou un auditeur Qualiopi, dans l'ordre où cela se fait.">
+    <Bloc titre={`Préparation : ${faits} / ${points.length}`} aide="Ce que demandent OPCO, CDC et auditeur Qualiopi, dans l'ordre.">
       <ul className="grid gap-2">
         {points.map((p) => (
           <li key={p.libelle}>
@@ -153,10 +156,10 @@ export function OngletApercu({ ctx, aller }: { ctx: ContexteFiche; aller: (o: 'p
     <>
       <Preparation ctx={ctx} aller={aller} />
 
-      <Bloc titre="Réglages de la session" aide="Ces informations sont imprimées sur la convention, la convocation et le certificat de réalisation.">
+      <Bloc titre="Réglages" aide="Imprimés sur convention, convocation et certificat.">
         <form onSubmit={enregistrer} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Champ libelle="Nom de la session" aide="Facultatif : sinon, le titre de la formation.">
+            <Champ libelle="Nom de la session" aide="Facultatif">
               <input className={CHAMP} value={v.title} onChange={maj('title')} maxLength={160} />
             </Champ>
             <Champ libelle="Lieu">
@@ -201,12 +204,12 @@ export function OngletApercu({ ctx, aller }: { ctx: ContexteFiche; aller: (o: 'p
                 <input className={CHAMP} type="number" min={0} max={100} value={v.tauxDistanciel} onChange={maj('tauxDistanciel')} />
               </Champ>
             ) : null}
-            <Champ libelle="Durée par stagiaire (heures)" aide={`Vide : ${s.dureePrevue ? `${String(s.dureePrevue).replace('.', ',')} h, calculée d'après le planning ou le programme` : "calculée d'après le planning"}.`}>
+            <Champ libelle="Durée par stagiaire (heures)" aide={`Vide : ${s.dureePrevue ? `${String(s.dureePrevue).replace('.', ',')} h (calculée)` : 'calculée'}`}>
               <input className={CHAMP} inputMode="decimal" value={v.dureeHeures} onChange={maj('dureeHeures')} />
             </Champ>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Champ libelle="Prix HT par stagiaire (€)" aide="Repris par les conventions et les factures. Un prix propre à un stagiaire se règle sur sa fiche.">
+            <Champ libelle="Prix HT par stagiaire (€)" aide="Modifiable par stagiaire">
               <input className={CHAMP} inputMode="decimal" value={v.priceHt} onChange={maj('priceHt')} />
             </Champ>
             <Champ libelle="Type de session">
@@ -215,7 +218,7 @@ export function OngletApercu({ ctx, aller }: { ctx: ContexteFiche; aller: (o: 'p
                 <option value="intra">Intra (un seul client)</option>
               </select>
             </Champ>
-            <Champ libelle="Sous-traitance" aide="Elle change la ligne du BPF où la session est comptée.">
+            <Champ libelle="Sous-traitance" aide="Change la ligne du BPF">
               <select className={CHAMP} value={v.sousTraitance} onChange={maj('sousTraitance')}>
                 <option value="AUCUNE">Aucune</option>
                 <option value="RECUE">Je réalise pour un autre organisme</option>
@@ -228,18 +231,18 @@ export function OngletApercu({ ctx, aller }: { ctx: ContexteFiche; aller: (o: 'p
               <input className={CHAMP} value={v.organismePartenaire} onChange={maj('organismePartenaire')} maxLength={200} />
             </Champ>
           ) : null}
-          <Champ libelle="Informations pratiques" aide="Accès, stationnement, repas, matériel à apporter : elles figurent sur la convocation.">
+          <Champ libelle="Informations pratiques" aide="Accès, repas, matériel · sur la convocation">
             <textarea className={`${CHAMP} min-h-[90px]`} value={v.infosPratiques} onChange={maj('infosPratiques')} maxLength={2000} />
           </Champ>
           <fieldset className="grid gap-3 rounded-xl border border-[#DDEBE4] p-4">
             <legend className="px-1 text-sm font-bold text-[#12312A]">Envois automatiques</legend>
             <label className="flex items-start gap-3 text-[15px]">
               <input type="checkbox" className="mt-1 h-5 w-5 accent-[#1E9E6A]" checked={v.convocationsAuto} onChange={(e) => setV((x) => ({ ...x, convocationsAuto: e.target.checked }))} />
-              <span>Envoyer les convocations sept jours avant, avec le programme</span>
+              <span>Convocations à J-7, avec le programme</span>
             </label>
             <label className="flex items-start gap-3 text-[15px]">
               <input type="checkbox" className="mt-1 h-5 w-5 accent-[#1E9E6A]" checked={v.enquetesAuto} onChange={(e) => setV((x) => ({ ...x, enquetesAuto: e.target.checked }))} />
-              <span>Envoyer les enquêtes : de fin le lendemain, au commanditaire, puis à froid</span>
+              <span>Enquêtes : fin, commanditaire, à froid</span>
             </label>
             {v.enquetesAuto ? (
               <label className="flex flex-wrap items-center gap-2 pl-8 text-[15px]">
@@ -250,12 +253,12 @@ export function OngletApercu({ ctx, aller }: { ctx: ContexteFiche; aller: (o: 'p
             ) : null}
           </fieldset>
           <button type="submit" disabled={ctx.occupe} className={BTN_PRIMAIRE}>
-            {ctx.occupe ? 'Enregistrement…' : 'Enregistrer les réglages'}
+            {ctx.occupe ? 'Enregistrement…' : 'Enregistrer'}
           </button>
         </form>
       </Bloc>
 
-      <Bloc titre="Classement du programme (BPF et CPF)" aide="Il vaut pour toutes les sessions de cette formation : il range les stagiaires et les heures dans les bons cadres du bilan pédagogique et financier.">
+      <Bloc titre="Classement BPF et CPF" aide="Vaut pour toutes les sessions de cette formation.">
         <form onSubmit={enregistrerBpf} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Champ libelle="Nature de l'action (art. L6313-1)">
@@ -276,15 +279,15 @@ export function OngletApercu({ ctx, aller }: { ctx: ContexteFiche; aller: (o: 'p
                 ))}
               </select>
             </Champ>
-            <Champ libelle="Code NSF (cadre F-4)" aide="Trois chiffres et une lettre, par exemple 332t (travail social).">
+            <Champ libelle="Code NSF (cadre F-4)" aide="Ex. 332t">
               <input className={CHAMP} value={bpf.codeNsf} onChange={(e) => setBpf((x) => ({ ...x, codeNsf: e.target.value }))} maxLength={8} />
             </Champ>
-            <Champ libelle="Code RNCP ou RS" aide="Seulement si la formation prépare une certification enregistrée.">
+            <Champ libelle="Code RNCP ou RS" aide="Si formation certifiante">
               <input className={CHAMP} value={bpf.codeCertification} onChange={(e) => setBpf((x) => ({ ...x, codeCertification: e.target.value }))} maxLength={30} placeholder="RNCP12345 ou RS1234" />
             </Champ>
           </div>
           <button type="submit" disabled={ctx.occupe} className={BTN_PRIMAIRE}>
-            Enregistrer le classement
+            Enregistrer
           </button>
         </form>
       </Bloc>

@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { BarreHaut, BarreLaterale, type CompteAffiche } from './BarreLaterale';
@@ -182,19 +183,25 @@ export function Titre({
   children,
   sousTitre,
   actions,
+  info,
 }: {
   surtitre?: string;
   children: ReactNode;
   sousTitre?: ReactNode;
   actions?: ReactNode;
+  /** Une explication courte, rangée derrière le petit « i » à côté du titre. */
+  info?: ReactNode;
 }) {
   return (
     <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="max-w-[64ch]">
         {surtitre ? <p className="mb-2 text-sm font-bold uppercase tracking-[0.12em] text-[#6B6A8A]">{surtitre}</p> : null}
-        <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-4xl">
-          {children}
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-[#1D1B5C] [text-wrap:balance] sm:text-4xl">
+            {children}
+          </h1>
+          {info ? <Info>{info}</Info> : null}
+        </div>
         {sousTitre ? <p className="mt-3 text-lg leading-relaxed text-[#3B3A66]">{sousTitre}</p> : null}
       </div>
       {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
@@ -202,11 +209,47 @@ export function Titre({
   );
 }
 
-export function SousTitre({ children, id }: { children: ReactNode; id?: string }) {
+export function SousTitre({ children, id, info }: { children: ReactNode; id?: string; info?: ReactNode }) {
+  if (!info) {
+    return (
+      <h2 id={id} className="mb-4 text-xl font-extrabold tracking-tight text-[#1D1B5C] sm:text-2xl">
+        {children}
+      </h2>
+    );
+  }
   return (
-    <h2 id={id} className="mb-4 text-xl font-extrabold tracking-tight text-[#1D1B5C] sm:text-2xl">
-      {children}
-    </h2>
+    <div className="mb-4 flex items-center gap-2">
+      <h2 id={id} className="text-xl font-extrabold tracking-tight text-[#1D1B5C] sm:text-2xl">
+        {children}
+      </h2>
+      <Info>{info}</Info>
+    </div>
+  );
+}
+
+/**
+ * LE PETIT « i » : une explication rangée, qui ne s'ouvre qu'à la demande.
+ *
+ * Un `<details>` natif : il s'ouvre au clic, à Entrée ou à Espace, sans
+ * JavaScript. À ne jamais placer DANS un `<p>` ou un titre (HTML invalide) :
+ * toujours à côté.
+ */
+export function Info({ children, libelle = 'Plus d’infos', aDroite = false }: { children: ReactNode; libelle?: string; aDroite?: boolean }) {
+  return (
+    <details className="relative inline-block shrink-0 align-middle text-left">
+      <summary
+        aria-label={libelle}
+        title={libelle}
+        className="flex h-6 w-6 cursor-pointer list-none items-center justify-center rounded-full border border-[#C7C4F2] bg-white font-serif text-[13px] font-bold italic text-[#4F46E5] transition hover:bg-[#ECEBFC] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#ECEBFC] [&::-webkit-details-marker]:hidden"
+      >
+        i
+      </summary>
+      <div
+        className={`absolute top-8 z-30 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-[#E6E4F3] bg-white p-3 text-sm font-normal normal-case leading-relaxed tracking-normal text-[#3B3A66] shadow-[0_10px_28px_rgba(29,27,92,0.12)] ${aDroite ? 'right-0' : 'left-0'}`}
+      >
+        {children}
+      </div>
+    </details>
   );
 }
 

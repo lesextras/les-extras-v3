@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { Encart, ORIGINE_SITE, Titre } from '../_ui';
@@ -27,7 +28,7 @@ export default async function PageIntegrations() {
       {publies.length || packsPublies.length ? (
         <Integrations origine={ORIGINE_SITE} cours={publies} packs={packsPublies} />
       ) : (
-        <Encart ton="info">Publie d&apos;abord une formation ou un pack : seuls les contenus publiés s&apos;intègrent ailleurs.</Encart>
+        <Encart ton="info">Aucun contenu publié.</Encart>
       )}
     </>
   );

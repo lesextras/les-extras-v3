@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useMemo, useState } from 'react';
 import { appel } from '../_client';
@@ -86,11 +87,11 @@ export function ReferentielQualiopi({ initial }: { initial: Referentiel }) {
       <section className={`${CARTE} mb-6 p-5 sm:p-6`}>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[13px] font-extrabold uppercase tracking-[0.1em] text-[#5E7A6E]">Couverture du référentiel</p>
+            <p className="text-[13px] font-extrabold uppercase tracking-[0.1em] text-[#5E7A6E]">Couverture</p>
             <p className="mt-1 text-3xl font-extrabold tabular-nums text-[#12312A]">{pourcentage} %</p>
             <p className="mt-0.5 text-[14px] text-[#334A42]">
-              {couverts.length} indicateur{couverts.length > 1 ? 's' : ''} sur {concernes.length} qui te concernent
-              {tous.length - concernes.length > 0 ? ` · ${tous.length - concernes.length} marqué${tous.length - concernes.length > 1 ? 's' : ''} sans objet` : ''}
+              {couverts.length} / {concernes.length}
+              {tous.length - concernes.length > 0 ? ` · ${tous.length - concernes.length} sans objet` : ''}
             </p>
           </div>
           <button
@@ -98,7 +99,7 @@ export function ReferentielQualiopi({ initial }: { initial: Referentiel }) {
             onClick={() => setFiltre((f) => (f === 'TOUT' ? 'RESTE' : 'TOUT'))}
             className={BTN_SECONDAIRE}
           >
-            {filtre === 'TOUT' ? 'Ne montrer que ce qui manque' : 'Montrer tout le référentiel'}
+            {filtre === 'TOUT' ? 'Ce qui manque' : 'Tout voir'}
           </button>
         </div>
         <div className="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-[#E3F5EC]">
@@ -189,7 +190,7 @@ function LigneIndicateur({
 
         <div className="flex shrink-0 flex-wrap gap-2">
           <button type="button" onClick={() => setOuvert((o) => !o)} className="rounded-lg border border-[#DDEBE4] bg-white px-3 py-1.5 text-[13px] font-bold text-[#334A42] transition hover:border-[#1E9E6A] hover:text-[#0F5F3E]">
-            {i.intitule ? 'Corriger' : 'Noter la preuve'}
+            {i.intitule ? 'Modifier' : 'Ajouter la preuve'}
           </button>
           {i.etat !== 'SANS_OBJET' ? (
             <button type="button" onClick={() => onNoter(i.id, { etat: 'SANS_OBJET' })} className="rounded-lg px-3 py-1.5 text-[13px] font-bold text-[#5E7A6E] hover:bg-[#F2F7F5]">
@@ -197,7 +198,7 @@ function LigneIndicateur({
             </button>
           ) : (
             <button type="button" onClick={() => onNoter(i.id, { etat: 'A_FAIRE' })} className="rounded-lg px-3 py-1.5 text-[13px] font-bold text-[#5E7A6E] hover:bg-[#F2F7F5]">
-              Me concerne finalement
+              Me concerne
             </button>
           )}
           {i.etat === 'DEPOSEE' ? (
@@ -215,7 +216,7 @@ function LigneIndicateur({
             value={intitule}
             onChange={(e) => setIntitule(e.target.value)}
             maxLength={300}
-            placeholder="Quelle pièce répond ? « Fiche programme CM IA », « CV du formateur »…"
+            placeholder="Pièce (ex. CV du formateur)"
             className={CHAMP}
           />
           <input
@@ -223,7 +224,7 @@ function LigneIndicateur({
             value={lien}
             onChange={(e) => setLien(e.target.value)}
             maxLength={500}
-            placeholder="Son lien, si elle est en ligne (facultatif)"
+            placeholder="Lien (facultatif)"
             className={CHAMP}
           />
           <button

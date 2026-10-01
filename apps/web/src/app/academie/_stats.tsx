@@ -1,8 +1,9 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { BTN_DISCRET, CARTE, Encart, SousTitre } from './_ui';
+import { BTN_DISCRET, CARTE, Encart, Pastille, SousTitre } from './_ui';
 import { euros, type Apprenant, type CoursResume, type Vente } from './_ecole/types';
 
 /**
@@ -137,11 +138,11 @@ export function BlocStatistiques({
 
   return (
     <section className="mt-10" id="statistiques">
-      <SousTitre>Ce que disent les chiffres</SousTitre>
+      <SousTitre>Statistiques</SousTitre>
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <label className="flex flex-wrap items-center gap-2 text-[14px] font-bold text-[#12312A]">
-          Sur quelle période
+          Période
           <select
             value={periode}
             onChange={(e) => setPeriode(e.target.value)}
@@ -171,18 +172,13 @@ export function BlocStatistiques({
         ))}
       </div>
 
-      <p className="mb-6 text-[15px] text-[#334A42]">
-        Sur cette période, <strong className="font-extrabold text-[#12312A]">{fenetre.maintenant.commences}</strong>{' '}
-        apprenant{fenetre.maintenant.commences > 1 ? 's ont' : ' a'} commencé une formation et{' '}
-        <strong className="font-extrabold text-[#12312A]">{fenetre.maintenant.finis}</strong>{' '}
-        {fenetre.maintenant.finis > 1 ? "l'ont" : "l'a"} terminée.
+      <p className="mb-6 flex flex-wrap gap-2 text-[15px] text-[#334A42]">
+        <Pastille ton="accent">{fenetre.maintenant.commences} commencé{fenetre.maintenant.commences > 1 ? 's' : ''}</Pastille>
+        <Pastille ton="ok">{fenetre.maintenant.finis} terminé{fenetre.maintenant.finis > 1 ? 's' : ''}</Pastille>
       </p>
 
       {rienDuTout ? (
-        <Encart ton="info">
-          Aucune vente ni inscription pour l&apos;instant. Dès qu&apos;une formation part, les chiffres apparaissent
-          ici : ce qui rentre, qui suit, qui décroche.
-        </Encart>
+        <Encart ton="info">Aucune vente ni inscription.</Encart>
       ) : (
         <>
           <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -190,7 +186,7 @@ export function BlocStatistiques({
               { t: `Encaissé en ${annee}`, v: euros(caAnnee), d: `${payeesAnnee.length} vente${payeesAnnee.length > 1 ? 's' : ''} payée${payeesAnnee.length > 1 ? 's' : ''}`, c: 'text-[#0F5F3E]' },
               { t: 'Apprenants', v: String(personnes.size), d: `${inscriptions.length} inscription${inscriptions.length > 1 ? 's' : ''}`, c: 'text-[#12312A]' },
               { t: "Taux d'achèvement", v: `${achevement} %`, d: `${terminees} parcours terminé${terminees > 1 ? 's' : ''}`, c: achevement >= 50 ? 'text-[#0F5F3E]' : 'text-[#7C3E06]' },
-              { t: 'Sans visite depuis un mois', v: String(inactifs), d: inactifs ? 'à relancer' : 'personne à relancer', c: inactifs ? 'text-[#8A1B3D]' : 'text-[#12312A]' },
+              { t: 'Inactifs (+30 j)', v: String(inactifs), d: inactifs ? 'à relancer' : '—', c: inactifs ? 'text-[#8A1B3D]' : 'text-[#12312A]' },
             ].map((x) => (
               <div key={x.t} className={`${CARTE} p-5`}>
                 <p className="text-[13px] font-bold uppercase tracking-wide text-[#5E7A6E]">{x.t}</p>
@@ -202,7 +198,7 @@ export function BlocStatistiques({
 
           <div className="grid gap-5 lg:grid-cols-2">
             <div className={`${CARTE} p-5`}>
-              <h3 className="mb-3 text-[17px] font-extrabold text-[#12312A]">Ce qui rentre, mois par mois</h3>
+              <h3 className="mb-3 text-[17px] font-extrabold text-[#12312A]">Encaissements / mois</h3>
               <div className="overflow-x-auto">
                 <ul className="flex min-w-[500px] items-end gap-2" style={{ height: 140 }}>
                   {caParMois.map((m) => (
@@ -220,7 +216,7 @@ export function BlocStatistiques({
             </div>
 
             <div className={`${CARTE} p-5`}>
-              <h3 className="mb-3 text-[17px] font-extrabold text-[#12312A]">Les inscriptions, mois par mois</h3>
+              <h3 className="mb-3 text-[17px] font-extrabold text-[#12312A]">Inscriptions / mois</h3>
               <div className="overflow-x-auto">
                 <ul className="flex min-w-[500px] items-end gap-2" style={{ height: 140 }}>
                   {inscritsParMois.map((m) => (
@@ -257,10 +253,10 @@ export function BlocStatistiques({
 
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/academie/ventes" className={BTN_DISCRET}>
-              Le détail des ventes
+              Ventes
             </Link>
             <Link href="/academie/apprenants" className={BTN_DISCRET}>
-              Le détail des apprenants
+              Apprenants
             </Link>
           </div>
         </>

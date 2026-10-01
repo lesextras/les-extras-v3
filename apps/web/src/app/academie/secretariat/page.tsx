@@ -1,7 +1,8 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
-import { BTN_DISCRET, CARTE, Encart, Pastille, Titre, formaterDate } from '../_ui';
+import { BTN_DISCRET, CARTE, Encart, Info, Pastille, Titre, formaterDate } from '../_ui';
 import type { LigneSessionAdmin } from '../_gestion/types';
 
 export const metadata: Metadata = { title: 'Mon secrétariat', robots: { index: false, follow: false } };
@@ -12,43 +13,43 @@ const PIECES = [
     code: 'convention',
     titre: 'La convention ou le contrat',
     quand: 'Avant le premier jour',
-    quoi: "Convention avec l'employeur ou le financeur, contrat quand la personne paie elle-même. Elle porte l'intitulé, les dates, la durée, le prix et les objectifs.",
+    quoi: 'Convention si un employeur ou financeur paie, contrat si la personne paie.',
   },
   {
     code: 'convocation',
     titre: 'La convocation',
     quand: 'Une semaine avant',
-    quoi: "Date, horaires, lieu, accès, et le nom du référent handicap à joindre si un aménagement est nécessaire.",
+    quoi: 'Date, horaires, lieu, référent handicap.',
   },
   {
     code: 'programme',
     titre: 'Le programme remis',
     quand: 'Avant le premier jour',
-    quoi: 'Objectifs, public visé, prérequis, déroulé, durée, modalités d’évaluation. Le même que celui du catalogue.',
+    quoi: 'Le même que celui du catalogue.',
   },
   {
     code: 'emargement',
     titre: "La feuille d'émargement",
     quand: 'Chaque demi-journée',
-    quoi: 'Signée par chaque apprenant et par le formateur, demi-journée par demi-journée. C’est la pièce la plus regardée en contrôle.',
+    quoi: 'Apprenants et formateur. La pièce la plus contrôlée.',
   },
   {
     code: 'chaud',
     titre: "L'évaluation à chaud",
     quand: 'Le dernier jour',
-    quoi: 'Ce que la personne en a pensé, à la fin de la session, tant qu’elle est là.',
+    quoi: 'Avant que la personne parte.',
   },
   {
     code: 'attestation',
     titre: 'L’attestation de fin de formation',
     quand: 'Dans les jours qui suivent',
-    quoi: 'Remise à chaque personne : intitulé, dates, durée, objectifs, résultats de l’évaluation des acquis.',
+    quoi: 'Avec les résultats de l’évaluation des acquis.',
   },
   {
     code: 'froid',
     titre: "L'évaluation à froid",
     quand: 'Trois à six mois après',
-    quoi: 'Ce que la formation a changé dans le travail. C’est l’indicateur 11, et c’est celui qu’on oublie.',
+    quoi: 'Indicateur 11 : souvent oublié.',
   },
 ];
 
@@ -143,15 +144,13 @@ export default async function SecretariatPage() {
                     </li>
                   ))}
                 </ul>
-                {!x.location && !x.salle ? <p className="mt-2 text-[14px] text-[#7C3E06]">Le lieu manque encore : sans adresse, la convocation ne peut pas partir.</p> : null}
+                {!x.location && !x.salle ? <p className="mt-2 text-[14px] text-[#7C3E06]">Lieu manquant : convocation bloquée.</p> : null}
               </li>
             );
           })}
         </ul>
       ) : (
-        <p className="mb-9 text-[15px] leading-relaxed text-[#5E7A6E]">
-          Aucune session à venir. Dès qu&apos;une date est posée, elle apparaît ici avec ce qu&apos;il faut préparer.
-        </p>
+        <p className="mb-9 text-[15px] leading-relaxed text-[#5E7A6E]">Aucune session à venir.</p>
       )}
 
       {/* ------------------------------------------------- ce qui suit */}
@@ -172,7 +171,7 @@ export default async function SecretariatPage() {
                         {x.titre || 'Session sans intitulé'}
                       </p>
                       <p className="text-[14px] text-[#5E7A6E]">
-                        Terminée il y a {jours} jour{jours > 1 ? 's' : ''}
+                        Terminée · J+{jours}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -206,7 +205,7 @@ export default async function SecretariatPage() {
       ) : null}
 
       {/* ------------------------------------------------- le référentiel */}
-      <h2 className="mb-4 text-[19px] font-extrabold text-[#12312A]">Les sept pièces, dans l&apos;ordre</h2>
+      <h2 className="mb-4 text-[19px] font-extrabold text-[#12312A]">Les 7 pièces, dans l&apos;ordre</h2>
       <ol className="grid gap-3">
         {PIECES.map((p, i) => (
           <li key={p.code} className={`${CARTE} flex gap-4 p-4 sm:p-5`}>
@@ -214,24 +213,23 @@ export default async function SecretariatPage() {
               {i + 1}
             </span>
             <div>
-              <p className="text-[16px] font-extrabold text-[#12312A]">{p.titre}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[16px] font-extrabold text-[#12312A]">{p.titre}</p>
+                <Info>{p.quoi}</Info>
+              </div>
               <p className="text-[13px] font-bold uppercase tracking-wide text-[#1E9E6A]">{p.quand}</p>
-              <p className="mt-1 text-[15px] leading-relaxed text-[#334A42]">{p.quoi}</p>
             </div>
           </li>
         ))}
       </ol>
 
-      <p className="mt-8 max-w-[75ch] text-[14px] leading-relaxed text-[#5E7A6E]">
-        Les preuves que tu déposes pour l&apos;audit se rangent dans{' '}
+      <p className="mt-8 flex flex-wrap gap-x-4 gap-y-1 text-[14px] text-[#5E7A6E]">
         <Link href="/academie/certification" className="font-bold text-[#0F5F3E] underline underline-offset-4">
-          Ma certification Qualiopi
+          Ma certification
         </Link>
-        , et les questionnaires se construisent dans{' '}
         <Link href="/academie/formulaires" className="font-bold text-[#0F5F3E] underline underline-offset-4">
           Mes formulaires
         </Link>
-        .
       </p>
     </>
   );

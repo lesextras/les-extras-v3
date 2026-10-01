@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useCallback, useEffect, useState } from 'react';
 import { appel } from '../_client';
@@ -126,7 +127,7 @@ export function Bpf({ anneeInitiale }: { anneeInitiale: number }) {
             </div>
           ) : null}
           <div className="mb-5">
-            <Encart ton="info">C&apos;est une aide au remplissage : le formulaire en ligne fait foi. Les montants viennent des factures émises (moins les avoirs) ; tu peux corriger une ligne en la saisissant.</Encart>
+            <Encart ton="info">Aide au remplissage : le formulaire officiel fait foi.</Encart>
           </div>
 
           <section className={`${CARTE} mb-6 p-5 sm:p-6`}>

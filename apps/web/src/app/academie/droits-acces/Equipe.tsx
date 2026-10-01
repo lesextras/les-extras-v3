@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { appel } from '../_client';
@@ -150,8 +151,7 @@ export function Equipe({ membres: initiaux, invitations: initiales }: { membres:
       {seuleAdmin ? (
         <div className="mb-6">
           <Encart ton="attention">
-            Tu es la seule personne à pouvoir administrer cette académie. Invite au moins une deuxième
-            administratrice ou un deuxième administrateur : sans cela, un mot de passe perdu ferme l&apos;espace.
+            Seul·e administrateur·rice : invite une deuxième personne pour ne pas perdre l&apos;accès.
           </Encart>
         </div>
       ) : null}
@@ -179,10 +179,7 @@ export function Equipe({ membres: initiaux, invitations: initiales }: { membres:
 
       {ouvert ? (
         <form onSubmit={inviter} className={`${CARTE} mb-6 p-5`}>
-          <p className="mb-4 text-[14px] leading-relaxed text-[#5E7A6E]">
-            On n&apos;ouvre jamais un compte à la place de quelqu&apos;un. Tu envoies l&apos;invitation, la personne
-            crée son propre compte et choisit son mot de passe : c&apos;est elle, et elle seule, qui y a accès.
-          </p>
+          <p className="mb-4 text-[14px] text-[#5E7A6E]">La personne crée elle-même son compte et son mot de passe.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Adresse e-mail</span>
@@ -293,7 +290,7 @@ export function Equipe({ membres: initiaux, invitations: initiales }: { membres:
         </ul>
       ) : (
         <p className="text-[15px] leading-relaxed text-[#5E7A6E]">
-          Aucune invitation en attente. Tout le monde a créé son compte.
+          Aucune invitation en attente.
         </p>
       )}
     </>

@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { apiEspace, sessionAssociation } from '../../../_session';
@@ -46,7 +47,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
     <>
       <nav className="mb-4 text-sm text-[#6B6A8A]" aria-label="Fil d'Ariane">
         <Link href="/espace/dossiers" className="font-bold text-[#4F46E5] underline underline-offset-4">
-          Mes subventions et appels à projet
+          Mes dossiers
         </Link>
         <span className="mx-2">›</span>
         <span>{d.intitule}</span>
@@ -111,13 +112,13 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
         <section className="mb-8 grid gap-4 md:grid-cols-2">
           {d.description ? (
             <Carte>
-              <h2 className="text-lg font-extrabold text-[#1D1B5C]">Ce que le financeur demande</h2>
+              <h2 className="text-lg font-extrabold text-[#1D1B5C]">Ce que finance l&apos;aide</h2>
               <p className="mt-2 whitespace-pre-line leading-relaxed">{d.description}</p>
             </Carte>
           ) : null}
           {d.ideeProjet ? (
             <Carte>
-              <h2 className="text-lg font-extrabold text-[#1D1B5C]">L&apos;idée qu&apos;on propose</h2>
+              <h2 className="text-lg font-extrabold text-[#1D1B5C]">Notre idée</h2>
               <p className="mt-2 whitespace-pre-line leading-relaxed">{d.ideeProjet}</p>
               <Link href="/espace/projets" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">
                 Mes projets →
@@ -133,17 +134,16 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
 
       {/* ------------------------------------------------------- assemblage */}
       <section className="mb-8">
-        <SousTitre>Les papiers à joindre</SousTitre>
+        <SousTitre>Papiers à joindre</SousTitre>
         <Carte>
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <p className="text-sm text-[#6B6A8A]">Chaque papier demandé par le financeur, et s&apos;il est prêt dans le classeur.</p>
+          <div className="flex flex-wrap items-baseline justify-end gap-2">
             <span className="text-sm font-extrabold tabular-nums text-[#1D1B5C]">{d.completude} % prêt</span>
           </div>
           <div className="mt-2">
             <Barre pourcentage={d.completude} ton="ok" />
           </div>
           {d.assemblage.length === 0 ? (
-            <p className="mt-3 text-sm text-[#6B6A8A]">Aucun papier n&apos;est coché pour ce dossier. Coche-les dans la fiche, plus bas.</p>
+            <p className="mt-3 text-sm text-[#6B6A8A]">Aucun papier coché (voir la fiche, plus bas).</p>
           ) : (
             <ul className="mt-4 divide-y divide-[#E6E4F3]">
               {d.assemblage.map((p) => {
@@ -161,7 +161,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
                         </a>
                       ) : (
                         <Link href={`/espace/classeur#${p.code}`} className="font-bold text-[#4F46E5] underline underline-offset-4">
-                          Ranger au classeur
+                          Déposer
                         </Link>
                       )}
                       {p.dateExpiration ? ` · expire le ${dateCourte(p.dateExpiration)}` : ''}
@@ -176,7 +176,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
 
       {/* ----------------------------------------------------------- budget */}
       <section className="mb-8">
-        <SousTitre>Le budget et le compte rendu</SousTitre>
+        <SousTitre>Budget et compte rendu</SousTitre>
         <Carte>
           <BudgetDossier dossier={d} />
         </Carte>
@@ -184,7 +184,7 @@ export default async function DossierPage({ params }: { params: Promise<{ id: st
 
       {/* ------------------------------------------------------------ fiche */}
       <section>
-        <SousTitre>La fiche du dossier</SousTitre>
+        <SousTitre>Fiche du dossier</SousTitre>
         <FicheDossier dossier={d} />
       </section>
     </>

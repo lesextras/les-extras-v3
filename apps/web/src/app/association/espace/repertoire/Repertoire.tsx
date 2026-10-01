@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState } from 'react';
 import {
@@ -114,17 +115,10 @@ export function Repertoire({ contacts, mode = 'INTERNE' }: { contacts: Contact[]
         <div className="rounded-2xl border border-[#E6E4F3] bg-white px-6 py-10 text-center">
           <p className="font-bold text-[#1D1B5C]">
             {onglet === 'EQUIPE'
-              ? 'Personne dans l’équipe pour l’instant.'
+              ? 'Personne dans l’équipe.'
               : onglet === 'MEMBRES'
-                ? 'Aucun membre pour l’instant.'
-                : `Rien dans « ${famille?.libelle ?? 'cette famille'} » pour l’instant.`}
-          </p>
-          <p className="mt-1 text-sm text-[#6B6A8A]">
-            {onglet === 'EQUIPE'
-              ? 'Commence par le président, le trésorier et le secrétaire : les financeurs demandent qui décide.'
-              : onglet === 'MEMBRES'
-                ? 'Chaque membre, avec sa date d’entrée et sa cotisation : c’est ce qui prouve qu’une décision est valable.'
-                : 'Un nom, un poste, un téléphone : le jour où il faut appeler, on ne cherche plus.'}
+                ? 'Aucun membre.'
+                : `Rien dans « ${famille?.libelle ?? 'cette famille'} ».`}
           </p>
           <button type="button" onClick={() => setOuverte('nouvelle')} className="mt-4 rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA]">
             Ajouter une personne

@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -68,7 +69,7 @@ export function NouveauDossier({ financeursConnus = [], projetsConnus = [] }: { 
   return (
     <form onSubmit={soumettre} className="grid gap-3 rounded-xl border border-[#E6E4F3] bg-white p-5 sm:grid-cols-2">
       <fieldset className="sm:col-span-2">
-        <legend className="text-sm font-bold text-[#1D1B5C]">C&apos;est une subvention ou un appel à projet ?</legend>
+        <legend className="text-sm font-bold text-[#1D1B5C]">Type</legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {(['SUBVENTION', 'APPEL_A_PROJET'] as NatureDossier[]).map((n) => (
             <label
@@ -80,14 +81,11 @@ export function NouveauDossier({ financeursConnus = [], projetsConnus = [] }: { 
             </label>
           ))}
         </div>
-        <p className="mt-1 text-xs text-[#6B6A8A]">
-          Une subvention : tu demandes de l&apos;aide pour ce que tu fais. Un appel à projet : un financeur ouvre un concours, tu candidates avant une date.
-        </p>
       </fieldset>
 
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-bold">Nom de la demande</span>
-        <input type="text" required maxLength={200} value={intitule} onChange={(e) => setIntitule(e.target.value)} placeholder="Le nom que le financeur donne à son aide" className={champ} />
+        <input type="text" required maxLength={200} value={intitule} onChange={(e) => setIntitule(e.target.value)} placeholder="Nom de l'aide" className={champ} />
       </label>
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-bold">Financeur</span>
@@ -98,7 +96,7 @@ export function NouveauDossier({ financeursConnus = [], projetsConnus = [] }: { 
           list="financeurs-connus"
           value={financeur}
           onChange={(e) => setFinanceur(e.target.value)}
-          placeholder="Mairie de …, CAF, département, fondation…"
+          placeholder="Mairie, CAF, fondation…"
           className={champ}
         />
         {financeursConnus.length ? (
@@ -108,22 +106,17 @@ export function NouveauDossier({ financeursConnus = [], projetsConnus = [] }: { 
                 <option key={f} value={f} />
               ))}
             </datalist>
-            <span className="text-xs text-[#6B6A8A]">
-              Tes financeurs et institutions déjà notés dans « Mes contacts » sont proposés dès les premières lettres.
-            </span>
           </>
         ) : null}
       </label>
 
       <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-        <span className="font-bold">Description de la demande</span>
-        <span className="text-xs text-[#6B6A8A]">Ce que le financeur cherche à soutenir, recopié de l&apos;annonce : pour qui, pour quoi, ce qu&apos;il exclut.</span>
+        <span className="font-bold">Ce que finance l&apos;aide</span>
         <textarea rows={3} maxLength={4000} value={description} onChange={(e) => setDescription(e.target.value)} className={champ} />
       </label>
 
       <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-        <span className="font-bold">Idée du projet à proposer</span>
-        <span className="text-xs text-[#6B6A8A]">Ce que tu comptes lui présenter. Deux phrases suffisent pour commencer.</span>
+        <span className="font-bold">Ton idée de projet</span>
         {projetsConnus.length ? (
           <span className="mb-1 flex flex-wrap gap-1.5">
             {projetsConnus.map((p) => (
@@ -148,7 +141,7 @@ export function NouveauDossier({ financeursConnus = [], projetsConnus = [] }: { 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold">Montant max (€)</span>
-          <input type="number" min={0} step={1} value={montantMax} onChange={(e) => setMontantMax(e.target.value)} placeholder="Le plafond annoncé" className={champ} />
+          <input type="number" min={0} step={1} value={montantMax} onChange={(e) => setMontantMax(e.target.value)} placeholder="Plafond" className={champ} />
         </label>
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold">Montant à demander (€)</span>

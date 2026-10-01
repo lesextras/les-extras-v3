@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
@@ -25,8 +26,8 @@ export default async function MonAcademiePage() {
     {
       href: '/academie/certification',
       titre: 'Ma certification',
-      detail: `Les 7 critères et les ${qualiopi.indicateurs || 32} indicateurs Qualiopi, leurs preuves, et le jour de l'audit. ${qualiopi.couverture} % de couverture aujourd'hui.`,
-      bouton: 'Ouvrir ma certification',
+      detail: `Qualiopi · ${qualiopi.couverture} % couvert`,
+      bouton: 'Ouvrir',
       bordure: 'border-[#B7E4CE] hover:border-[#1E9E6A]',
       fond: 'bg-[#E3F5EC]',
       pastille: 'bg-[#1E9E6A]',
@@ -36,9 +37,8 @@ export default async function MonAcademiePage() {
     {
       href: '/academie/comptabilite',
       titre: 'Ma comptabilité',
-      detail:
-        "Devis, conventions, factures, subrogation OPCO, encaissements, et le bilan pédagogique et financier à déposer chaque année.",
-      bouton: 'Ouvrir ma comptabilité',
+      detail: 'Devis, factures, OPCO, BPF',
+      bouton: 'Ouvrir',
       bordure: 'border-[#F3B0C2] hover:border-[#D6335C]',
       fond: 'bg-[#FDE7EC]',
       pastille: 'bg-[#D6335C]',
@@ -48,9 +48,8 @@ export default async function MonAcademiePage() {
     {
       href: '/academie/secretariat',
       titre: 'Mon secrétariat',
-      detail:
-        "Le règlement intérieur, les CGV, le livret d'accueil, la procédure de réclamation, le récépissé de déclaration : tous tes papiers au même endroit.",
-      bouton: 'Ouvrir mon secrétariat',
+      detail: 'Règlement, CGV, livret d’accueil',
+      bouton: 'Ouvrir',
       bordure: 'border-[#C7C4F2] hover:border-[#4F46E5]',
       fond: 'bg-[#ECEBFC]',
       pastille: 'bg-[#4F46E5]',
@@ -63,7 +62,7 @@ export default async function MonAcademiePage() {
     <>
       <Titre
         surtitre="Mon académie"
-        sousTitre="Ce qu'un financeur et un auditeur vérifient en premier."
+        sousTitre="Ce que financeurs et auditeurs vérifient."
       >
         {academie.nom}
       </Titre>
@@ -98,42 +97,34 @@ export default async function MonAcademiePage() {
           <div className="mt-3">
             <Barre pourcentage={qualiopi.couverture} />
           </div>
-          <p className="mt-2 text-sm text-[#5E7A6E]">{qualiopi.couverture} % des indicateurs couverts</p>
+          <p className="mt-2 text-sm tabular-nums text-[#5E7A6E]">{qualiopi.couverture} % couvert</p>
           {academie.auditPrevuLe ? <p className="mt-1 text-sm text-[#5E7A6E]">Audit le {formaterDate(academie.auditPrevuLe)}</p> : null}
         </Carte>
         <Carte>
           <p className="text-sm font-bold text-[#5E7A6E]">Journal de veille</p>
           <p className="mt-1 text-2xl font-extrabold tabular-nums text-[#12312A]">{veille.total}</p>
           <p className="mt-1 text-sm leading-relaxed text-[#5E7A6E]">
-            {veille.total ? 'entrées récentes' : "Aucune entrée : trois indicateurs du critère 6 en dépendent."}
+            {veille.total ? 'entrées récentes' : <Pastille ton="attention">Vide · critère 6</Pastille>}
           </p>
           <Link href="/academie/veille" className="mt-2 inline-block text-sm font-bold text-[#0F5F3E] underline underline-offset-4">
-            Tenir ma veille →
+            Ouvrir →
           </Link>
         </Carte>
         <Carte>
-          <p className="text-sm font-bold text-[#5E7A6E]">Réclamations en cours</p>
+          <p className="text-sm font-bold text-[#5E7A6E]">Réclamations ouvertes</p>
           <p className="mt-1 text-2xl font-extrabold tabular-nums text-[#12312A]">{reclamations.ouvertes}</p>
-          <p className="mt-1 text-sm leading-relaxed text-[#5E7A6E]">Le critère 7 demande la trace du traitement, pas seulement celle de la plainte.</p>
           <Link href="/academie/reclamations" className="mt-2 inline-block text-sm font-bold text-[#0F5F3E] underline underline-offset-4">
-            Ouvrir le registre →
+            Ouvrir →
           </Link>
         </Carte>
       </section>
 
       {/* ------------------------------------------------------------- la fiche */}
       <section id="fiche" className={`${CARTE} p-5 sm:p-7`}>
-        <SousTitre>La fiche de mon organisme</SousTitre>
-        <p className="mb-5 max-w-[68ch] text-sm leading-relaxed text-[#5E7A6E]">
-          Ce que l&apos;espace recopie partout ailleurs : dans tes documents, dans tes conventions, et dans les étapes du chemin
-          qui se cochent toutes seules quand la donnée arrive.
-        </p>
+        <SousTitre info="Recopiée dans tes documents, conventions et étapes du chemin.">Fiche de l&apos;organisme</SousTitre>
         {academie.nda ? null : (
           <div className="mb-5">
-            <Encart ton="attention">
-              Ton numéro de déclaration d&apos;activité manque. Tant qu&apos;il n&apos;est pas là, aucune convention ne peut être
-              facturée en formation professionnelle, mais tu peux tout préparer sans lui.
-            </Encart>
+            <Encart ton="attention">Numéro NDA manquant : facturation des conventions bloquée.</Encart>
           </div>
         )}
         <FormulaireFiche fiche={academie} />
@@ -141,20 +132,13 @@ export default async function MonAcademiePage() {
 
       {/* -------------------------------------------- documents et facturation */}
       <section id="documents" className={`${CARTE} mt-6 p-5 sm:p-7`}>
-        <SousTitre>Ce que mes documents et mes factures impriment</SousTitre>
-        <p className="mb-5 max-w-[68ch] text-sm leading-relaxed text-[#5E7A6E]">
-          Le représentant qui signe, la TVA, le délai et les coordonnées de paiement, le règlement intérieur : repris sur les conventions,
-          les convocations, les certificats de réalisation et les factures de l&apos;administration des sessions.
-        </p>
+        <SousTitre info="Repris sur conventions, convocations, certificats et factures.">Mentions des documents</SousTitre>
         <ReglagesAdministration fiche={academie} />
       </section>
 
       <p className="mt-6 text-sm text-[#5E7A6E]">
         <Pastille ton="neutre">Rappel</Pastille>{' '}
-        <span className="ml-2">
-          La mention légale exacte à faire figurer sur tes documents est : « Cet enregistrement ne vaut pas agrément de
-          l&apos;État. »
-        </span>
+        <span className="ml-2">Mention obligatoire : « Cet enregistrement ne vaut pas agrément de l&apos;État. »</span>
       </p>
     </>
   );

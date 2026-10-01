@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import { apiEspace, sessionAssociation } from '../../_session';
 import { nomCourt } from '../../_nom';
 import { Encart, SousTitre, Titre, Tuile } from '../../_ui';
@@ -48,7 +49,8 @@ export default async function BoutiquePage() {
     <>
       <Titre
         surtitre={espace.data ? nomCourt(espace.data.organisation.nom) : undefined}
-        sousTitre="Tout ce que l'association vend en dehors des formations : ce qu'on remet en main propre ou qu'on expédie, et ce qui se télécharge à l'instant du paiement. Rien n'est enregistré tant que le paiement n'est pas confirmé."
+        sousTitre="Objets, fichiers et accès à vendre."
+        info="Une commande n'est enregistrée qu'une fois le paiement confirmé."
       >
         Ma boutique
       </Titre>
@@ -57,56 +59,35 @@ export default async function BoutiquePage() {
         <Tuile
           libelle="En vente"
           valeur={enVente.length}
-          detail={`${listeProduits.length} produit${listeProduits.length > 1 ? 's' : ''} au total`}
+          detail={`sur ${listeProduits.length}`}
           ton={enVente.length ? 'ok' : undefined}
         />
-        <Tuile
-          libelle="Commandes"
-          valeur={listeCommandes.length}
-          detail="Toutes payées : rien n'est écrit avant"
-        />
+        <Tuile libelle="Commandes" valeur={listeCommandes.length} />
         <Tuile
           libelle="À préparer"
           valeur={aExpedier.length}
-          detail={aExpedier.length ? 'Des colis attendent' : 'Rien en attente'}
           ton={aExpedier.length ? 'attention' : 'ok'}
         />
-        <Tuile libelle="Encaissé" valeur={euros(encaisse)} detail="Hors annulations et remboursements" />
+        <Tuile libelle="Encaissé" valeur={euros(encaisse)} detail="hors remboursements" />
       </section>
 
       <section id="encaissement" className="mb-10 scroll-mt-24">
-        <SousTitre>Le compte d&apos;encaissement</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          C&apos;est ici qu&apos;on dit où l&apos;argent doit arriver. Le même branchement sert la
-          boutique et, si l&apos;association vend aussi des formations, son académie.
-        </p>
+        <SousTitre info="Où l'argent arrive. Sert aussi à l'académie.">Compte d&apos;encaissement</SousTitre>
         <Encaissement etat={stripe.data ?? null} />
       </section>
 
       <section id="produits" className="mb-10 scroll-mt-24">
-        <SousTitre>Ce que je vends</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Un objet se compte, s&apos;expédie et demande une adresse ; un fichier ou un accès se
-          remet à l&apos;instant du paiement. Choisis la nature en premier : le reste du formulaire
-          s&apos;y adapte.
-        </p>
+        <SousTitre info="Objet : expédié ou remis. Fichier ou accès : remis au paiement.">Mes produits</SousTitre>
         <Produits initiaux={listeProduits} />
       </section>
 
       <section id="vitrine" className="mb-10 scroll-mt-24">
-        <SousTitre>La vitrine</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          La page publique de la boutique : son nom, ses couleurs, ce qu&apos;on y lit avant
-          d&apos;acheter.
-        </p>
+        <SousTitre info="La page publique de la boutique.">Vitrine</SousTitre>
         <Vitrine initiale={vitrine.data} />
       </section>
 
       <section id="commandes" className="scroll-mt-24">
-        <SousTitre>Les commandes</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Ce qui a été payé, et ce qu&apos;il reste à faire : préparer, expédier, remettre.
-        </p>
+        <SousTitre>Commandes</SousTitre>
         <Commandes initiales={listeCommandes} />
       </section>
     </>

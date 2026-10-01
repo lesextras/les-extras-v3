@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
@@ -46,19 +47,20 @@ export default async function SessionsPage({ searchParams }: { searchParams: Pro
     <>
       <Titre
         surtitre="Gestion de l’organisme"
-        sousTitre="Planning, stagiaires, émargement signé, conventions, attestations, enquêtes et factures : tout ce qu'une session produit, au même endroit."
+        sousTitre="Tout ce qu'une session produit, au même endroit."
+        info="Une session se programme depuis sa formation, onglet « Sessions »."
         actions={
           <>
             <Link href="/academie/planning" className={BTN_SECONDAIRE}>
-              Voir le planning
+              Planning
             </Link>
             <Link href="/academie/formations" className={BTN_PRIMAIRE}>
-              Programmer une session
+              Nouvelle session
             </Link>
           </>
         }
       >
-        Sessions et planning
+        Sessions
       </Titre>
 
       {error ? (
@@ -68,10 +70,7 @@ export default async function SessionsPage({ searchParams }: { searchParams: Pro
       ) : null}
 
       {!liste.length && !error ? (
-        <Encart ton="info">
-          Aucune session pour l&apos;instant. Elle se programme depuis sa formation : ouvre une formation en présentiel ou en
-          classe virtuelle, onglet « Sessions ». Elle apparaît ensuite ici, prête à être administrée.
-        </Encart>
+        <Encart ton="info">Aucune session. Programme-la depuis une formation.</Encart>
       ) : (
         <>
           <nav className="mb-6 flex flex-wrap gap-2" aria-label="Filtrer les sessions">
@@ -112,11 +111,11 @@ function LigneSession({ s }: { s: LigneSessionAdmin }) {
   const passee = new Date(s.endDate ?? s.startDate).getTime() < Date.now();
   const manque: string[] = [];
   if (s.status !== 'CANCELLED') {
-    if (!s.creneaux) manque.push('le planning');
-    if (!s.stagiaires) manque.push('les stagiaires');
+    if (!s.creneaux) manque.push('Planning');
+    if (!s.stagiaires) manque.push('Stagiaires');
     if (s.stagiaires && s.convoques < s.stagiaires && !passee) manque.push(`${s.stagiaires - s.convoques} convocation${s.stagiaires - s.convoques > 1 ? 's' : ''}`);
-    if (passee && s.stagiaires && s.evaluesChaud < s.stagiaires) manque.push(`${s.stagiaires - s.evaluesChaud} enquête${s.stagiaires - s.evaluesChaud > 1 ? 's' : ''} de fin`);
-    if (passee && s.stagiaires && !s.facturee) manque.push('la facture');
+    if (passee && s.stagiaires && s.evaluesChaud < s.stagiaires) manque.push(`${s.stagiaires - s.evaluesChaud} enquête${s.stagiaires - s.evaluesChaud > 1 ? 's' : ''}`);
+    if (passee && s.stagiaires && !s.facturee) manque.push('Facture');
   }
   return (
     <li>
@@ -134,18 +133,24 @@ function LigneSession({ s }: { s: LigneSessionAdmin }) {
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[14px] text-[#334A42]">
           <span>
             {s.stagiaires} stagiaire{s.stagiaires > 1 ? 's' : ''}
-            {s.maxSeats ? ` sur ${s.maxSeats}` : ''}
+            {s.maxSeats ? ` / ${s.maxSeats}` : ''}
           </span>
           <span>{s.creneaux} créneau{s.creneaux > 1 ? 'x' : ''}</span>
           {s.conventions ? (
             <span>
-              {s.conventionsSignees}/{s.conventions} convention{s.conventions > 1 ? 's' : ''} signée{s.conventionsSignees > 1 ? 's' : ''}
+              {s.conventionsSignees}/{s.conventions} convention{s.conventions > 1 ? 's' : ''}
             </span>
           ) : null}
           {s.facturee ? <span className="font-bold text-[#0F5F3E]">Facturée</span> : null}
         </div>
         {manque.length ? (
-          <p className="mt-3 rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-3 py-2 text-[14px] text-[#7C3E06]">À faire : {manque.join(', ')}.</p>
+          <span className="mt-3 flex flex-wrap items-center gap-1.5">
+            {manque.map((m) => (
+              <Pastille key={m} ton="attention">
+                {m}
+              </Pastille>
+            ))}
+          </span>
         ) : null}
       </Link>
     </li>

@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -153,7 +154,7 @@ export function ListeCours({
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-[15px]" style={{ color: VERT.sourdine }}>
           {cours.length === 0
-            ? 'Aucune formation pour le moment.'
+            ? 'Aucune formation.'
             : `${visibles.length} formation${visibles.length > 1 ? 's' : ''}${filtre === 'TOUTES' ? '' : ` sur ${cours.length}`}.`}
         </p>
         <button
@@ -199,14 +200,12 @@ export function ListeCours({
       {cours.length === 0 ? (
         <div className="rounded-2xl border bg-white p-8 text-center" style={{ borderColor: VERT.bord }}>
           <h2 className="text-xl font-extrabold tracking-tight" style={{ color: VERT.encre }}>
-            Une formation, c&apos;est ton savoir-faire, découpé.
+            Aucune formation.
           </h2>
-          <ul className="mx-auto mt-4 max-w-[52ch] space-y-2 text-left leading-relaxed" style={{ color: VERT.texte }}>
-            <li>Des chapitres et des leçons, avec vidéos, documents et quiz</li>
-            <li>Tu écris, tu publies, tu partages l&apos;adresse</li>
-            <li>Les inscrits avancent leçon par leçon, et tu vois leur progression</li>
-            <li>L&apos;attestation part toute seule quand tout est fait</li>
-            <li>En ligne, en salle, en visio ou les deux, c&apos;est une option de la formation</li>
+          <ul className="mx-auto mt-4 max-w-[40ch] space-y-1.5 text-left leading-relaxed" style={{ color: VERT.texte }}>
+            <li>Leçons, vidéos, quiz</li>
+            <li>En ligne, en salle ou en visio</li>
+            <li>Attestation automatique</li>
           </ul>
           <button
             type="button"
@@ -215,13 +214,12 @@ export function ListeCours({
             className="mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-base font-bold text-white transition disabled:opacity-60"
             style={{ backgroundColor: VERT.fonce }}
           >
-            Créer ma première formation
+            Nouvelle formation
           </button>
         </div>
       ) : visibles.length === 0 ? (
         <p className="rounded-2xl border bg-white px-5 py-6 text-center" style={{ borderColor: VERT.bord, color: VERT.texte }}>
-          Aucune formation dans cette modalité. Change de filtre, ou choisis la modalité dans l&apos;onglet
-          « Paramètres » d&apos;une formation.
+          Aucune formation dans cette modalité.
         </p>
       ) : (
         <ul className="grid gap-3">

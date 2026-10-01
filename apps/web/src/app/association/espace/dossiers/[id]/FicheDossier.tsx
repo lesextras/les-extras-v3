@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -124,7 +125,7 @@ export function FicheDossier({ dossier }: { dossier: Dossier }) {
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-bold">Compte rendu à rendre le</span>
         <input type="date" value={dateCompteRendu} onChange={(e) => setDateCompteRendu(e.target.value)} className={champ} />
-        <span className="text-xs text-[#6B6A8A]">En général six mois après la fin de l&apos;action, ou la date fixée par la convention.</span>
+        <span className="text-xs text-[#6B6A8A]">Souvent 6 mois après l&apos;action</span>
       </label>
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-bold">Montant demandé (€)</span>

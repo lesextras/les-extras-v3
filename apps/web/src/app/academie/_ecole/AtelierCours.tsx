@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useEffect, useMemo, useState } from 'react';
 import { appel, messageDe } from './api';
@@ -815,8 +816,7 @@ function Contenu({
           className="rounded-2xl border-2 border-dashed bg-white px-5 py-10 text-center text-[15px]"
           style={{ borderColor: VERT.bord, color: VERT.sourdine }}
         >
-          Cette formation n&apos;a encore aucun contenu. Clique sur « Ajouter un contenu pédagogique » :
-          une leçon suffit pour commencer, le chapitre n&apos;est utile que si tu en as plusieurs.
+          Aucun contenu. Une leçon suffit pour commencer.
         </p>
       ) : null}
 
@@ -1684,10 +1684,6 @@ function Parametres({
       </Bloc>
 
       <Bloc titre="Comment on la suit">
-        <p className="mb-4 text-[15px]" style={{ color: VERT.texte }}>
-          Une seule formation, une seule fiche. Le présentiel, la visio et le mixte se choisissent ici : la formation ne
-          change pas de nature, elle change de façon d&apos;être suivie.
-        </p>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {(Object.keys(NOM_MODALITE) as ModaliteCours[]).map((m) => (
             <button
@@ -1745,8 +1741,8 @@ function Parametres({
             ) : null}
             <p className="text-[14px]" style={{ color: VERT.sourdine }}>
               {enSalle
-                ? "Sans lieu écrit, ni la convention ni l'émargement ne tiennent : la publication est refusée tant qu'il manque."
-                : 'Sans lien, personne ne peut rejoindre : la publication est refusée tant qu’il manque.'}
+                ? 'Lieu obligatoire pour publier.'
+                : 'Lien obligatoire pour publier.'}
             </p>
           </div>
         ) : null}
@@ -1914,8 +1910,7 @@ function Prix({
           </>
         )}
         <p className="mt-4 rounded-xl px-4 py-3 text-[14px]" style={{ backgroundColor: '#FEF3E2', color: '#7C3E06' }}>
-          Le paiement en ligne n&apos;est pas encore branché : ce prix s&apos;affiche, et l&apos;encaissement se fait
-          ailleurs. Une fois payé, tu inscris la personne depuis l&apos;onglet « Apprenants » et tu enregistres la vente.
+          Paiement en ligne pas encore branché : encaisse ailleurs, puis inscris la personne (onglet « Apprenants »).
         </p>
       </Bloc>
 
@@ -1970,7 +1965,7 @@ function Descriptions({
           />
         </Champ>
         <p className="mt-2 text-[14px]" style={{ color: VERT.sourdine }}>
-          Trente secondes suffisent : qui parle, ce qu&apos;on apprend, à qui ça s&apos;adresse.
+          30 secondes suffisent.
         </p>
       </Bloc>
 
@@ -2016,14 +2011,10 @@ function Descriptions({
         </div>
       </Bloc>
 
-      <Bloc titre="La fiche programme, ce que lisent un financeur et un auditeur">
+      <Bloc titre="Fiche programme">
         {programme ? (
           <div className="grid gap-3">
-            <p className="max-w-[70ch] text-[14px] leading-relaxed" style={{ color: VERT.sourdine }}>
-              Les objectifs, le public et les prérequis ci-dessus sont ceux de la fiche : ils s&apos;écrivent une fois.
-              Il reste le déroulé et la durée en heures, les deux mentions que l&apos;indicateur 1 exige en plus.
-            </p>
-            <Champ libelle="Le déroulé, les séquences, dans l'ordre, avec leur modalité">
+            <Champ libelle="Déroulé (séquences et modalités)">
               <textarea rows={6} value={programme.program ?? ''} onChange={(e) => setP({ program: e.target.value })} className={CHAMP} />
             </Champ>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -2042,30 +2033,29 @@ function Descriptions({
                     Certifiante{programme.certificationName ? ` · ${programme.certificationName}` : ''}.
                   </span>
                 ) : (
-                  <span>Non certifiante. Cette mention se pose à la validation du programme.</span>
+                  <span>Non certifiante.</span>
                 )}
               </div>
             </div>
             {manques.length ? (
               <p className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-3 py-2 text-[14px] text-[#7C3E06]">
-                Il manque {manques.join(', ')} pour que la fiche tienne devant l&apos;indicateur 1.
+                Manque : {manques.join(', ')} (indicateur 1).
               </p>
             ) : (
               <p className="rounded-xl border border-[#B7E4CE] bg-[#E3F5EC] px-3 py-2 text-[14px] text-[#0F5F3E]">
-                Fiche complète : objectifs, public, prérequis, durée et déroulé y sont.
+                Fiche complète.
               </p>
             )}
           </div>
         ) : (
           <div className="grid gap-3">
             <div className="max-w-[70ch] text-[14px] leading-relaxed" style={{ color: VERT.sourdine }}>
-              <p>Cette formation n&apos;a pas encore de fiche programme.</p>
+              <p>Aucune fiche programme.</p>
               <ul className="mt-1.5 list-disc space-y-1 pl-5">
-                <li>C&apos;est le premier document qu&apos;un auditeur demande</li>
-                <li>C&apos;est celui qu&apos;un financeur lit avant de dire oui</li>
-                <li>C&apos;est elle qui porte les sessions datées, la convention et l&apos;émargement</li>
+                <li>Demandée par l&apos;auditeur</li>
+                <li>Lue par le financeur</li>
+                <li>Porte sessions, convention, émargement</li>
               </ul>
-              <p className="mt-1.5">Elle s&apos;ouvre à partir de ce qui est déjà écrit ici.</p>
             </div>
             <div>
               <button
@@ -2134,8 +2124,7 @@ function Sessions({
     return (
       <Bloc titre="Les sessions">
         <p className="max-w-[70ch] text-[15px] leading-relaxed" style={{ color: VERT.texte }}>
-          Une session est toujours la session d&apos;une fiche programme : c&apos;est elle que reprennent la convention,
-          la feuille d&apos;émargement et les évaluations. Cette formation n&apos;en a pas encore.
+          Fiche programme requise avant toute session.
         </p>
         <div className="mt-4">
           <button
@@ -2251,7 +2240,7 @@ function Sessions({
                         </p>
                         {manque.length && !annulee ? (
                           <p className="mt-2 rounded-lg border border-[#F5D6A8] bg-[#FEF3E2] px-3 py-1.5 text-[13px] text-[#7C3E06]">
-                            Il manque {manque.join(' et ')} : une convention se défend mal sans.
+                            Manque : {manque.join(' et ')}.
                           </p>
                         ) : null}
                         <div className="mt-3 flex flex-wrap gap-2">
@@ -2431,8 +2420,7 @@ function Commentaires({
           </p>
         ) : null}
         <p className="rounded-2xl border bg-white px-5 py-6 text-center" style={{ borderColor: VERT.bord, color: VERT.texte }}>
-          Personne n&apos;a encore écrit. Les questions posées sous une leçon arrivent ici, et ta réponse s&apos;affiche
-          juste en dessous, pour tout le monde.
+          Aucun commentaire.
         </p>
       </div>
     );
@@ -2606,16 +2594,14 @@ function StatsFormation({
           </ul>
         ) : (
           <p className="text-[15px]" style={{ color: VERT.texte }}>
-            Personne n&apos;est encore inscrit : rien à mesurer pour l&apos;instant.
+            Aucun inscrit.
           </p>
         )}
       </Bloc>
 
       {inactifs.length ? (
         <Bloc titre={`À relancer (${inactifs.length})`}>
-          <p className="mb-3 text-[15px]" style={{ color: VERT.texte }}>
-            Ces personnes n&apos;ont pas ouvert la formation depuis un mois, et ne l&apos;ont pas terminée.
-          </p>
+          <p className="mb-3 text-[15px]" style={{ color: VERT.texte }}>Inactifs depuis +30 jours.</p>
           <ul className="grid gap-2">
             {inactifs.slice(0, 12).map((a) => (
               <li key={a.id} className="flex flex-wrap items-center gap-3 rounded-xl border px-4 py-2.5" style={{ borderColor: VERT.bord }}>
@@ -2684,10 +2670,7 @@ function Apprenants({
         <h2 className="text-lg font-extrabold tracking-tight" style={{ color: VERT.encre }}>
           Inscrire quelqu&apos;un
         </h2>
-        <p className="mt-1 text-[15px]" style={{ color: VERT.texte }}>
-          Utile après un paiement encaissé ailleurs, ou pour une personne financée par son employeur. Chacun reçoit un
-          lien personnel : c&apos;est lui qui ouvre la formation. Aucun compte n&apos;est créé à sa place.
-        </p>
+        <p className="mt-1 text-[15px]" style={{ color: VERT.texte }}>Chacun reçoit un lien personnel.</p>
         {placesMax ? (
           <p className="mt-2 text-[14px] font-bold" style={{ color: apprenants.length >= placesMax ? '#8A1B3D' : VERT.sourdine }}>
             {apprenants.length} inscrit{apprenants.length > 1 ? 's' : ''} sur {placesMax} place{placesMax > 1 ? 's' : ''}

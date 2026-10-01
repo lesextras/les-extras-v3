@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useEffect, useMemo, useState } from 'react';
 import { appel } from '../../_client';
@@ -172,7 +173,7 @@ export function OngletEmargement({ ctx }: { ctx: ContexteFiche }) {
       ) : (
         <Bloc
           titre="Ouvrir l'émargement"
-          aide="Au début de chaque demi-journée : un code à six chiffres s'affiche, les stagiaires le recopient depuis leur lien et signent du doigt. Le code prouve la présence en salle ; la séance se ferme seule après douze heures."
+          aide="Un code à 6 chiffres s'affiche ; les stagiaires le recopient et signent. Fermeture auto après 12 h."
         >
           <div className="flex flex-wrap items-end gap-3">
             <label className="block">
@@ -195,7 +196,7 @@ export function OngletEmargement({ ctx }: { ctx: ContexteFiche }) {
         </Bloc>
       )}
 
-      <Bloc titre="Feuille d'émargement" aide="Signé : par le stagiaire, avec le code de la séance. Déclaré : coché par l'organisme, pour une personne qui n'a pas pu signer (la feuille le distingue).">
+      <Bloc titre="Feuille d'émargement" aide="Signé : par le stagiaire. Déclaré : coché par l'organisme.">
         <div className="mb-4 flex flex-wrap gap-2">
           <button
             type="button"
@@ -206,7 +207,7 @@ export function OngletEmargement({ ctx }: { ctx: ContexteFiche }) {
           </button>
         </div>
         {!colonnes.length || !actifs.length ? (
-          <Encart ton="info">La feuille se remplit dès qu&apos;il y a un planning et des stagiaires.</Encart>
+          <Encart ton="info">Planning et stagiaires requis.</Encart>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-[#DDEBE4]">
             <table className="min-w-full border-collapse text-[14px]">

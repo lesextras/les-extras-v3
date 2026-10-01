@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState } from 'react';
 import { LIBELLES_ETAT_ACTION, dateCourte, formaterEuros, type ActionAssociation, type EtatAction } from '../_types';
@@ -62,10 +63,7 @@ export function Projets({ projets }: { projets: ActionAssociation[] }) {
       {liste.length === 0 ? (
         <div className="rounded-2xl border border-[#E6E4F3] bg-white px-6 py-10 text-center">
           <p className="font-bold text-[#1D1B5C]">
-            {onglet === 'TOUS' ? 'Aucun projet pour l’instant.' : 'Aucun projet dans cette liste.'}
-          </p>
-          <p className="mt-1 text-sm text-[#6B6A8A]">
-            Note ce que vous faites ou voulez faire : une sortie, un atelier, un tournoi. C&apos;est ça qu&apos;on raconte dans une demande de subvention et dans le rapport d&apos;activité.
+            {onglet === 'TOUS' ? 'Aucun projet.' : 'Aucun projet ici.'}
           </p>
           <button type="button" onClick={() => setOuverte('nouvelle')} className="mt-4 rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA]">
             Ajouter un projet

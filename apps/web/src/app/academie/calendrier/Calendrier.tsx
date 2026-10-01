@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
@@ -198,7 +199,7 @@ export function Calendrier({ initiaux, visible: visibleInitial, cours }: { initi
         </form>
       ) : null}
 
-      {aVenir.length ? <ul className="grid gap-3">{aVenir.map(ligne)}</ul> : <Encart ton="info">Aucun événement à venir. Un webinaire, une permanence, une date d&apos;examen : tout ce que tes apprenants doivent avoir en tête.</Encart>}
+      {aVenir.length ? <ul className="grid gap-3">{aVenir.map(ligne)}</ul> : <Encart ton="info">Aucun événement à venir.</Encart>}
 
       {passes.length ? (
         <>

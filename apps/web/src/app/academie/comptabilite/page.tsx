@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
@@ -70,7 +71,7 @@ export default async function ComptabilitePage() {
     <>
       <Titre
         surtitre="L'argent"
-        sousTitre={`Encaissé depuis le 1er janvier ${annee}, et ce qui reste à payer.`}
+        sousTitre={`Encaissé et à payer, ${annee}.`}
       >
         Ma comptabilité
       </Titre>
@@ -106,9 +107,9 @@ export default async function ComptabilitePage() {
       {pro ? (
         <section className={`${CARTE} mb-7 p-5`}>
           <div className="mb-3 flex flex-wrap items-center gap-3">
-            <h2 className="text-[17px] font-extrabold text-[#12312A]">Formation professionnelle : devis et factures clients</h2>
+            <h2 className="text-[17px] font-extrabold text-[#12312A]">Devis et factures</h2>
             <Link href="/academie/facturation" className={`${BTN_DISCRET} ml-auto`}>
-              Ouvrir la facturation
+              Ouvrir
             </Link>
             <Link href="/academie/bpf" className={BTN_DISCRET}>
               Mon BPF
@@ -217,14 +218,11 @@ export default async function ComptabilitePage() {
           ))}
         </ul>
       ) : (
-        <p className="text-[15px] leading-relaxed text-[#5E7A6E]">
-          Aucune vente enregistrée pour l&apos;instant. Dès qu&apos;une inscription est payée, elle apparaît ici.
-        </p>
+        <p className="text-[15px] leading-relaxed text-[#5E7A6E]">Aucune vente.</p>
       )}
 
-      <p className="mt-8 max-w-[75ch] text-[14px] leading-relaxed text-[#5E7A6E]">
-        Les versements que tu attends d&apos;un financeur ne passent pas par la boutique : ils se suivent dans les
-        sessions et les conventions.{' '}
+      <p className="mt-8 text-[14px] text-[#5E7A6E]">
+        Versements des financeurs :{' '}
         <Link href="/academie/sessions" className="font-bold text-[#0F5F3E] underline underline-offset-4">
           Mes sessions
         </Link>

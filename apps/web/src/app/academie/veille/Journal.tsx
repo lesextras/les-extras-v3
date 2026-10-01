@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { appel } from '../_client';
@@ -38,11 +39,11 @@ const TEINTES: Record<TypeVeille, { pastille: string; fond: string; encre: strin
 
 /** Ce qu'on attend de chaque type, en une phrase — pour ne pas remplir au hasard. */
 const ATTENDU: Record<TypeVeille, string> = {
-  LEGALE: "Ce qui change dans la loi et la réglementation de la formation : décrets, Qualiopi, financements.",
-  METIER: "Ce qui bouge dans ton domaine d'expertise : pratiques, outils, référentiels, certifications.",
-  HANDICAP: "Ce qui aide à accueillir un apprenant en situation de handicap : ressources, aides, adaptations.",
-  INNOVATION: "Les façons d'enseigner qui apparaissent : formats, outils, évaluation.",
-  EMPLOI: "Ce que devient l'emploi sur tes métiers : tensions, compétences demandées, débouchés.",
+  LEGALE: 'Décrets, Qualiopi, financements',
+  METIER: 'Pratiques, outils, certifications',
+  HANDICAP: 'Ressources, aides, adaptations',
+  INNOVATION: 'Formats, outils, évaluation',
+  EMPLOI: 'Tensions, compétences, débouchés',
 };
 
 const aujourdhui = () => new Date().toISOString().slice(0, 10);
@@ -139,20 +140,18 @@ export function Journal({ entrees: initiales }: { entrees: Entree[] }) {
         <div className="mb-6">
           <Encart ton="attention">
             <span className="font-extrabold">Aucune entrée</span> en{' '}
-            {manquants.map((t) => LIBELLES_VEILLE[t].toLowerCase()).join(', ')}. L&apos;auditeur attend les cinq types :
-            une veille absente vaut non-conformité.
+            {manquants.map((t) => LIBELLES_VEILLE[t].toLowerCase()).join(', ')}. Les 5 types sont attendus.
           </Encart>
         </div>
       ) : sansConsequence ? (
         <div className="mb-6">
           <Encart ton="attention">
-            {sansConsequence} entrée{sansConsequence > 1 ? 's' : ''} sans conséquence écrite. C&apos;est cette colonne
-            que l&apos;auditeur lit en premier : dis en une phrase ce que ça a changé chez toi.
+            {sansConsequence} entrée{sansConsequence > 1 ? 's' : ''} sans conséquence écrite.
           </Encart>
         </div>
       ) : entrees.length ? (
         <div className="mb-6">
-          <Encart ton="ok">Les cinq veilles sont alimentées et chaque entrée dit ce qu&apos;elle a changé. Rien à rattraper.</Encart>
+          <Encart ton="ok">Veille complète.</Encart>
         </div>
       ) : null}
 
@@ -226,7 +225,7 @@ export function Journal({ entrees: initiales }: { entrees: Entree[] }) {
               onChange={(e) => setTitre(e.target.value)}
               maxLength={200}
               required
-              placeholder="Le titre de l'article, du décret, de la note"
+              placeholder="Article, décret, note…"
               className={CHAMP}
             />
           </label>
@@ -249,14 +248,14 @@ export function Journal({ entrees: initiales }: { entrees: Entree[] }) {
 
           <label className="block">
             <span className="mb-1.5 block text-sm font-bold text-[#12312A]">
-              Ce que ça change chez nous <span className="font-normal text-[#5E7A6E]">· la ligne que l&apos;auditeur lit</span>
+              Ce que ça change chez nous
             </span>
             <textarea
               value={consequence}
               onChange={(e) => setConsequence(e.target.value)}
               rows={2}
               maxLength={4000}
-              placeholder="« On a ajouté la mention au programme », « rien à changer », « à revoir à la prochaine session »…"
+              placeholder="Ex. : mention ajoutée au programme"
               className={CHAMP}
             />
           </label>
@@ -318,8 +317,8 @@ export function Journal({ entrees: initiales }: { entrees: Entree[] }) {
         <div className={`${CARTE} p-8 text-center`}>
           <p className="text-[15px] text-[#334A42]">
             {entrees.length
-              ? 'Aucune entrée de ce type pour le moment.'
-              : "Le journal est vide. Une entrée par trimestre et par type suffit à tenir le critère 6, ce n'est pas une revue de presse."}
+              ? 'Aucune entrée de ce type.'
+              : 'Aucune entrée. Une par trimestre et par type suffit.'}
           </p>
         </div>
       )}
@@ -336,7 +335,7 @@ function ChampConsequence({ onValider }: { onValider: (texte: string) => void })
         type="text"
         value={texte}
         onChange={(e) => setTexte(e.target.value)}
-        placeholder="En une phrase : ce que vous avez changé, ou pourquoi rien ne change."
+        placeholder="Ce qui a changé (ou pourquoi rien)"
         className={`flex-1 ${CHAMP}`}
       />
       <button type="button" onClick={() => onValider(texte)} disabled={!texte.trim()} className={BTN_SECONDAIRE}>

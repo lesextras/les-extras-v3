@@ -1,8 +1,9 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { appel, messageDe } from '../_ecole/api';
-import { BTN_DISCRET, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CHAMP, Encart, Pastille } from '../_ui';
+import { BTN_DISCRET, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, CHAMP, Encart, Info, Pastille } from '../_ui';
 import { dateCourte, euros, type Apprenant, type CoursResume, type Vente } from '../_ecole/types';
 
 const ORIGINE = 'https://pilote.toulali.fr';
@@ -346,8 +347,7 @@ export function Apprenants({
       {inactifs ? (
         <div className="mb-6">
           <Encart ton="attention">
-            {inactifs} personne{inactifs > 1 ? 's' : ''} n&apos;{inactifs > 1 ? 'ont' : 'a'} pas ouvert son cours
-            depuis plus d&apos;un mois. C&apos;est le moment de relancer, pas dans trois mois.
+            {inactifs} inactif{inactifs > 1 ? 's' : ''} depuis +30 jours : à relancer.
           </Encart>
         </div>
       ) : null}
@@ -446,12 +446,10 @@ export function Apprenants({
       {/* --------------------------------------------------- inviter quelqu'un */}
       {inviter ? (
         <form onSubmit={envoyerInvitation} className={`${CARTE} mb-6 p-5`}>
-          <h2 className="mb-1 text-[18px] font-extrabold text-[#12312A]">Inviter un apprenant</h2>
-          <p className="mb-4 max-w-[70ch] text-[14px] leading-relaxed text-[#5E7A6E]">
-            Aucun compte n&apos;est créé à sa place et aucun mot de passe n&apos;est choisi pour elle : l&apos;invitation
-            produit un <span className="font-bold">lien personnel</span> qui lui ouvre son cours. Tu le lui envoies par
-            le moyen que tu veux.
-          </p>
+          <div className="mb-4 flex items-center gap-2">
+            <h2 className="text-[18px] font-extrabold text-[#12312A]">Inviter un apprenant</h2>
+            <Info>Un lien personnel, sans compte ni mot de passe créé à sa place.</Info>
+          </div>
 
           {cours.length ? (
             <>
@@ -503,7 +501,7 @@ export function Apprenants({
             </>
           ) : (
             <p className="text-[15px] leading-relaxed text-[#5E7A6E]">
-              Aucun cours à proposer pour l&apos;instant. Crée d&apos;abord un cours en ligne.
+              Aucun cours en ligne.
             </p>
           )}
 
@@ -536,8 +534,7 @@ export function Apprenants({
       {/* ------------------------------------------------------ les personnes */}
       {personnes.length === 0 ? (
         <Encart ton="info">
-          Personne n&apos;est encore inscrit. Publie un cours et partage son adresse, ou invite quelqu&apos;un
-          directement : dans les deux cas, la personne ouvre son cours avec son propre lien.
+          Aucun inscrit.
         </Encart>
       ) : null}
 
@@ -606,10 +603,7 @@ export function Apprenants({
                     >
                       {p.bloquee ? "Rouvrir l'accès" : "Bloquer l'accès"}
                     </button>
-                    <span className="text-[13px] text-[#5E7A6E]">
-                      Bloquer n&apos;efface rien : la personne garde son inscription et sa progression,
-                      elle ne peut simplement plus ouvrir ses formations.
-                    </span>
+                    <span className="text-[13px] text-[#5E7A6E]">Progression conservée.</span>
                   </div>
                   <ul className="grid gap-2">
                     {p.cours.map((c) => (
@@ -646,10 +640,7 @@ export function Apprenants({
         })}
       </ul>
 
-      <p className="mt-6 max-w-[75ch] text-[14px] leading-relaxed text-[#5E7A6E]">
-        Personne n&apos;est inscrit à sa place : chacun crée son compte depuis l&apos;adresse du cours. L&apos;export
-        CSV reprend exactement ce que la liste affiche, filtres compris.
-      </p>
+      <p className="mt-6 text-[14px] text-[#5E7A6E]">Export CSV = liste affichée, filtres compris.</p>
     </>
   );
 }

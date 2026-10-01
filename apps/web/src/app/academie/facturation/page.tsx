@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { Titre } from '../_ui';
@@ -14,7 +15,8 @@ export default async function FacturationPage() {
     <>
       <Titre
         surtitre="Gestion de l’organisme"
-        sousTitre="Les devis, factures et avoirs que ton académie émet à ses clients : entreprises, OPCO, particuliers. Numérotation continue, mentions obligatoires, relances automatiques."
+        sousTitre="Devis, factures et avoirs."
+        info="Numérotation continue, mentions obligatoires et relances automatiques."
       >
         Devis et factures
       </Titre>

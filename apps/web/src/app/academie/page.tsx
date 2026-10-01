@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { BadgeCheck, Building2, CalendarDays, Check, ClipboardCheck, GraduationCap, ListChecks, PenLine, Sparkles, Users, Wallet, type LucideIcon } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -230,28 +231,28 @@ async function TableauDeBord() {
   const aFaire: { titre: string; detail: string; href: string }[] = [];
   if (!academie.nda) {
     aFaire.push({
-      titre: "Ton numéro de déclaration d'activité manque",
+      titre: 'Numéro NDA manquant',
       detail: "La déclaration d'activité se dépose dans les trois mois qui suivent ta première convention ou ton premier contrat de formation. Les financeurs (OPCO, France Travail, Mon Compte Formation) demandent ce numéro pour prendre en charge une formation : renseigne-le dès que la DREETS te l'a délivré.",
       href: '/academie/mon-academie',
     });
   }
   if (!academie.referentHandicap) {
     aFaire.push({
-      titre: 'Aucun référent handicap désigné',
+      titre: 'Référent handicap à nommer',
       detail: "C'est une obligation, et c'est vérifié en audit. Une personne nommée et joignable suffit.",
       href: '/academie/mon-academie',
     });
   }
   if (qualiopi.couverture < 100 && qualiopi.indicateurs > 0) {
     aFaire.push({
-      titre: `Il reste des preuves Qualiopi à déposer`,
+      titre: 'Preuves Qualiopi à déposer',
       detail: `${qualiopi.validees} indicateur${qualiopi.validees > 1 ? 's' : ''} validé${qualiopi.validees > 1 ? 's' : ''} sur ${qualiopi.indicateurs}. L'auditeur échantillonne : mieux vaut des preuves réelles que des modèles vides.`,
       href: '/academie/certification',
     });
   }
   if (veille.total === 0) {
     aFaire.push({
-      titre: 'Ton journal de veille est vide',
+      titre: 'Journal de veille vide',
       detail: "Trois indicateurs en dépendent. C'est le motif de non-conformité le plus fréquent en audit initial.",
       href: '/academie/veille',
     });
@@ -268,15 +269,15 @@ async function TableauDeBord() {
     const n = fin.depotsEnRetard + fin.aDeposerBientot;
     aFaire.push({
       titre: fin.depotsEnRetard
-        ? `${fin.depotsEnRetard} dossier${fin.depotsEnRetard > 1 ? 's' : ''} de financement à déposer, date dépassée`
-        : `${n} dossier${n > 1 ? 's' : ''} de financement à déposer sous 7 jours`,
+        ? `${fin.depotsEnRetard} financement${fin.depotsEnRetard > 1 ? 's' : ''} : dépôt en retard`
+        : `${n} financement${n > 1 ? 's' : ''} à déposer sous 7 j`,
       detail: 'Sans dépôt avant la date limite, le financeur peut refuser la prise en charge.',
       href: '/academie/financements',
     });
   }
   if (fin && fin.paiementsEnRetard > 0) {
     aFaire.push({
-      titre: `${fin.paiementsEnRetard} financement${fin.paiementsEnRetard > 1 ? 's' : ''} impayé${fin.paiementsEnRetard > 1 ? 's' : ''} depuis 45 jours`,
+      titre: `${fin.paiementsEnRetard} impayé${fin.paiementsEnRetard > 1 ? 's' : ''} (+45 j)`,
       detail: 'Relance le financeur avec la facture et le certificat de réalisation.',
       href: '/academie/financements',
     });
@@ -291,7 +292,7 @@ async function TableauDeBord() {
   }
   if (reclamations.ouvertes > 0) {
     aFaire.push({
-      titre: `${reclamations.ouvertes} réclamation${reclamations.ouvertes > 1 ? 's' : ''} en attente`,
+      titre: `${reclamations.ouvertes} réclamation${reclamations.ouvertes > 1 ? 's' : ''} ouverte${reclamations.ouvertes > 1 ? 's' : ''}`,
       detail: 'Le critère 7 demande la trace du traitement, pas seulement celle de la réclamation.',
       href: '/academie/reclamations',
     });
@@ -315,7 +316,7 @@ async function TableauDeBord() {
           {prenom ? `Bonjour ${prenom},` : 'Bonjour !'}
         </h1>
         <p className="mt-2 text-lg text-[#334A42]">
-          Que fait-on pour <Accent>{academie.nom}</Accent> cette semaine ?
+          <Accent>{academie.nom}</Accent> · cette semaine
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           {RACCOURCIS.map((r) => (
@@ -339,9 +340,9 @@ async function TableauDeBord() {
         <Carte>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-xl font-extrabold text-[#12312A]">Termine la configuration de ton école</h2>
-              <p className="mt-1 text-sm text-[#5E7A6E]">
-                {configuration.faites} sur {configuration.total}
+              <h2 className="text-xl font-extrabold text-[#12312A]">Configuration</h2>
+              <p className="mt-1 text-sm tabular-nums text-[#5E7A6E]">
+                {configuration.faites} / {configuration.total}
               </p>
             </div>
             <div className="flex flex-col items-center gap-1">
@@ -382,7 +383,7 @@ async function TableauDeBord() {
           <Carte>
             <h2 className="text-xl font-extrabold text-[#12312A]">Qualiopi</h2>
             <p className="mt-1 text-sm text-[#5E7A6E]">
-              {qualiopi.validees} indicateur{qualiopi.validees > 1 ? 's' : ''} validé{qualiopi.validees > 1 ? 's' : ''} sur {qualiopi.indicateurs}
+              {qualiopi.validees} / {qualiopi.indicateurs} indicateurs
             </p>
             <div className="mt-2">
               <Barre pourcentage={qualiopi.couverture} />
@@ -395,7 +396,7 @@ async function TableauDeBord() {
           <Carte>
             <h2 className="text-xl font-extrabold text-[#12312A]">Le chemin</h2>
             <p className="mt-1 text-sm text-[#5E7A6E]">
-              {chemin.faites} étape{chemin.faites > 1 ? 's' : ''} sur {chemin.total}
+              {chemin.faites} / {chemin.total}
             </p>
             <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[#E3F5EC]">
               <div className="h-full rounded-full bg-[#F5B400]" style={{ width: `${Math.round((chemin.faites / Math.max(1, chemin.total)) * 100)}%` }} />
@@ -405,7 +406,7 @@ async function TableauDeBord() {
                 {etapeCourante.titre} →
               </Link>
             ) : (
-              <p className="mt-3 text-sm font-bold text-[#1E9E6A]">Le chemin est fini. Bravo !</p>
+              <p className="mt-3 text-sm font-bold text-[#1E9E6A]">Terminé. Bravo !</p>
             )}
           </Carte>
           <BlocInstaller carte={CARTE} espace="academie" />
@@ -418,7 +419,7 @@ async function TableauDeBord() {
           <ul className="grid gap-2 md:grid-cols-2">
             {aFaire.map((a) => (
               <li key={a.titre}>
-                <Link href={a.href} className={`${CARTE_VIVE} flex items-center justify-between gap-3 px-4 py-3 no-underline`}>
+                <Link href={a.href} title={a.detail} className={`${CARTE_VIVE} flex items-center justify-between gap-3 px-4 py-3 no-underline`}>
                   <span className="font-bold text-[#12312A]">{a.titre}</span>
                   <span className="shrink-0 text-[#0F5F3E]" aria-hidden="true">→</span>
                 </Link>
@@ -426,7 +427,7 @@ async function TableauDeBord() {
             ))}
           </ul>
         ) : (
-          <Encart ton="ok">Rien ne presse cette semaine.</Encart>
+          <Encart ton="ok">Rien ne presse.</Encart>
         )}
       </section>
 

@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { Titre } from '../_ui';
@@ -21,7 +22,7 @@ export default async function FinancementsPage() {
     .map((x) => ({ id: x.id, titre: x.titre, startDate: x.startDate, endDate: x.endDate }));
   return (
     <>
-      <Titre surtitre="Gestion de l’organisme" sousTitre="OPCO, France Travail, CPF : chaque dossier, du dépôt au paiement.">
+      <Titre surtitre="Gestion de l’organisme" sousTitre="OPCO, France Travail, CPF : du dépôt au paiement.">
         Financements
       </Titre>
       <Financements sessions={sessions} />

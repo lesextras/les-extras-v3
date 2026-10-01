@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -135,7 +136,7 @@ export function FormulaireFiche({ fiche }: { fiche: FicheAcademie }) {
             value={v.referentHandicap}
             onChange={set('referentHandicap')}
             maxLength={120}
-            aide="Obligatoire, et son nom doit être publié · coche l'étape 7"
+            aide="Obligatoire et publié"
           />
           <Champ label="Référent pédagogique" value={v.referentPedagogique} onChange={set('referentPedagogique')} maxLength={120} />
         </div>

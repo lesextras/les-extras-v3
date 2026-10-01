@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { appel, messageDe } from '../_ecole/api';
@@ -199,10 +200,7 @@ export function Ventes({ initiales, cours, packs }: { initiales: Vente[]; cours:
       {/* --------------------------------------------- saisir une vente */}
       {ouvert ? (
         <form onSubmit={enregistrer} className={`${CARTE} mb-6 p-5`}>
-          <p className="mb-4 max-w-[70ch] text-[14px] leading-relaxed text-[#5E7A6E]">
-            Pour une vente réglée hors boutique : virement, chèque, espèces, ou prise en charge par un employeur ou un
-            OPCO. Elle apparaîtra dans ta comptabilité comme les autres.
-          </p>
+          <p className="mb-4 text-[14px] text-[#5E7A6E]">Vente hors boutique : virement, chèque, espèces, OPCO.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block sm:col-span-2">
               <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Produit acheté</span>

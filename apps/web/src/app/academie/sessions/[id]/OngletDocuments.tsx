@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useCallback, useEffect, useState } from 'react';
 import { appel } from '../../_client';
@@ -102,7 +103,7 @@ export function OngletDocuments({ ctx }: { ctx: ContexteFiche }) {
                   </button>
                   {d.type === 'PROGRAMME' ? (
                     <button type="button" className={BTN_SECONDAIRE} disabled={!!occupe} onClick={() => void envoyer('PROGRAMME')}>
-                      Envoyer à tous les stagiaires
+                      Envoyer à tous
                     </button>
                   ) : null}
                 </div>
@@ -110,7 +111,7 @@ export function OngletDocuments({ ctx }: { ctx: ContexteFiche }) {
 
               {d.par === 'entreprise' ? (
                 !registre.clients.length ? (
-                  <p className="text-[15px] text-[#5E7A6E]">Aucune entreprise : renseigne l&apos;employeur sur la fiche des stagiaires (onglet Stagiaires).</p>
+                  <p className="text-[15px] text-[#5E7A6E]">Aucune entreprise (voir onglet Stagiaires).</p>
                 ) : (
                   <>
                     <ul className="grid gap-2">
@@ -193,7 +194,7 @@ export function OngletDocuments({ ctx }: { ctx: ContexteFiche }) {
                           Tout télécharger (ZIP)
                         </button>
                       </div>
-                      {fin ? <p className="mt-2 text-[14px] text-[#5E7A6E]">Les heures réalisées viennent de l&apos;émargement : sans présence enregistrée, le document ne se produit pas.</p> : null}
+                      {fin ? <p className="mt-2 text-[14px] text-[#5E7A6E]">Heures issues de l&apos;émargement.</p> : null}
                     </>
                   );
                 })()
@@ -201,9 +202,9 @@ export function OngletDocuments({ ctx }: { ctx: ContexteFiche }) {
             </Bloc>
           ))}
 
-          <Bloc titre="Registre des envois" aide="Ce qui a été produit, envoyé à qui et quand, signé ou non : une preuve Qualiopi produite par l'activité.">
+          <Bloc titre="Registre des envois" aide="Qui, quand, signé ou non : une preuve Qualiopi.">
             {!registre.documents.length ? (
-              <p className="text-[15px] text-[#5E7A6E]">Rien n&apos;a encore été envoyé.</p>
+              <p className="text-[15px] text-[#5E7A6E]">Aucun envoi.</p>
             ) : (
               <ul className="grid gap-1 text-[14px]">
                 {registre.documents.map((d) => (

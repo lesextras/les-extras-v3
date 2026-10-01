@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -79,7 +80,7 @@ export function Financements({ sessions }: { sessions: SessionChoix[] }) {
           <Tuile
             libelle="En retard"
             valeur={r.enRetard}
-            detail={r.enRetard ? `${r.depotsEnRetard} dépôt${r.depotsEnRetard > 1 ? 's' : ''}, ${r.paiementsEnRetard} paiement${r.paiementsEnRetard > 1 ? 's' : ''}` : r.aDeposerBientot ? `${r.aDeposerBientot} à déposer sous 7 jours` : 'Aucun'}
+            detail={r.enRetard ? `${r.depotsEnRetard} dépôt${r.depotsEnRetard > 1 ? 's' : ''}, ${r.paiementsEnRetard} paiement${r.paiementsEnRetard > 1 ? 's' : ''}` : r.aDeposerBientot ? `${r.aDeposerBientot} sous 7 j` : '—'}
             ton={r.enRetard ? 'alerte' : r.aDeposerBientot ? 'attention' : 'ok'}
           />
         </div>
@@ -122,9 +123,9 @@ export function Financements({ sessions }: { sessions: SessionChoix[] }) {
           ))}
         </ul>
       ) : liste.dossiers.length ? (
-        <Encart ton="info">Rien à afficher ici.</Encart>
+        <Encart ton="info">Aucun dossier ici.</Encart>
       ) : (
-        <Encart ton="info">Aucun dossier pour l&apos;instant. Crée le premier dès qu&apos;une entreprise te demande une prise en charge.</Encart>
+        <Encart ton="info">Aucun dossier.</Encart>
       )}
     </>
   );

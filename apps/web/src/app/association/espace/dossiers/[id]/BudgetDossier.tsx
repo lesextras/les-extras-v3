@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -138,18 +139,12 @@ export function BudgetDossier({ dossier }: { dossier: Dossier }) {
 
       {onglet === 'PREVU' ? (
         <>
-          <p className="text-sm text-[#6B6A8A]">
-            À gauche ce que le projet va coûter, à droite d&apos;où vient l&apos;argent. Les deux totaux doivent être égaux. Ces lignes se
-            recopient dans les cases budget du CERFA 12156.
-          </p>
+          <p className="text-sm text-[#6B6A8A]">Dépenses = recettes · CERFA 12156</p>
           <Tableau titre="Budget prévisionnel" lignes={prevu} onChange={setPrevu} />
         </>
       ) : (
         <>
-          <p className="text-sm text-[#6B6A8A]">
-            Quand l&apos;action est faite : les vrais chiffres en face des chiffres prévus, et ce que ça a produit. C&apos;est le
-            contenu du CERFA 15059, le compte rendu financier.
-          </p>
+          <p className="text-sm text-[#6B6A8A]">Chiffres réels · CERFA 15059</p>
           {realise.length === 0 ? (
             <button type="button" onClick={() => setRealise(prevu.map((l) => ({ ...l })))} className="rounded-xl border-2 border-[#D9D6EE] bg-white px-4 py-2 text-sm font-bold text-[#1D1B5C] hover:border-[#4F46E5]">
               Partir du budget prévu
@@ -163,7 +158,7 @@ export function BudgetDossier({ dossier }: { dossier: Dossier }) {
             </label>
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-bold text-[#1D1B5C]">Ce que l&apos;action a produit</span>
-              <textarea rows={3} maxLength={4000} value={bilan} onChange={(e) => setBilan(e.target.value)} className={CHAMP} placeholder="Combien de séances, combien de personnes, ce qui a changé. Des phrases simples." />
+              <textarea rows={3} maxLength={4000} value={bilan} onChange={(e) => setBilan(e.target.value)} className={CHAMP} placeholder="Séances, personnes, changements" />
             </label>
           </div>
         </>

@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
 import { nomCourt } from '../../_nom';
@@ -38,8 +39,8 @@ export default async function DossiersPage({ searchParams }: { searchParams: Pro
   const dossiers = choisie === 'SUBVENTION' ? subventions : choisie === 'APPEL_A_PROJET' ? appels : data.dossiers;
   const ongletsNature = [
     { code: '', libelle: 'Tout', nombre: data.dossiers.length },
-    { code: 'subventions', libelle: 'Mes subventions', nombre: subventions.length },
-    { code: 'appels', libelle: 'Mes appels à projet', nombre: appels.length },
+    { code: 'subventions', libelle: 'Subventions', nombre: subventions.length },
+    { code: 'appels', libelle: 'Appels à projet', nombre: appels.length },
   ];
 
   const demande = dossiers.reduce((t, d) => t + (d.montantDemande ?? 0), 0);
@@ -50,20 +51,21 @@ export default async function DossiersPage({ searchParams }: { searchParams: Pro
     <>
       <Titre
         surtitre={nomCourt(data.organisation.nom)}
-        sousTitre="D'un côté les subventions que tu demandes, de l'autre les appels à projet auxquels tu réponds. La date limite remonte sur l'accueil 60 jours avant."
+        sousTitre="Subventions demandées et appels à projet."
+        info="La date limite remonte sur l'accueil 60 jours avant."
         actions={
           <Link href="/chemin#partie-3" className="inline-flex items-center rounded-xl border-2 border-[#D9D6EE] bg-white px-4 py-2 text-sm font-bold text-[#1D1B5C] no-underline hover:border-[#4F46E5]">
-            Comment demander une subvention
+            Le mode d&apos;emploi
           </Link>
         }
       >
-        Mes subventions et appels à projet
+        Mes dossiers
       </Titre>
 
       <section className="mb-6 grid gap-3 sm:grid-cols-3">
         <Tuile libelle="Demandé" valeur={formaterEuros(demande)} detail={`${dossiers.length} dossier${dossiers.length > 1 ? 's' : ''}`} />
         <Tuile libelle="Accordé" valeur={formaterEuros(accorde)} ton="ok" />
-        <Tuile libelle="À justifier" valeur={aJustifier} detail="compte rendu à envoyer" ton={aJustifier ? 'attention' : 'neutre'} />
+        <Tuile libelle="À justifier" valeur={aJustifier} ton={aJustifier ? 'attention' : 'neutre'} />
       </section>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">

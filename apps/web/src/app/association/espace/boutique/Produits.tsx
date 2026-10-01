@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState } from 'react';
 import { appel } from '../../_client';
@@ -116,8 +117,7 @@ export function Produits({ initiaux }: { initiaux: Produit[] }) {
       {/* ------------------------------------------------------- la liste */}
       {produits.length === 0 ? (
         <Encart>
-          Rien en vente pour l&apos;instant. Ajoute un premier produit : il reste en brouillon tant
-          que tu ne l&apos;as pas mis en vente.
+          Aucun produit.
         </Encart>
       ) : (
         <ul className="grid gap-3">
@@ -302,8 +302,7 @@ function FicheProduit({
               className={champ}
             />
             <span className="text-xs font-normal text-[#6B6A8A]">
-              Comptés une fois par produit dans la commande, pas par exemplaire. À zéro : remise en
-              main propre, ou port offert.
+              Une fois par produit · 0 = remise en main propre
             </span>
           </label>
         </div>
@@ -328,8 +327,7 @@ function FicheProduit({
             />
           </label>
           <p className="text-xs text-[#6B6A8A] md:col-span-2">
-            L&apos;un des deux suffit. C&apos;est ce lien qui part dans le message de confirmation,
-            au moment du paiement.
+            L&apos;un des deux suffit · envoyé au paiement.
           </p>
         </div>
       )}

@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { appel } from '../_client';
@@ -68,7 +69,7 @@ export function ReglagesAdministration({ fiche }: { fiche: FicheAcademie }) {
   return (
     <form onSubmit={envoyer} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <L t="Représentant légal" aide="Il signe les conventions, les attestations et les certificats de réalisation.">
+        <L t="Représentant légal" aide="Signe conventions et certificats">
           <input className={CHAMP} value={v.representantNom} onChange={maj('representantNom')} maxLength={120} />
         </L>
         <L t="Sa qualité">
@@ -79,7 +80,7 @@ export function ReglagesAdministration({ fiche }: { fiche: FicheAcademie }) {
         <legend className="px-1 text-sm font-bold text-[#12312A]">TVA</legend>
         <label className="flex items-start gap-3 text-[15px]">
           <input type="checkbox" className="mt-1 h-5 w-5 accent-[#1E9E6A]" checked={v.exonereTva} onChange={(e) => setV((x) => ({ ...x, exonereTva: e.target.checked }))} />
-          <span>Mon organisme est exonéré de TVA pour ses formations (article 261-4-4° a du CGI, sur attestation de la DREETS)</span>
+          <span>Exonéré de TVA (art. 261-4-4° a CGI)</span>
         </label>
         {!v.exonereTva ? (
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -96,11 +97,11 @@ export function ReglagesAdministration({ fiche }: { fiche: FicheAcademie }) {
         <L t="Délai de paiement (jours)">
           <input className={CHAMP} type="number" min={0} max={60} value={v.delaiPaiementJours} onChange={maj('delaiPaiementJours')} />
         </L>
-        <L t="Coordonnées bancaires" aide="Imprimées sur les factures : IBAN et BIC.">
+        <L t="Coordonnées bancaires" aide="IBAN et BIC">
           <input className={CHAMP} value={v.coordonneesBancaires} onChange={maj('coordonneesBancaires')} maxLength={300} />
         </L>
       </div>
-      <L t="Lien vers le règlement intérieur" aide="Il doit être remis au stagiaire avant l'entrée en formation (L6352-3) : la convocation le cite.">
+      <L t="Lien du règlement intérieur" aide="Remis avant l'entrée en formation (L6352-3)">
         <input className={CHAMP} type="url" value={v.reglementInterieurUrl} onChange={maj('reglementInterieurUrl')} maxLength={500} placeholder="https://" />
       </L>
       {etat.ok ? <Encart ton="ok">{etat.ok}</Encart> : null}

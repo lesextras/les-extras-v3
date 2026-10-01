@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { appel, messageDe } from '../_ecole/api';
@@ -15,8 +16,8 @@ import type { Vitrine } from '../_ecole/types';
 
 /** Les modèles de certificat proposés. Le nom dit ce qu'on voit. */
 const MODELES: { cle: string; nom: string; quoi: string }[] = [
-  { cle: 'sobre', nom: 'Sobre', quoi: 'Un cadre fin, le nom de la formation, la date. Rien d’autre.' },
-  { cle: 'classique', nom: 'Classique', quoi: 'Un liseré, un sceau, la signature de l’organisme.' },
+  { cle: 'sobre', nom: 'Sobre', quoi: 'Cadre fin, titre, date.' },
+  { cle: 'classique', nom: 'Classique', quoi: 'Liseré, sceau, signature.' },
   { cle: 'colore', nom: 'Coloré', quoi: 'Le fond prend ta couleur principale.' },
 ];
 
@@ -61,14 +62,11 @@ export function ReglagesFormations({ vitrine }: { vitrine: Vitrine }) {
         onSubmit={(e) => enregistrer('certificat', { certificatModele: modele, certificatsActifs: v.certificatsActifs }, e)}
         className={`${CARTE} mb-5 p-5`}
       >
-        <h2 className="mb-1 text-[18px] font-extrabold text-[#12312A]">Le certificat de réussite</h2>
-        <ul className="mb-4 space-y-1.5 text-[15px] leading-relaxed text-[#334A42]">
-          <li>L&apos;apprenant l&apos;édite lui-même, une fois toutes les leçons terminées</li>
-          <li>C&apos;est un document de fin de parcours, il n&apos;a pas la valeur d&apos;un diplôme</li>
-          <li>
-            Il ne remplace pas l&apos;attestation de fin de formation que tu délivres au titre de
-            Qualiopi
-          </li>
+        <h2 className="mb-1 text-[18px] font-extrabold text-[#12312A]">Certificat de réussite</h2>
+        <ul className="mb-4 space-y-1 text-[15px] leading-relaxed text-[#334A42]">
+          <li>Édité par l&apos;apprenant en fin de parcours</li>
+          <li>Pas un diplôme</li>
+          <li>Ne remplace pas l&apos;attestation Qualiopi</li>
         </ul>
 
         <label className="mb-4 flex items-start gap-2 text-[15px] text-[#334A42]">
@@ -81,7 +79,7 @@ export function ReglagesFormations({ vitrine }: { vitrine: Vitrine }) {
           <span>
             <span className="font-bold text-[#12312A]">Délivrer un certificat de réussite</span>
             <br />
-            Décoche pour ne plus en proposer. Les certificats déjà édités ne sont pas retirés.
+            Les certificats déjà édités restent.
           </span>
         </label>
 
@@ -117,12 +115,7 @@ export function ReglagesFormations({ vitrine }: { vitrine: Vitrine }) {
         onSubmit={(e) => enregistrer('commentaires', { commentairesActifs: v.commentairesActifs }, e)}
         className={`${CARTE} mb-5 p-5`}
       >
-        <h2 className="mb-1 text-[18px] font-extrabold text-[#12312A]">Les commentaires</h2>
-        <p className="mb-4 text-[15px] leading-relaxed text-[#334A42]">
-          Sous chaque leçon, un apprenant peut écrire une question ou une remarque. Tu peux couper
-          cette possibilité partout d&apos;un coup, ou formation par formation, dans l&apos;onglet
-          « Paramètres » de chacune.
-        </p>
+        <h2 className="mb-4 text-[18px] font-extrabold text-[#12312A]">Commentaires sous les leçons</h2>
 
         <label className="mb-4 flex items-start gap-2 text-[15px] text-[#334A42]">
           <input
@@ -134,8 +127,7 @@ export function ReglagesFormations({ vitrine }: { vitrine: Vitrine }) {
           <span>
             <span className="font-bold text-[#12312A]">Autoriser les commentaires</span>
             <br />
-            Décoche pour les fermer sur toutes tes formations. Ce qui a déjà été écrit reste
-            visible depuis « Mes formations ».
+            Pour toutes tes formations.
           </span>
         </label>
 
@@ -154,12 +146,8 @@ export function ReglagesFormations({ vitrine }: { vitrine: Vitrine }) {
         }
         className={`${CARTE} p-5`}
       >
-        <h2 className="mb-1 text-[18px] font-extrabold text-[#12312A]">Savoir d&apos;où viennent tes inscrits</h2>
-        <p className="mb-4 text-[15px] leading-relaxed text-[#334A42]">
-          Ces deux codes se posent sur ta page publique et sur l&apos;espace apprenant. Ils
-          n&apos;ont d&apos;intérêt que si tu fais de la publicité ou que tu regardes tes
-          statistiques ailleurs. Laisse vide si ce n&apos;est pas ton cas.
-        </p>
+        <h2 className="mb-1 text-[18px] font-extrabold text-[#12312A]">Suivi d&apos;audience</h2>
+        <p className="mb-4 text-[15px] text-[#334A42]">Facultatif · utile si tu fais de la publicité</p>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
@@ -184,10 +172,7 @@ export function ReglagesFormations({ vitrine }: { vitrine: Vitrine }) {
           </label>
         </div>
 
-        <p className="mt-3 text-[13px] text-[#5E7A6E]">
-          Si tu poses l&apos;un de ces codes, dis-le dans tes mentions légales et laisse tes
-          visiteurs refuser le suivi : c&apos;est ce que demande le RGPD.
-        </p>
+        <p className="mt-3 text-[13px] text-[#5E7A6E]">RGPD : à mentionner, avec refus possible du suivi.</p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button type="submit" disabled={enCours === 'suivi'} className={BTN_PRIMAIRE}>

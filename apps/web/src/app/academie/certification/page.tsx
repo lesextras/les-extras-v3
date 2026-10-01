@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
@@ -29,29 +30,28 @@ export default async function CertificationPage() {
     <>
       <Titre
         surtitre="Référentiel national qualité"
-        sousTitre="32 indicateurs, une preuve pour chacun. Ce qui manque est en haut."
+        sousTitre="Une preuve par indicateur."
+        info="Cet outil ne délivre aucune certification : il tient tes preuves prêtes pour l'audit."
       >
-        Ma certification Qualiopi
+        Ma certification
       </Titre>
 
       {/* ------------------------------------------------- l'état administratif */}
       {a ? (
         <section className={`${CARTE} mb-6 p-5 sm:p-6`}>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Ligne libelle="Où tu en es" valeur={LIBELLES_QUALIOPI[a.qualiopi]} />
-            <Ligne libelle="Certificateur" valeur={a.certificateur || 'Pas encore choisi'} />
+            <Ligne libelle="État" valeur={LIBELLES_QUALIOPI[a.qualiopi]} />
+            <Ligne libelle="Certificateur" valeur={a.certificateur || 'À choisir'} />
             <Ligne libelle="Audit prévu le" valeur={a.auditPrevuLe ? formaterDate(a.auditPrevuLe) : 'Pas de date'} />
             <Ligne
               libelle="Certificat valable"
-              valeur={a.certifieDu && a.certifieAu ? `${formaterDate(a.certifieDu)} → ${formaterDate(a.certifieAu)}` : 'Pas encore certifiée'}
+              valeur={a.certifieDu && a.certifieAu ? `${formaterDate(a.certifieDu)} → ${formaterDate(a.certifieAu)}` : '—'}
             />
           </div>
           <p className="mt-4 text-[14px] text-[#5E7A6E]">
-            Ces quatre informations se corrigent dans{' '}
             <Link href="/academie/mon-academie" className="font-bold text-[#0F5F3E] underline underline-offset-4">
-              la fiche de l&apos;organisme
+              Modifier
             </Link>
-            .
           </p>
         </section>
       ) : null}
@@ -59,9 +59,7 @@ export default async function CertificationPage() {
       {a && a.qualiopi === 'PAS_ENGAGE' ? (
         <div className="mb-6">
           <Encart ton="info">
-            La certification vient <span className="font-extrabold">après</span> la déclaration d&apos;activité, jamais
-            avant : elle porte sur des pratiques qu&apos;il faut avoir commencé à tenir. Tu peux préparer les preuves dès
-            maintenant, c&apos;est même la bonne façon de s&apos;y prendre.
+            Certification <span className="font-extrabold">après</span> la déclaration d&apos;activité. Prépare tes preuves dès maintenant.
           </Encart>
         </div>
       ) : null}
@@ -71,14 +69,11 @@ export default async function CertificationPage() {
         <ReferentielQualiopi initial={ref.data} />
       ) : (
         <Encart ton="attention">
-          {ref.error ?? "Le référentiel ne se charge pas pour le moment. Réessaie dans un instant."}
+          {ref.error ?? 'Chargement impossible. Réessaie.'}
         </Encart>
       )}
 
-      <p className="mt-8 max-w-[75ch] text-[14px] leading-relaxed text-[#5E7A6E]">
-        Cet outil ne délivre aucune certification et ne remplace pas un certificateur accrédité : il tient tes preuves
-        prêtes pour le jour de l&apos;audit. Le référentiel affiché est le référentiel national qualité.
-      </p>
+      <p className="mt-8 text-[13px] text-[#5E7A6E]">Outil de préparation · ne remplace pas un certificateur accrédité.</p>
     </>
   );
 }

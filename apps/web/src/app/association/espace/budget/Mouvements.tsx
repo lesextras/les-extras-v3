@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useMemo, useState } from 'react';
 import { LIBELLES_MOYEN, LIBELLES_NATURE_MOUVEMENT, dateCourte, formaterEuros, type Mouvement } from '../_types';
@@ -149,10 +150,7 @@ export function Mouvements({ mouvements }: { mouvements: Mouvement[] }) {
 
       {liste.length === 0 ? (
         <div className="rounded-2xl border border-[#E6E4F3] bg-white px-6 py-10 text-center">
-          <p className="font-bold text-[#1D1B5C]">{mouvements.length ? 'Aucune ligne ne correspond à cette recherche.' : 'Aucune ligne pour l’instant.'}</p>
-          <p className="mt-1 text-sm text-[#6B6A8A]">
-            Note chaque euro : un don, une cotisation, la buvette, une subvention reçue, un achat. C&apos;est ce cahier qu&apos;on présente en assemblée générale.
-          </p>
+          <p className="font-bold text-[#1D1B5C]">{mouvements.length ? 'Aucun résultat.' : 'Aucune ligne.'}</p>
           <button type="button" onClick={() => setOuverte('nouvelle')} className="mt-4 rounded-xl bg-[#4F46E5] px-5 py-3 text-base font-bold text-white hover:bg-[#4338CA]">
             Ajouter une ligne
           </button>

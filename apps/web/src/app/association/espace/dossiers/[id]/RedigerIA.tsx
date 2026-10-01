@@ -1,8 +1,9 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState } from 'react';
 import { appel } from '../../../_client';
-import { BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE } from '../../../_ui';
+import { BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Info } from '../../../_ui';
 
 interface DossierRedige {
   presentation: string;
@@ -62,30 +63,26 @@ export function RedigerIA({ dossierId, disponible }: { dossierId: string; dispon
     return (
       <div className={`${CARTE} p-5`}>
         <h2 className="text-lg font-extrabold text-[#1D1B5C]">Écrire la demande</h2>
-        <p className="mt-1 text-sm leading-relaxed text-[#6B6A8A]">
-          La rédaction assistée n&apos;est pas encore activée sur ce serveur. En attendant, la fabrique produit les documents officiels (projet en une page,
-          budget, rapport d&apos;activité) à partir de tes réponses.
-        </p>
+        <p className="mt-1 text-sm text-[#6B6A8A]">Rédaction assistée bientôt disponible.</p>
       </div>
     );
   }
 
   return (
     <div className={`${CARTE} p-5`}>
-      <h2 className="text-lg font-extrabold text-[#1D1B5C]">Écrire la demande</h2>
-      <p className="mt-1 text-sm leading-relaxed text-[#6B6A8A]">
-        À partir de ton projet, de tes projets notés et de ce que demande ce financeur. Rien n&apos;est inventé : ce qui manque est listé à la fin, à toi de le
-        compléter. Relis toujours avant d&apos;envoyer.
-      </p>
+      <div className="flex items-center gap-2">
+        <h2 className="text-lg font-extrabold text-[#1D1B5C]">Écrire la demande</h2>
+        <Info>Rien n&apos;est inventé : ce qui manque est listé à la fin. Relis avant d&apos;envoyer.</Info>
+      </div>
 
       <label className="mt-4 flex flex-col gap-1 text-sm">
-        <span className="font-bold text-[#1D1B5C]">Quelque chose à préciser ?</span>
+        <span className="font-bold text-[#1D1B5C]">Précisions (facultatif)</span>
         <textarea
           rows={2}
           maxLength={2000}
           value={precision}
           onChange={(e) => setPrecision(e.target.value)}
-          placeholder="Par exemple : insister sur les jeunes du quartier, prévoir deux sorties, mentionner la mairie comme partenaire."
+          placeholder="Ex. : insister sur les jeunes du quartier"
           className="w-full rounded-xl border border-[#D9D6EE] bg-white px-4 py-3 text-base text-[#1D1B5C] focus:border-[#4F46E5] focus:outline-none focus:ring-4 focus:ring-[#ECEBFC]"
         />
       </label>

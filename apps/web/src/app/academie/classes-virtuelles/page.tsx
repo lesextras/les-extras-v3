@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
 import { Encart, Titre } from '../_ui';
@@ -28,7 +29,7 @@ export default async function PageClasses() {
       </Titre>
       {!visio.data?.disponible ? (
         <div className="mb-5">
-          <Encart ton="info">La salle intégrée n&apos;est pas encore disponible sur ce serveur : en attendant, colle le lien de ton outil de visio habituel.</Encart>
+          <Encart ton="info">Salle intégrée bientôt disponible : colle ton lien de visio.</Encart>
         </div>
       ) : null}
       {Array.isArray(classes.data) ? (

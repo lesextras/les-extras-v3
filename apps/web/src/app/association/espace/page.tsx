@@ -1,7 +1,8 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../_session';
 import { nomCourt } from '../_nom';
-import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Carte, Encart, Pastille, SousTitre } from '../_ui';
+import { Accent, BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Carte, Encart, Info, Pastille, SousTitre } from '../_ui';
 import { BlocInstaller } from '../../_shared/BlocInstaller';
 import { LIBELLES_ETAT, LIBELLES_ETAT_ACTION, dateCourte, formaterEuros, type Espace } from './_types';
 
@@ -61,10 +62,10 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
         <p className="mt-2 text-lg text-[#3B3A66]">
           {bienvenue ? (
             <>
-              Bienvenue dans l&apos;espace de <Accent>{nomCourt(organisation.nom)}</Accent>. Par quoi veux-tu commencer ?
+              Bienvenue chez <Accent>{nomCourt(organisation.nom)}</Accent>.
             </>
           ) : (
-            <>Que fait-on pour {nomCourt(organisation.nom)} cette semaine ?</>
+            <>{nomCourt(organisation.nom)} · cette semaine</>
           )}
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
@@ -86,9 +87,9 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
         <Carte>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-xl font-extrabold text-[#1D1B5C]">Termine la configuration de ton espace</h2>
-              <p className="mt-1 text-sm text-[#6B6A8A]">
-                {configuration.faites} sur {configuration.total} · {organisation.rna || organisation.siret ? 'association rattachée' : 'association pas encore rattachée'}
+              <h2 className="text-xl font-extrabold text-[#1D1B5C]">Configuration</h2>
+              <p className="mt-1 text-sm tabular-nums text-[#6B6A8A]">
+                {configuration.faites} / {configuration.total}
               </p>
             </div>
             <div className="flex flex-col items-center gap-1">
@@ -137,16 +138,16 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
               </div>
             </div>
             <p className="mt-2 text-sm text-[#6B6A8A]">
-              {lundi.enCours.deposes} déposé{lundi.enCours.deposes > 1 ? 's' : ''} en attente de réponse · {lundi.enCours.accordesAJustifier} à justifier
+              {lundi.enCours.deposes} en attente · {lundi.enCours.accordesAJustifier} à justifier
             </p>
             <Link href="/espace/dossiers" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-[#4F46E5] underline underline-offset-4">
-              Créer une demande →
+              Nouvelle demande →
             </Link>
           </Carte>
           <Carte>
             <h2 className="text-xl font-extrabold text-[#1D1B5C]">Le chemin</h2>
             <p className="mt-1 text-sm text-[#6B6A8A]">
-              {chemin.faites} étape{chemin.faites > 1 ? 's' : ''} sur {chemin.total}
+              {chemin.faites} / {chemin.total}
             </p>
             <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[#ECEBFC]">
               <div className="h-full rounded-full bg-[#F5B400]" style={{ width: `${chemin.pourcentage}%` }} />
@@ -156,7 +157,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
                 Étape {prochaineEtape.numero} : {prochaineEtape.titre} →
               </Link>
             ) : (
-              <p className="mt-3 text-sm font-bold text-[#1E9E6A]">Le chemin est fini. Bravo !</p>
+              <p className="mt-3 text-sm font-bold text-[#1E9E6A]">Terminé. Bravo !</p>
             )}
           </Carte>
           <BlocInstaller carte={CARTE} espace="association" />
@@ -165,17 +166,16 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
 
       {/* ------------------------------------------------------------ ce lundi */}
       <section className="mt-8">
-        <SousTitre>Ce lundi : ce qui presse</SousTitre>
+        <SousTitre info="Pièces qui expirent sous 60 jours, dates limites proches, comptes rendus attendus.">Ce qui presse</SousTitre>
         {urgences === 0 ? (
           <Encart ton="ok">
-            <p className="font-extrabold">Rien ne presse cette semaine.</p>
-            <p className="mt-1 text-sm">Aucune pièce qui expire dans les 60 jours, aucune date limite proche, aucun compte rendu en attente.</p>
+            <p className="font-extrabold">Rien ne presse.</p>
           </Encart>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {lundi.perime.length ? (
               <Carte>
-                <h3 className="font-extrabold text-[#1D1B5C]">Des pièces expirent</h3>
+                <h3 className="font-extrabold text-[#1D1B5C]">Pièces à renouveler</h3>
                 <ul className="mt-2 space-y-2">
                   {lundi.perime.map((p) => (
                     <li key={p.typeCode} className="flex items-center justify-between gap-3 text-sm">
@@ -192,7 +192,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
             ) : null}
             {lundi.du.length ? (
               <Carte>
-                <h3 className="font-extrabold text-[#1D1B5C]">Des dates limites approchent</h3>
+                <h3 className="font-extrabold text-[#1D1B5C]">Dates limites</h3>
                 <ul className="mt-2 space-y-2">
                   {lundi.du.map((d) => (
                     <li key={`${d.dossierId}-${d.nature}`} className="flex items-center justify-between gap-3 text-sm">
@@ -207,12 +207,12 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
             ) : null}
             {vieStatutaire.agEnRetard || vieStatutaire.mandatsExpires.length ? (
               <Carte>
-                <h3 className="font-extrabold text-[#1D1B5C]">La vie de l&apos;association</h3>
+                <h3 className="font-extrabold text-[#1D1B5C]">Vie statutaire</h3>
                 <ul className="mt-2 space-y-2 text-sm">
                   {vieStatutaire.agEnRetard ? (
                     <li className="flex items-center justify-between gap-3">
                       <Link href="/espace/association#vie" className="font-bold text-[#1D1B5C] underline underline-offset-4">
-                        La dernière assemblée générale date de plus d&apos;un an
+                        Assemblée générale
                       </Link>
                       <Pastille ton="attention">à organiser</Pastille>
                     </li>
@@ -220,7 +220,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
                   {vieStatutaire.mandatsExpires.map((m) => (
                     <li key={m.id} className="flex items-center justify-between gap-3">
                       <Link href="/espace/repertoire" className="font-bold text-[#1D1B5C] underline underline-offset-4">
-                        Le mandat de {m.nom} est fini
+                        Mandat fini : {m.nom}
                       </Link>
                       <Pastille ton="alerte">depuis le {dateCourte(m.mandatFin)}</Pastille>
                     </li>
@@ -230,7 +230,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
             ) : null}
             {lundi.manque.length ? (
               <Carte>
-                <h3 className="font-extrabold text-[#1D1B5C]">Il manque des pièces à des dossiers</h3>
+                <h3 className="font-extrabold text-[#1D1B5C]">Pièces manquantes</h3>
                 <ul className="mt-2 space-y-2 text-sm">
                   {lundi.manque.map((m) => (
                     <li key={m.typeCode} className="flex items-center justify-between gap-3">
@@ -254,15 +254,12 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
         <div className="mb-4 flex items-center justify-between">
           <SousTitre>Mes projets</SousTitre>
           <Link href="/espace/projets" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
-            Tous mes projets
+            Tout voir
           </Link>
         </div>
         {actions.length === 0 ? (
           <div className={`${CARTE} px-6 py-10 text-center`}>
-            <p className="font-bold text-[#1D1B5C]">Aucun projet noté pour l&apos;instant.</p>
-            <p className="mt-1 text-sm text-[#6B6A8A]">
-              Une sortie, un atelier, un tournoi : noté ici, il remplit tout seul le rapport d&apos;activité et tes demandes de subvention.
-            </p>
+            <p className="font-bold text-[#1D1B5C]">Aucun projet.</p>
             <Link href="/espace/projets" className={`${BTN_PRIMAIRE} mt-4`}>
               Noter un projet
             </Link>
@@ -280,7 +277,6 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
               <div className={`${CARTE} px-5 py-4`}>
                 <p className="text-sm font-bold text-[#6B6A8A]">Personnes touchées</p>
                 <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{resumeActions.beneficiaires}</p>
-                <p className="text-sm text-[#6B6A8A]">Le chiffre que les financeurs demandent</p>
               </div>
               <div className={`${CARTE} px-5 py-4`}>
                 <p className="text-sm font-bold text-[#6B6A8A]">Bénévoles engagés</p>
@@ -312,32 +308,32 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
       {/* -------------------------------------------------------------- argent */}
       <section className="mt-8">
         <div className="mb-4 flex items-center justify-between">
-          <SousTitre>Ma gestion budgétaire</SousTitre>
+          <SousTitre>Budget</SousTitre>
           <Link href="/espace/comptabilite" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
-            Le cahier de comptes
+            Ouvrir les comptes
           </Link>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className={`${CARTE} px-5 py-4`}>
-            <p className="text-sm font-bold text-[#6B6A8A]">Ce qui est entré</p>
+            <p className="text-sm font-bold text-[#6B6A8A]">Entrées</p>
             <p className="text-2xl font-extrabold tabular-nums text-[#1E9E6A]">{formaterEuros(budget.recettes)}</p>
             <p className="text-sm text-[#6B6A8A]">{formaterEuros(budget.recettesAnnee)} en {budget.annee}</p>
           </div>
           <div className={`${CARTE} px-5 py-4`}>
-            <p className="text-sm font-bold text-[#6B6A8A]">Ce qui est sorti</p>
+            <p className="text-sm font-bold text-[#6B6A8A]">Sorties</p>
             <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(budget.depenses)}</p>
             <p className="text-sm text-[#6B6A8A]">{formaterEuros(budget.depensesAnnee)} en {budget.annee}</p>
           </div>
           <div className={`${CARTE} px-5 py-4`}>
             <p className="text-sm font-bold text-[#6B6A8A]">Solde</p>
             <p className={`text-2xl font-extrabold tabular-nums ${budget.solde < 0 ? 'text-[#C0392B]' : 'text-[#1D1B5C]'}`}>{formaterEuros(budget.solde)}</p>
-            <p className="text-sm text-[#6B6A8A]">{budget.lignes} ligne{budget.lignes > 1 ? 's' : ''} notée{budget.lignes > 1 ? 's' : ''}</p>
+            <p className="text-sm text-[#6B6A8A]">{budget.lignes} ligne{budget.lignes > 1 ? 's' : ''}</p>
           </div>
           <div className={`${CARTE} px-5 py-4`}>
             <p className="text-sm font-bold text-[#6B6A8A]">Dons reçus</p>
             <p className="text-2xl font-extrabold tabular-nums text-[#1D1B5C]">{formaterEuros(budget.dons)}</p>
             <p className="text-sm text-[#6B6A8A]">
-              {budget.donsAvecRecu} reçu{budget.donsAvecRecu > 1 ? 's' : ''} fiscal{budget.donsAvecRecu > 1 ? 'aux' : ''} envoyé{budget.donsAvecRecu > 1 ? 's' : ''}
+              {budget.donsAvecRecu} reçu{budget.donsAvecRecu > 1 ? 's' : ''} fisca{budget.donsAvecRecu > 1 ? 'ux' : 'l'}
             </p>
           </div>
         </div>
@@ -346,7 +342,7 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
       {/* ------------------------------------------------------------ dossiers */}
       <section className="mt-8">
         <div className="mb-4 flex items-center justify-between">
-          <SousTitre>Mes subventions et appels à projet</SousTitre>
+          <SousTitre>Mes dossiers</SousTitre>
           <Link href="/espace/dossiers" className="text-sm font-bold text-[#4F46E5] underline underline-offset-4">
             Tout voir
           </Link>
@@ -354,10 +350,9 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
         <div className={`${CARTE} overflow-hidden`}>
           {recents.length === 0 ? (
             <div className="px-6 py-10 text-center">
-              <p className="font-bold text-[#1D1B5C]">Aucun dossier pour l&apos;instant.</p>
-              <p className="mt-1 text-sm text-[#6B6A8A]">Crée ton premier dossier de subvention : le financeur, la date limite, et les papiers à joindre.</p>
+              <p className="font-bold text-[#1D1B5C]">Aucun dossier.</p>
               <Link href="/espace/dossiers" className={`${BTN_PRIMAIRE} mt-4`}>
-                Créer un dossier
+                Nouveau dossier
               </Link>
             </div>
           ) : (
@@ -401,12 +396,9 @@ export default async function LundiPage({ searchParams }: { searchParams: Promis
       <section className="mt-8">
         <Carte>
           <div className="grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:items-center">
-            <div>
-              <h2 className="text-xl font-extrabold text-[#1D1B5C]">Apprends, étape par étape</h2>
-              <p className="mt-1 leading-relaxed">
-                Chaque étape du chemin explique pourquoi, comment faire, et donne les papiers à remplir. Et pour aller plus loin,
-                les formations du centre de formation d&apos;ADéPA (certifié Qualiopi) peuvent être financées par ton OPCO.
-              </p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-extrabold text-[#1D1B5C]">Apprendre pas à pas</h2>
+              <Info>Formations ADéPA certifiées Qualiopi, finançables par ton OPCO.</Info>
             </div>
             <div className="flex flex-wrap gap-2 md:justify-end">
               <Link href="/chemin" className={BTN_SECONDAIRE}>

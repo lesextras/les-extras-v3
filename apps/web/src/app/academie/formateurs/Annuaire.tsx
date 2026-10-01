@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { appel } from '../_client';
@@ -309,7 +310,7 @@ export function Annuaire({ formateurs: f0, salles: s0, ongletInitial, erreur: e0
               ),
             )}
           </ul>
-          {!salles.length ? <Encart ton="info">Aucune salle. Ajoute celles où tu formes : le planning pourra signaler une salle prise deux fois.</Encart> : null}
+          {!salles.length ? <Encart ton="info">Aucune salle.</Encart> : null}
         </>
       )}
     </>

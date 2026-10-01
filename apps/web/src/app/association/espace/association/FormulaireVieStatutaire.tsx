@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -40,12 +41,12 @@ export function FormulaireVieStatutaire({ vie }: { vie: VieStatutaire }) {
     <form onSubmit={enregistrer} className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
       <label className="flex flex-col gap-1">
         <span className="font-extrabold text-[#1D1B5C]">Dernière assemblée générale</span>
-        <span className="text-sm text-[#6B6A8A]">La date de la dernière grande réunion des membres.</span>
+        <span className="text-sm text-[#6B6A8A]">Dernière réunion des membres</span>
         <input type="date" value={dateAG} onChange={(e) => setDateAG(e.target.value)} className={CHAMP} />
       </label>
       <label className="flex flex-col gap-1">
         <span className="font-extrabold text-[#1D1B5C]">Durée des mandats</span>
-        <span className="text-sm text-[#6B6A8A]">Combien de temps un responsable est élu (voir les statuts).</span>
+        <span className="text-sm text-[#6B6A8A]">Durée d'un mandat (statuts)</span>
         <select value={duree} onChange={(e) => setDuree(e.target.value)} className={CHAMP}>
           {[12, 24, 36, 48].map((m) => (
             <option key={m} value={m}>

@@ -1,9 +1,10 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../../_client';
-import { Pastille } from '../../_ui';
+import { Info, Pastille } from '../../_ui';
 import { LIBELLES_SITUATION, dateCourte, pourInput, type LigneClasseur } from '../_types';
 
 /**
@@ -93,9 +94,17 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
             <span className="font-extrabold text-[#1D1B5C]">{type.libelle}</span>
             {type.dureeValiditeMois ? <span className="text-xs text-[#6B6A8A]">valable {type.dureeValiditeMois} mois</span> : null}
             {type.parExercice ? <span className="text-xs text-[#6B6A8A]">chaque année</span> : null}
+            <Info libelle={`À quoi sert : ${type.libelle}`}>
+              <span className="block">{type.pourquoi}</span>
+              {situation === 'MANQUANTE' && type.ouLaTrouver ? (
+                <span className="mt-2 block">
+                  <strong>Où la trouver : </strong>
+                  {type.ouLaTrouver}
+                </span>
+              ) : null}
+            </Info>
           </div>
-          <p className="mt-1 text-sm text-[#3B3A66]">{type.pourquoi}</p>
-          {piece?.preuve && situation === 'DEDUITE' ? <p className="mt-1 text-sm text-[#6B6A8A]">Trouvée dans : {piece.preuve} · dépose le justificatif pour l’avoir sous la main</p> : null}
+          {piece?.preuve && situation === 'DEDUITE' ? <p className="mt-1 text-sm text-[#6B6A8A]">Trouvée : {piece.preuve}</p> : null}
           {piece?.fileId ? (
             <p className="mt-1 text-sm text-[#6B6A8A]">
               <a href={`/api/proxy/files/${piece.fileId}`} target="_blank" rel="noopener" className="underline underline-offset-4">
@@ -103,12 +112,6 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
               </a>
               {piece.dateExpiration ? ` · expire le ${dateCourte(piece.dateExpiration)}` : ''}
               {piece.exercice ? ` · exercice ${piece.exercice}` : ''}
-            </p>
-          ) : null}
-          {situation === 'MANQUANTE' ? (
-            <p className="mt-1 text-sm">
-              <span className="text-[#6B6A8A]">Où la trouver : </span>
-              {type.ouLaTrouver}
             </p>
           ) : null}
         </div>
@@ -119,7 +122,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
               onClick={() => setOuvert((v) => !v)}
               className="rounded-xl border border-[#4F46E5] px-3 py-1.5 text-sm font-bold text-[#4F46E5] hover:bg-[#ECEBFC]"
             >
-              {piece?.fileId ? 'Remplacer ou corriger' : 'Déposer des fichiers'}
+              {piece?.fileId ? 'Modifier' : 'Déposer'}
             </button>
           ) : (
             <button
@@ -127,7 +130,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
               onClick={() => setOuvert((v) => !v)}
               className="rounded-xl border border-[#E6E4F3] px-3 py-1.5 text-sm text-[#6B6A8A] hover:bg-[#F5F4FC]"
             >
-              Ajouter le document quand même
+              Ajouter quand même
             </button>
           )}
         </div>
@@ -136,7 +139,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
       {ouvert ? (
         <form onSubmit={enregistrer} className="mt-4 grid gap-3 border-t border-[#E6E4F3] pt-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-            <span className="font-bold">Fichiers (PDF, Word, JPEG, PNG ou WEBP)</span>
+            <span className="font-bold">Fichiers</span>
             <input
               ref={fichierRef}
               type="file"
@@ -144,9 +147,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
               accept="application/pdf,image/jpeg,image/png,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx"
               className="text-sm"
             />
-            <span className="text-xs text-[#6B6A8A]">
-              Tu peux en déposer plusieurs : le premier prend la place du papier, les autres sont rangés dans « Mes documents ».
-            </span>
+            <span className="text-xs text-[#6B6A8A]">PDF, Word ou image · les suivants vont dans « Mes documents »</span>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold">Date du document</span>
@@ -156,7 +157,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-bold">Date d&apos;expiration</span>
               <input type="date" value={dateExpiration} onChange={(e) => setDateExpiration(e.target.value)} className={champ} />
-              <span className="text-xs text-[#6B6A8A]">Laisse vide : elle sera calculée depuis la date du document.</span>
+              <span className="text-xs text-[#6B6A8A]">Vide = calculée automatiquement</span>
             </label>
           ) : null}
           {type.parExercice ? (
@@ -179,7 +180,7 @@ export function PieceDuClasseur({ ligne }: { ligne: LigneClasseur }) {
             </button>
             {piece?.fileId ? (
               <button type="button" onClick={retirer} disabled={enCours} className="ml-auto rounded-xl px-4 py-2 text-sm text-[#7C3E06] hover:bg-[#FEF3E2]">
-                Retirer le fichier
+                Retirer
               </button>
             ) : null}
           </div>

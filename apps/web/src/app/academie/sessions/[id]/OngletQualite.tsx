@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useEffect, useState } from 'react';
 import { appel } from '../../_client';
@@ -32,12 +33,12 @@ export function OngletQualite({ ctx }: { ctx: ContexteFiche }) {
     <>
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Tuile libelle="Satisfaction en fin" valeur={virgule(r.chaud.note, ' / 5')} detail={`${r.chaud.reponses} réponse${r.chaud.reponses > 1 ? 's' : ''}${r.chaud.taux !== null ? `, ${r.chaud.taux} %` : ''}`} ton={r.chaud.note && r.chaud.note >= 4 ? 'ok' : 'neutre'} />
-        <Tuile libelle="Recommanderaient" valeur={r.chaud.recommandation === null ? 'Aucune réponse' : `${r.chaud.recommandation} %`} />
-        <Tuile libelle="Assiduité moyenne" valeur={r.assiduite.moyenne === null ? 'Non mesurée' : `${r.assiduite.moyenne} %`} detail="Heures réalisées sur heures prévues" />
-        <Tuile libelle="Progression des acquis" valeur={r.positionnement.progression === null ? 'Non mesurée' : `+${String(r.positionnement.progression).replace('.', ',')} pt`} detail={`${r.positionnement.mesures} stagiaire${r.positionnement.mesures > 1 ? 's' : ''} positionné${r.positionnement.mesures > 1 ? 's' : ''} à l'entrée et à la sortie (sur 4)`} />
+        <Tuile libelle="Recommanderaient" valeur={r.chaud.recommandation === null ? '—' : `${r.chaud.recommandation} %`} />
+        <Tuile libelle="Assiduité moyenne" valeur={r.assiduite.moyenne === null ? '—' : `${r.assiduite.moyenne} %`} detail="réalisé / prévu" />
+        <Tuile libelle="Progression des acquis" valeur={r.positionnement.progression === null ? '—' : `+${String(r.positionnement.progression).replace('.', ',')} pt`} detail={`${r.positionnement.mesures} mesuré${r.positionnement.mesures > 1 ? 's' : ''} (sur 4)`} />
       </div>
 
-      <Bloc titre="Le détail" aide="Objectifs, pédagogie et organisation sont notés sur 5 dans l'enquête de fin ; la mise en œuvre des acquis se mesure à froid.">
+      <Bloc titre="Détail" aide="Notes sur 5 (enquête de fin) ; acquis mesurés à froid.">
         <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
           {[
             ['Objectifs atteints', virgule(r.chaud.objectifs, ' / 5')],
@@ -56,7 +57,7 @@ export function OngletQualite({ ctx }: { ctx: ContexteFiche }) {
         </dl>
       </Bloc>
 
-      <Bloc titre="Où en sont les réponses" aide="Les stagiaires répondent depuis leur lien personnel. Tu peux le leur renvoyer depuis l'onglet Stagiaires.">
+      <Bloc titre="Réponses" aide="Lien à renvoyer depuis l'onglet Stagiaires.">
         <ul className="grid gap-2">
           {actifs.map((i) => (
             <li key={i.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-[#DDEBE4] bg-white px-4 py-2 text-[14px]">

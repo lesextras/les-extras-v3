@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
@@ -105,12 +106,8 @@ export function Partage({
 
       <div className="grid gap-3">
         <div>
-          <p className="text-lg font-extrabold text-[#1D1B5C]">Faire connaître la boutique</p>
-          <p className="mt-0.5 max-w-[60ch] text-sm text-[#6B6A8A]">
-            Le lien se colle dans un mail, une signature, une bio de réseau social. Le QR code
-            s&apos;imprime sur une affiche, un flyer, un bulletin : il est téléchargé en grand
-            format, prêt pour le papier.
-          </p>
+          <p className="text-lg font-extrabold text-[#1D1B5C]">Partager la boutique</p>
+          <p className="mt-0.5 text-sm text-[#6B6A8A]">Lien pour mails et réseaux · QR code pour affiches</p>
         </div>
 
         <label className="grid gap-1 text-sm font-bold text-[#3B3A66]">
@@ -146,15 +143,13 @@ export function Partage({
 
         {modifie ? (
           <Encart ton="attention">
-            L&apos;adresse a été modifiée mais pas encore enregistrée : ce lien et ce QR code
-            pointent vers l&apos;adresse actuelle, pas vers la nouvelle.
+            Nouvelle adresse non enregistrée : lien et QR code encore anciens.
           </Encart>
         ) : null}
 
         {!publiee ? (
           <Encart ton="attention">
-            La boutique est fermée : ce lien mène à une page introuvable tant qu&apos;elle
-            n&apos;est pas ouverte. Ouvre-la avant d&apos;imprimer quoi que ce soit.
+            Boutique fermée : lien inactif. Ouvre-la avant d&apos;imprimer.
           </Encart>
         ) : null}
       </div>

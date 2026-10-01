@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { apiEspace, contexteChemin, sessionAssociation } from '../../_session';
 import { nomCourt } from '../../_nom';
@@ -38,67 +39,66 @@ export default async function SecretariatPage() {
   const obligations = [
     {
       code: 'ag',
-      titre: 'Tenir une assemblée générale par an',
+      titre: 'Assemblée générale annuelle',
       detail: vie.dateDerniereAG
-        ? `Dernière assemblée le ${dateCourte(vie.dateDerniereAG)}${vie.prochaineAG ? ` · la prochaine avant le ${dateCourte(vie.prochaineAG)}` : ''}`
-        : "Aucune assemblée notée : c'est la première chose que demandent les financeurs.",
+        ? `Dernière : ${dateCourte(vie.dateDerniereAG)}${vie.prochaineAG ? ` · prochaine avant le ${dateCourte(vie.prochaineAG)}` : ''}`
+        : 'Aucune AG notée.',
       etat: vie.agEnRetard ? 'ALERTE' : vie.agBientot ? 'ATTENTION' : vie.dateDerniereAG ? 'OK' : 'ATTENTION',
       action: { libelle: 'Noter la date', href: '/espace/association#vie' },
     },
     {
       code: 'bureau',
-      titre: 'Un bureau à jour, avec des mandats valides',
+      titre: 'Bureau à jour',
       detail: vie.mandatsExpires.length
-        ? `${vie.mandatsExpires.length} mandat${vie.mandatsExpires.length > 1 ? 's' : ''} fini${vie.mandatsExpires.length > 1 ? 's' : ''} : à réélire, puis à déclarer en préfecture.`
+        ? `${vie.mandatsExpires.length} mandat${vie.mandatsExpires.length > 1 ? 's' : ''} fini${vie.mandatsExpires.length > 1 ? 's' : ''} : réélire, déclarer.`
         : vie.bureau.president && vie.bureau.tresorier
           ? 'Président et trésorier notés.'
-          : 'Il manque au moins le président ou le trésorier.',
+          : 'Président ou trésorier manquant.',
       etat: vie.mandatsExpires.length ? 'ALERTE' : vie.bureau.president && vie.bureau.tresorier ? 'OK' : 'ATTENTION',
       action: { libelle: 'Mon équipe', href: '/espace/repertoire' },
     },
     {
       code: 'prefecture',
-      titre: 'Déclarer les changements en préfecture',
-      detail:
-        'Changement de bureau, de statuts, de siège : la déclaration se fait dans les 3 mois, en ligne. La liste des dirigeants se fabrique ici.',
+      titre: 'Changements en préfecture',
+      detail: 'Bureau, statuts, siège : sous 3 mois, en ligne.',
       etat: 'INFO',
       action: { libelle: 'Faire la démarche', href: 'https://www.service-public.fr/associations/vosdroits/R37933', externe: true },
     },
     {
       code: 'comptes',
-      titre: 'Tenir les comptes et les présenter en assemblée',
+      titre: 'Comptes tenus et présentés',
       detail: budget
         ? `${budget.lignes} ligne${budget.lignes > 1 ? 's' : ''} notée${budget.lignes > 1 ? 's' : ''} · solde ${formaterEuros(budget.solde)}`
-        : 'Le cahier de comptes est vide.',
+        : 'Aucune ligne.',
       etat: budget && budget.lignes > 0 ? 'OK' : 'ATTENTION',
       action: { libelle: 'Ma comptabilité', href: '/espace/comptabilite' },
     },
     {
       code: 'recus',
-      titre: 'Délivrer un reçu pour chaque don',
+      titre: 'Un reçu par don',
       detail: donsSansRecu
-        ? `${donsSansRecu} don${donsSansRecu > 1 ? 's' : ''} sans reçu fiscal noté.`
-        : 'Chaque don noté a son reçu.',
+        ? `${donsSansRecu} don${donsSansRecu > 1 ? 's' : ''} sans reçu.`
+        : 'Tous les dons ont leur reçu.',
       etat: donsSansRecu ? 'ATTENTION' : 'OK',
       action: { libelle: 'Fabriquer un reçu', href: '#documents' },
     },
     {
       code: 'pieces',
-      titre: 'Garder les papiers à jour',
+      titre: 'Papiers à jour',
       detail: piecesPerimees.length
         ? `${piecesPerimees.length} pièce${piecesPerimees.length > 1 ? 's' : ''} périmée${piecesPerimees.length > 1 ? 's' : ''}.`
         : piecesBientot.length
           ? `${piecesBientot.length} pièce${piecesBientot.length > 1 ? 's' : ''} expire${piecesBientot.length > 1 ? 'nt' : ''} bientôt.`
-          : 'Rien ne périme dans les 60 jours.',
+          : 'Rien sous 60 jours.',
       etat: piecesPerimees.length ? 'ALERTE' : piecesBientot.length ? 'ATTENTION' : 'OK',
       action: { libelle: 'Le classeur', href: '/espace/classeur' },
     },
     {
       code: 'comptes-rendus',
-      titre: 'Rendre compte des subventions reçues',
+      titre: 'Comptes rendus de subventions',
       detail: comptesRendus.length
-        ? `${comptesRendus.length} subvention${comptesRendus.length > 1 ? 's' : ''} accordée${comptesRendus.length > 1 ? 's' : ''} à justifier.`
-        : 'Aucun compte rendu en attente.',
+        ? `${comptesRendus.length} à justifier.`
+        : 'Aucun en attente.',
       etat: comptesRendus.length ? 'ATTENTION' : 'OK',
       action: { libelle: 'Mes demandes', href: '/espace/dossiers' },
     },
@@ -110,31 +110,30 @@ export default async function SecretariatPage() {
     <>
       <Titre
         surtitre={nomCourt(organisation.nom)}
-        sousTitre="Les papiers de la vie de l'association, les obligations à tenir, et l'argent qui entre et qui sort. Tout ce qu'un secrétaire et un trésorier ont à faire, au même endroit."
+        sousTitre="Obligations, documents et comptes."
       >
         Mon secrétariat
       </Titre>
 
       <section className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Tuile libelle="Obligations à tenir" valeur={aTenir} detail={aTenir ? 'À regarder de près' : 'Tout est en règle'} ton={aTenir ? 'attention' : 'ok'} />
+        <Tuile libelle="Obligations à tenir" valeur={aTenir} detail={aTenir ? 'à regarder' : 'en règle'} ton={aTenir ? 'attention' : 'ok'} />
         <Tuile libelle="Documents à fabriquer" valeur={modeles.length} detail="Convocation, PV, reçus…" />
         <Tuile
           libelle="Pièces périmées"
           valeur={piecesPerimees.length}
-          detail={piecesBientot.length ? `${piecesBientot.length} expire${piecesBientot.length > 1 ? 'nt' : ''} bientôt` : 'Rien à renouveler'}
+          detail={piecesBientot.length ? `${piecesBientot.length} bientôt` : undefined}
           ton={piecesPerimees.length ? 'alerte' : piecesBientot.length ? 'attention' : 'ok'}
         />
         <Tuile
           libelle="Comptes rendus à faire"
           valeur={comptesRendus.length}
-          detail={comptesRendus.length ? 'Subventions accordées à justifier' : 'Rien en attente'}
           ton={comptesRendus.length ? 'attention' : 'ok'}
         />
       </section>
 
       {/* --------------------------------------------------- les obligations */}
       <section id="obligations" className="mb-10 scroll-mt-24">
-        <SousTitre>Ce que l&apos;association doit tenir</SousTitre>
+        <SousTitre>Obligations</SousTitre>
         <ul className="mt-4 grid gap-3 md:grid-cols-2">
           {obligations.map((o) => (
             <li key={o.code}>
@@ -163,10 +162,7 @@ export default async function SecretariatPage() {
 
       {/* ------------------------------------------------------ les documents */}
       <section id="documents" className="mb-10 scroll-mt-24">
-        <SousTitre>Les documents à fabriquer</SousTitre>
-        <p className="mt-1 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Tu remplis quelques champs, le document sort en PDF (rangé dans tes documents) et en Word si tu veux le retoucher.
-        </p>
+        <SousTitre info="Quelques champs à remplir : PDF rangé dans tes documents, Word en option.">Documents à fabriquer</SousTitre>
         <div className="mt-4">
           <DocumentsSecretariat modeles={modeles} prerempli={prerempli} />
         </div>
@@ -175,17 +171,14 @@ export default async function SecretariatPage() {
       {/* --------------------------------------------------------- l'argent */}
       <section id="comptes" className="scroll-mt-24">
         <SousTitre>L&apos;argent</SousTitre>
-        <p className="mt-1 mb-4 max-w-[70ch] text-sm text-[#6B6A8A]">
-          Les comptes ont leur propre page : le cahier de comptes, le prévisionnel, les dons et les reçus fiscaux, la billetterie et les ventes.
-        </p>
         <Link href="/espace/comptabilite" className={`${CARTE} block p-5 no-underline transition hover:border-[#4F46E5]`}>
           <span className="block text-lg font-extrabold text-[#1D1B5C]">Ma comptabilité</span>
           <span className="mt-1 block text-sm text-[#6B6A8A]">
             {budget?.lignes
               ? `${budget.lignes} ligne${budget.lignes > 1 ? 's' : ''} notée${budget.lignes > 1 ? 's' : ''} · solde ${formaterEuros(budget.solde)}`
-              : 'Le cahier de comptes est encore vide : une ligne par don, par cotisation, par achat.'}
+              : 'Aucune ligne.'}
           </span>
-          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir ma comptabilité →</span>
+          <span className="mt-3 block text-sm font-bold text-[#4F46E5]">Ouvrir →</span>
         </Link>
       </section>
 

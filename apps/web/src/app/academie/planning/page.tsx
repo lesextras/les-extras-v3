@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
@@ -51,7 +52,7 @@ export default async function PlanningPage({ searchParams }: { searchParams: Pro
     <>
       <Titre
         surtitre="Gestion de l’organisme"
-        sousTitre="Les créneaux de toutes tes sessions, semaine par semaine, avec les conflits de formateur et de salle."
+        sousTitre="Tes créneaux, semaine par semaine."
         actions={
           <Link href="/academie/sessions" className={BTN_SECONDAIRE}>
             Les sessions

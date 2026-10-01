@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
@@ -51,7 +52,7 @@ export default async function EdofPage() {
     <>
       <Titre
         surtitre="Gestion de l’organisme · CPF"
-        sousTitre="Déposer une formation éligible au CPF se fait sur l'espace des organismes de la Caisse des dépôts (EDOF). Avant d'y aller, vérifie ici que rien ne manque."
+        sousTitre="Vérifie tout avant de déposer sur EDOF."
         actions={
           <a className={BTN_SECONDAIRE} href={data?.lien ?? 'https://www.of.moncompteformation.gouv.fr/'} target="_blank" rel="noopener noreferrer">
             Ouvrir EDOF ↗
@@ -75,10 +76,7 @@ export default async function EdofPage() {
               </p>
             ) : null}
           </section>
-          <Encart ton="info">
-            Seules les formations qui mènent à une certification enregistrée (RNCP ou répertoire spécifique), les bilans de compétences et
-            l&apos;accompagnement à la VAE sont éligibles au CPF. Les autres n&apos;ont pas leur place sur EDOF, et c&apos;est normal.
-          </Encart>
+          <Encart ton="info">Éligibles CPF : RNCP, RS, bilans de compétences, VAE.</Encart>
           <div className="mt-6 grid gap-4">
             {data.formations.map((f) => (
               <section key={f.id} className={`${CARTE} p-5 sm:p-6`}>
@@ -86,7 +84,7 @@ export default async function EdofPage() {
                   <h2 className="text-[18px] font-extrabold text-[#12312A]">{f.titre}</h2>
                   {f.pret ? <Pastille ton="ok">Prête pour EDOF</Pastille> : f.eligible ? <Pastille ton="attention">{f.manque} point{f.manque > 1 ? 's' : ''} à compléter</Pastille> : <Pastille ton="neutre">Non éligible au CPF</Pastille>}
                 </div>
-                {f.eligible || f.pret ? <Liste points={f.points} /> : <p className="text-[15px] text-[#5E7A6E]">Si elle prépare une certification RNCP ou RS, règle son objectif dans le classement du programme (fiche d&apos;une de ses sessions, onglet Aperçu).</p>}
+                {f.eligible || f.pret ? <Liste points={f.points} /> : <p className="text-[15px] text-[#5E7A6E]">Certifiante ? Règle son classement (session, onglet Aperçu).</p>}
               </section>
             ))}
             {!data.formations.length ? <Encart ton="info">Aucune formation au catalogue.</Encart> : null}

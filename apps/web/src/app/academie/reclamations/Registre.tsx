@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { appel } from '../_client';
@@ -130,19 +131,15 @@ export function Registre({ reclamations: initiales }: { reclamations: Reclamatio
       <div className="mb-6">
         {sansTraitement ? (
           <Encart ton="attention">
-            {sansTraitement} réclamation{sansTraitement > 1 ? 's' : ''} ouverte{sansTraitement > 1 ? 's' : ''} sans
-            traitement écrit. C&apos;est ce que l&apos;auditeur cherche : pas l&apos;absence de réclamation, mais la
-            preuve qu&apos;elle a été traitée.
+            {sansTraitement} réclamation{sansTraitement > 1 ? 's' : ''} sans traitement écrit.
           </Encart>
         ) : liste.length ? (
           <Encart ton="ok">
-            Chaque réclamation ouverte porte son traitement. Le registre tient debout devant un auditeur.
+            Toutes les réclamations sont traitées.
           </Encart>
         ) : (
           <Encart ton="info">
-            Le registre est vide. Ce n&apos;est pas rassurant pour un auditeur : cela veut souvent dire qu&apos;aucun
-            canal n&apos;existe. Annonce une adresse de réclamation dans tes documents, et note ici même les remarques
-            orales, une réclamation traitée vaut mieux que zéro réclamation.
+            Registre vide. Note aussi les remarques orales.
           </Encart>
         )}
       </div>

@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { appel, messageDe } from '../_ecole/api';
@@ -157,7 +158,7 @@ export function Packs({ initiaux, cours }: { initiaux: Pack[]; cours: CoursResum
               </ul>
             ) : (
               <p className="text-[15px] text-[#5E7A6E]">
-                Aucun cours à mettre dans un pack pour l&apos;instant. Crée d&apos;abord un cours en ligne.
+                Aucun cours en ligne.
               </p>
             )}
           </fieldset>
@@ -219,8 +220,7 @@ export function Packs({ initiaux, cours }: { initiaux: Pack[]; cours: CoursResum
         </ul>
       ) : (
         <Encart ton="info">
-          Tu n&apos;as pas encore de pack. Un pack sert quand deux ou trois cours se suivent naturellement : on les
-          vend ensemble, à un prix qui donne envie de tout prendre.
+          Aucun pack.
         </Encart>
       )}
     </>

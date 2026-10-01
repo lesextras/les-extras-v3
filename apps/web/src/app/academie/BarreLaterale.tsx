@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -137,7 +138,7 @@ const MENU: Element[] = [
       { href: '/academie/planning', libelle: 'Planning', icone: ICONES.agenda },
       { href: '/academie/formateurs', libelle: 'Formateurs et salles', icone: ICONES.formateurs },
       { href: '/academie/prospects', libelle: 'Prospects', icone: ICONES.prospects },
-      { href: '/academie/facturation', libelle: 'Devis et factures clients', icone: ICONES.factures },
+      { href: '/academie/facturation', libelle: 'Devis et factures', icone: ICONES.factures },
       { href: '/academie/financements', libelle: 'Financements', icone: ICONES.financements },
       { href: '/academie/qualite', libelle: 'Qualité et enquêtes', icone: ICONES.certification },
       { href: '/academie/bpf', libelle: 'Bilan pédagogique (BPF)', icone: ICONES.statistiques },
@@ -606,8 +607,7 @@ const PORTES = [
     href: '/inscription?type=particulier',
     titre: 'Espace particulier',
     ligne: "Je n'ai encore rien créé",
-    info:
-      "Tu n'as ni association ni organisme de formation pour l'instant. Tu ouvres un compte à ton nom, tu lis le chemin, et tu créeras ta structure en route : l'espace se transformera tout seul le jour où elle existera.",
+    info: "Un compte à ton nom. L'espace évolue quand ta structure existe.",
     pastille: 'bg-[#4F46E5]',
     icone: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1',
   },
@@ -616,8 +616,7 @@ const PORTES = [
     href: '/inscription?type=association',
     titre: 'Espace association',
     ligne: "J'ai une association loi 1901",
-    info:
-      "Ton association existe déjà, ou tu es en train de la déclarer. L'espace porte son classeur de pièces, ses projets, ses demandes de subvention, ses comptes et son équipe. Sa fiche est pré-remplie à partir de son nom ou de son numéro.",
+    info: 'Association déclarée ou en cours. Fiche pré-remplie depuis son nom ou son numéro.',
     pastille: 'bg-[#C42B57]',
     icone: 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6',
   },
@@ -626,8 +625,7 @@ const PORTES = [
     href: '/academie/inscription',
     titre: 'Espace académie',
     ligne: "Je forme, ou je vais former",
-    info:
-      "Un organisme de formation n'est pas une association : c'est la déclaration d'activité à la DREETS qui le fait, pas la forme juridique. L'espace porte la déclaration, la certification Qualiopi, le catalogue, les sessions, les apprenants et les émargements.",
+    info: 'Organisme de formation : déclaration, Qualiopi, sessions, apprenants.',
     pastille: 'bg-[#0F5F3E]',
     icone: 'M22 10L12 5 2 10l10 5 10-5zM6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5',
   },
@@ -707,7 +705,7 @@ function MenuCreerEspace() {
             ))}
 
             <p className="mx-3 mb-2 mt-1 text-[12px] leading-relaxed text-[#5E7A6E]">
-              Tu peux changer plus tard : un même compte porte plusieurs espaces.
+              Un compte, plusieurs espaces.
             </p>
           </div>
         </>

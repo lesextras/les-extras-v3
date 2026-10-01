@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
 import { Encart, Titre, Tuile } from '../../_ui';
@@ -31,30 +32,28 @@ export default async function ContactsPage() {
     <>
       <Titre
         surtitre="Autour de l'association"
-        sousTitre="Un nom, un poste, un téléphone, et sa famille : qui finance, qui décide à la mairie, qui agit avec vous. Noté une fois ici, il ressert partout, dans tes demandes, dans tes courriers, dans tes comptes rendus."
+        sousTitre="Financeurs, élus, partenaires."
+        info="Noté une fois, réutilisé dans tes demandes, courriers et comptes rendus."
       >
         Mes contacts
       </Titre>
 
       <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Tuile libelle="Partenaires" valeur={partenaires} detail="Ceux qui agissent avec vous" />
-        <Tuile libelle="Financeurs" valeur={financeurs} detail="Ceux qui donnent de l'argent" ton={financeurs ? 'ok' : 'neutre'} />
-        <Tuile libelle="Institutionnels" valeur={institutionnels} detail="Mairie, CAF, département, élus" />
-        <Tuile libelle="Divers" valeur={divers} detail="Presse, prestataires, voisins…" />
+        <Tuile libelle="Partenaires" valeur={partenaires} />
+        <Tuile libelle="Financeurs" valeur={financeurs} ton={financeurs ? 'ok' : 'neutre'} />
+        <Tuile libelle="Institutionnels" valeur={institutionnels} />
+        <Tuile libelle="Divers" valeur={divers} />
       </section>
 
       <Repertoire contacts={contacts} mode="CONTACTS" />
 
-      <p className="mt-6 text-sm text-[#6B6A8A]">
-        Un financeur noté ici se propose tout seul quand tu crées une demande dans{' '}
+      <p className="mt-6 flex flex-wrap gap-x-4 gap-y-1 text-sm text-[#6B6A8A]">
         <Link href="/espace/dossiers" className="font-bold text-[#4F46E5] underline underline-offset-4">
-          mes subventions et appels à projet
+          Mes dossiers
         </Link>
-        . L&apos;équipe de l&apos;association, elle, est{' '}
         <Link href="/espace/repertoire" className="font-bold text-[#4F46E5] underline underline-offset-4">
-          sur sa propre page
+          Mon équipe
         </Link>
-        .
       </p>
     </>
   );

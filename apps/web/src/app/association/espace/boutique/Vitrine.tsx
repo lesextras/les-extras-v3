@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState } from 'react';
 import { appel } from '../../_client';
@@ -143,15 +144,13 @@ export function Vitrine({ initiale }: { initiale: VitrineType }) {
           />
         </span>
         <span className="text-xs font-normal text-[#6B6A8A]">
-          C&apos;est ce qu&apos;on lit sur le lien et ce qui sert au QR code : plus c&apos;est
-          court, plus c&apos;est facile à dire à voix haute et à scanner.{' '}
+          Court = facile à dire et à scanner.{' '}
           {apercu && apercu !== v.slug ? (
             <>
               Ce sera enregistré sous <strong className="text-[#1D1B5C]">/boutique/{apercu}</strong>.
             </>
           ) : null}{' '}
-          Changer l&apos;adresse casse les liens et les QR codes déjà partagés : l&apos;ancienne ne
-          mène plus nulle part.
+          Changer l&apos;adresse casse les liens déjà partagés.
         </span>
       </label>
 
@@ -195,19 +194,15 @@ export function Vitrine({ initiale }: { initiale: VitrineType }) {
       </div>
 
       <label className={etiquette}>
-        Ce que tu dis sur la livraison
+        Livraison
         <textarea
           rows={2}
           value={v.livraisonTexte ?? ''}
           onChange={(e) => setV({ ...v, livraisonTexte: e.target.value })}
           className={champ}
-          placeholder="Délais, points de retrait, ce qui est possible et ce qui ne l’est pas."
+          placeholder="Délais, points de retrait…"
         />
-        <span className="text-xs font-normal text-[#6B6A8A]">
-          Ce texte s&apos;affiche sur la boutique et part dans le message de confirmation, quand la
-          commande contient un objet. Laissé vide, rien ne s&apos;affiche : mieux vaut ne rien dire
-          qu&apos;annoncer un délai qu&apos;on ne tiendra pas.
-        </span>
+        <span className="text-xs font-normal text-[#6B6A8A]">Affiché sur la boutique et la confirmation.</span>
       </label>
 
       <div className="grid gap-4 md:grid-cols-2">

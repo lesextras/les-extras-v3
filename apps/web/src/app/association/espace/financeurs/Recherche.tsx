@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -72,10 +73,7 @@ export function Recherche({ disponible, projetId, projetIntitule }: { disponible
   if (!disponible) {
     return (
       <div className={`${CARTE} p-5`}>
-        <p className="font-extrabold text-[#1D1B5C]">La recherche assistée n&apos;est pas encore activée sur ce serveur.</p>
-        <p className="mt-1 text-sm leading-relaxed text-[#6B6A8A]">
-          En attendant, la liste des dispositifs connus et des outils utiles reste consultable.
-        </p>
+        <p className="font-extrabold text-[#1D1B5C]">Recherche assistée bientôt disponible.</p>
         <Link href="/chemin#droits" className="mt-3 inline-flex text-sm font-bold text-[#4F46E5] underline underline-offset-4">
           Ce à quoi j&apos;ai droit →
         </Link>
@@ -88,9 +86,9 @@ export function Recherche({ disponible, projetId, projetIntitule }: { disponible
       <div className={`${CARTE} p-5`}>
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold text-[#1D1B5C]">
-            {projetIntitule ? `Quelque chose à préciser sur « ${projetIntitule} » ?` : 'Que cherches-tu à financer en priorité ?'}
+            {projetIntitule ? `Précisions sur « ${projetIntitule} »` : 'Priorité à financer'}
           </span>
-          <span className="text-[#6B6A8A]">Facultatif. Par exemple : du matériel pour l&apos;atelier cuisine, un poste de coordination, une sortie pour vingt jeunes.</span>
+          <span className="text-[#6B6A8A]">Facultatif · ex. matériel, sortie pour 20 jeunes</span>
           <textarea
             rows={2}
             maxLength={1000}
@@ -100,26 +98,19 @@ export function Recherche({ disponible, projetId, projetIntitule }: { disponible
           />
         </label>
         <button type="button" onClick={chercher} disabled={enCours} className={`${BTN_PRIMAIRE} mt-4 disabled:opacity-60`}>
-          {enCours ? 'Recherche en cours…' : projetIntitule ? 'Chercher des financeurs pour ce projet' : 'Chercher des financeurs'}
+          {enCours ? 'Recherche en cours…' : 'Chercher des financeurs'}
         </button>
-        <p className="mt-2 text-xs text-[#6B6A8A]">
-          {projetIntitule
-            ? 'La recherche part de ce projet, de ton projet en une page et de ta commune. Les pistes les plus faciles à décrocher arrivent en premier.'
-            : 'La recherche part de ce que tu as noté : ton projet en une page, tes projets, ta commune. Plus c’est rempli, plus les pistes sont justes.'}
-        </p>
       </div>
 
       {erreur ? <p className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">{erreur}</p> : null}
 
       {pistes ? (
         pistes.length === 0 ? (
-          <p className="text-sm text-[#6B6A8A]">Aucune piste cette fois. Précise ton projet et relance.</p>
+          <p className="text-sm text-[#6B6A8A]">Aucune piste. Précise et relance.</p>
         ) : (
           <>
             <p className="rounded-xl border border-[#D9D6EE] bg-[#F5F4FC] px-4 py-3 text-sm text-[#3B3A66]">
-              <span className="font-bold text-[#1D1B5C]">Des pistes, pas des promesses.</span> Vérifie toujours sur le site du financeur : les conditions, les
-              montants et les dates changent. Rien de ce qui est écrit ici ne remplace l&apos;annonce officielle. Les pistes sont classées de la plus facile à
-              décrocher à la plus difficile.
+              <span className="font-bold text-[#1D1B5C]">Des pistes, pas des promesses.</span> Vérifie sur le site du financeur · de la plus facile à la plus difficile.
             </p>
             <ul className="grid gap-4 md:grid-cols-2">
               {pistes.map((p) => (

@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState } from 'react';
 import { appel } from '../../_client';
@@ -45,10 +46,10 @@ export function Encaissement({ etat }: { etat: EtatStripe | null }) {
           <p className="text-lg font-extrabold text-[#1D1B5C]">Où arrive l&apos;argent</p>
           <p className="mt-1 max-w-[62ch] text-sm leading-relaxed text-[#6B6A8A]">
             {pret
-              ? "Le compte de l'association est relié : chaque vente lui est versée directement, sans passer par la plateforme."
+              ? 'Ventes versées directement à l’association.'
               : relie
-                ? "Le dossier est ouvert mais pas terminé : tant qu'il l'est, les ventes continuent d'arriver sur le compte de la plateforme."
-                : "Aucun compte n'est relié : les ventes arrivent aujourd'hui sur le compte de la plateforme, qui doit vous les reverser à la main."}
+                ? 'Dossier à terminer : ventes encore versées à la plateforme.'
+                : 'Aucun compte relié : ventes reversées à la main.'}
           </p>
         </div>
         <span
@@ -129,22 +130,18 @@ export function Encaissement({ etat }: { etat: EtatStripe | null }) {
       ) : null}
 
       <div className="mt-3 text-xs leading-relaxed text-[#6B6A8A]">
-        <p>Le dossier se remplit sur les pages de Stripe. Trois pièces sont demandées.</p>
+        <p>Dossier à remplir sur Stripe :</p>
         <ul className="mt-1.5 list-disc space-y-1 pl-5">
           <li>Une pièce d&apos;identité</li>
           <li>L&apos;IBAN de l&apos;association</li>
           <li>Le représentant légal</li>
         </ul>
         <p className="mt-1.5">
-        Rien de tout cela ne transite par cette application, et aucun mot de passe ne se
-        tape ici.
+        Aucun mot de passe tapé ici.
         {(etat?.commissionVentePourcent ?? 0) === 0 ? (
           <>
             {' '}
-            La plateforme ne prend aucune part sur ces ventes : elle ne retient que ce que le
-            prestataire de paiement lui facture, 1,5 % plus 25 centimes, le tarif standard pour
-            une carte européenne. Une carte non européenne coûte un peu plus cher : cet écart-là
-            reste à la charge de la plateforme.
+            Aucune commission : seulement les frais de paiement (1,5 % + 0,25 €).
           </>
         ) : null}
         </p>

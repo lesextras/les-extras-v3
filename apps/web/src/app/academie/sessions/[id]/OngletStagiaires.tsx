@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { appel } from '../../_client';
@@ -101,7 +102,7 @@ function Formulaire({ initiale, valider, annuler, occupe, titre }: { initiale: S
         <Champ libelle="Prénom et nom">
           <input className={CHAMP} value={v.nom} onChange={maj('nom')} required minLength={2} maxLength={160} autoComplete="off" />
         </Champ>
-        <Champ libelle="E-mail" aide="Pour la convocation, l'émargement et les enquêtes.">
+        <Champ libelle="E-mail">
           <input className={CHAMP} type="email" value={v.email} onChange={maj('email')} maxLength={200} autoComplete="off" />
         </Champ>
         <Champ libelle="Téléphone">
@@ -138,7 +139,7 @@ function Formulaire({ initiale, valider, annuler, occupe, titre }: { initiale: S
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          <Champ libelle="Entreprise ou employeur" aide="C'est lui qui signe la convention.">
+          <Champ libelle="Entreprise ou employeur" aide="Signe la convention">
             <input className={CHAMP} value={v.entrepriseNom} onChange={maj('entrepriseNom')} maxLength={200} />
           </Champ>
           <Champ libelle="SIRET de l'entreprise">
@@ -150,19 +151,19 @@ function Formulaire({ initiale, valider, annuler, occupe, titre }: { initiale: S
           <Champ libelle="Contact à l'entreprise">
             <input className={CHAMP} value={v.entrepriseContact} onChange={maj('entrepriseContact')} maxLength={160} placeholder="Nom de la personne qui signe" />
           </Champ>
-          <Champ libelle="E-mail de l'entreprise" aide="La convention à signer et l'enquête commanditaire y partent.">
+          <Champ libelle="E-mail de l'entreprise">
             <input className={CHAMP} type="email" value={v.entrepriseEmail} onChange={maj('entrepriseEmail')} maxLength={200} />
           </Champ>
         </div>
       )}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Champ libelle="Financeur (OPCO, France Travail…)" aide="S'il paie directement l'organisme (subrogation).">
+        <Champ libelle="Financeur (OPCO, France Travail…)" aide="Si subrogation">
           <input className={CHAMP} value={v.financeurNom} onChange={maj('financeurNom')} maxLength={160} />
         </Champ>
         <Champ libelle="N° de dossier ou d'accord">
           <input className={CHAMP} value={v.numeroDossier} onChange={maj('numeroDossier')} maxLength={80} />
         </Champ>
-        <Champ libelle="Prix HT propre à ce stagiaire (€)" aide="Vide : le prix de la session.">
+        <Champ libelle="Prix HT de ce stagiaire (€)" aide="Vide = prix de la session">
           <input className={CHAMP} inputMode="decimal" value={v.prixHt} onChange={maj('prixHt')} />
         </Champ>
       </div>
@@ -192,7 +193,7 @@ export function OngletStagiaires({ ctx }: { ctx: ContexteFiche }) {
   return (
     <Bloc
       titre={`Stagiaires : ${actifs.length}${s.maxSeats ? ` sur ${s.maxSeats}` : ''}`}
-      aide="Chaque stagiaire reçoit un lien personnel, sans compte à créer : sa convocation, ses signatures d'émargement, ses enquêtes et ses documents."
+      aide="Chaque stagiaire reçoit un lien personnel, sans compte."
     >
       <div className="mb-4">
         {ajout ? (

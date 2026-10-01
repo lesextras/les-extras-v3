@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -114,7 +115,7 @@ export function FicheProjet({ projet, onFermer }: { projet: ActionAssociation | 
 
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-bold text-[#1D1B5C]">Pour qui, et quoi</span>
-        <span className="text-[#6B6A8A]">Deux phrases suffisent : c&apos;est ce texte qu&apos;on recopie dans le rapport d&apos;activité.</span>
+        <span className="text-[#6B6A8A]">Deux phrases suffisent</span>
         <textarea rows={3} maxLength={2000} value={v.resume} onChange={(e) => setV({ ...v, resume: e.target.value })} className={CHAMP} />
       </label>
 
@@ -148,7 +149,7 @@ export function FicheProjet({ projet, onFermer }: { projet: ActionAssociation | 
       </div>
 
       <fieldset className="rounded-xl bg-[#F5F4FC] p-4">
-        <legend className="px-1 text-sm font-bold text-[#1D1B5C]">Les chiffres que les financeurs demandent</legend>
+        <legend className="px-1 text-sm font-bold text-[#1D1B5C]">Les chiffres</legend>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-bold text-[#1D1B5C]">Personnes touchées</span>
@@ -171,14 +172,14 @@ export function FicheProjet({ projet, onFermer }: { projet: ActionAssociation | 
 
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-bold text-[#1D1B5C]">Avec qui</span>
-        <span className="text-[#6B6A8A]">La mairie, une école, une autre association, une entreprise.</span>
+        <span className="text-[#6B6A8A]">Mairie, école, association, entreprise</span>
         <input type="text" maxLength={400} value={v.partenaires} onChange={(e) => setV({ ...v, partenaires: e.target.value })} className={CHAMP} />
       </label>
 
       {v.etat === 'TERMINEE' ? (
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-bold text-[#1D1B5C]">Ce qu&apos;on en retient</span>
-          <span className="text-[#6B6A8A]">Ce qui a marché, ce qu&apos;on changerait. C&apos;est le bilan à joindre au compte rendu de subvention.</span>
+          <span className="text-[#6B6A8A]">Ce qui a marché, ce qu&apos;on changerait</span>
           <textarea rows={3} maxLength={4000} value={v.bilan} onChange={(e) => setV({ ...v, bilan: e.target.value })} className={CHAMP} />
         </label>
       ) : null}

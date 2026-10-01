@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useState } from 'react';
 import { appel, messageDe, telecharger } from '../_ecole/api';
@@ -114,7 +115,7 @@ export function Devoirs({ initiale, formations, coursInitial }: { initiale: List
       {affiches.length === 0 ? (
         <Encart ton="info">
           {filtre === 'A_CORRIGER'
-            ? "Rien à corriger. Pour recevoir des devoirs, ajoute une leçon de type « Devoir » dans le sommaire d'une formation."
+            ? 'Rien à corriger.'
             : 'Aucun devoir dans cette liste.'}
         </Encart>
       ) : (

@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import type { Metadata } from 'next';
 import { sessionAcademie } from '../_session';
 import { Titre } from '../_ui';
@@ -13,10 +14,11 @@ export default async function BpfPage() {
   return (
     <>
       <Titre
-        surtitre="Gestion de l’organisme · art. L6352-11 du code du travail"
-        sousTitre="Le bilan à déposer chaque année avant le 31 mai sur Mon Activité Formation. Tout ce que tes sessions et tes factures permettent de calculer est déjà rempli ; le reste se saisit ici."
+        surtitre="Gestion de l’organisme"
+        sousTitre="À déposer avant le 31 mai."
+        info="Art. L6352-11 du code du travail. Pré-rempli depuis tes sessions et factures."
       >
-        Bilan pédagogique et financier
+        Mon BPF
       </Titre>
       <Bpf anneeInitiale={annee} />
     </>

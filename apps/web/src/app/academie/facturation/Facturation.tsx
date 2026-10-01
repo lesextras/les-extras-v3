@@ -1,9 +1,10 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { appel } from '../_client';
-import { BTN_PRIMAIRE, BTN_SECONDAIRE, Encart, Tuile } from '../_ui';
+import { BTN_PRIMAIRE, BTN_SECONDAIRE, Encart, Info, Tuile } from '../_ui';
 import { EditeurFacture, LigneFactureOrg } from '../_gestion/Factures';
 import { euros, telecharger } from '../_gestion/outils';
 import type { FactureOrg, ListeFactures } from '../_gestion/types';
@@ -64,9 +65,9 @@ export function Facturation({ tvaParDefaut, siretManquant }: { tvaParDefaut: num
       {siretManquant ? (
         <div className="mb-5">
           <Encart ton="attention">
-            Le SIRET de ton académie manque : une facture ne peut pas être émise sans lui.{' '}
+            SIRET manquant : facturation bloquée.{' '}
             <Link href="/academie/mon-academie#fiche" className="font-bold underline">
-              Le renseigner
+              Ajouter
             </Link>
           </Encart>
         </div>
@@ -79,7 +80,7 @@ export function Facturation({ tvaParDefaut, siretManquant }: { tvaParDefaut: num
 
       {r ? (
         <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Tuile libelle={`Chiffre d'affaires ${r.annee} (HT)`} valeur={euros(r.chiffreAffairesHt)} detail="Factures émises, moins les avoirs" />
+          <Tuile libelle={`Chiffre d'affaires ${r.annee} (HT)`} valeur={euros(r.chiffreAffairesHt)} detail="Factures − avoirs" />
           <Tuile libelle="À encaisser" valeur={euros(r.aEncaisser)} ton={r.aEncaisser ? 'attention' : 'neutre'} />
           <Tuile libelle="En retard" valeur={r.enRetard} detail={r.enRetard ? euros(r.montantEnRetard) : 'Aucune'} ton={r.enRetard ? 'alerte' : 'ok'} />
           <Tuile libelle="Devis en attente" valeur={r.devisOuverts} detail={r.devisOuverts ? `${euros(r.montantDevis)} HT` : undefined} />
@@ -88,10 +89,10 @@ export function Facturation({ tvaParDefaut, siretManquant }: { tvaParDefaut: num
 
       <div className="mb-5 flex flex-wrap gap-2">
         <button type="button" className={BTN_PRIMAIRE} onClick={() => setEdition('nouveau')}>
-          Nouvelle facture ou nouveau devis
+          Nouveau document
         </button>
         <button type="button" className={BTN_SECONDAIRE} onClick={() => void telecharger(`/academie/gestion/factures/journal.csv?annee=${annee}`, `journal-des-ventes-${annee}.csv`).catch((e: Error) => setErreur(e.message))}>
-          Journal des ventes {annee} (CSV)
+          Export {annee} (CSV)
         </button>
         <Link href="/academie/sessions" className={BTN_SECONDAIRE}>
           Facturer une session
@@ -134,14 +135,15 @@ export function Facturation({ tvaParDefaut, siretManquant }: { tvaParDefaut: num
           ))}
         </ul>
       ) : (
-        <Encart ton="info">Rien à afficher ici.</Encart>
+        <Encart ton="info">Aucun document.</Encart>
       )}
 
-      <p className="mt-8 max-w-[75ch] text-sm leading-relaxed text-[#5E7A6E]">
-        Une facture émise ne se modifie plus : elle s&apos;annule par un avoir, qui porte son propre numéro (article 242 nonies A de l&apos;annexe II du CGI). Les factures
-        échues sont relancées à J+1, J+15 et J+30, puis plus rien d&apos;automatique. La facturation électronique devient obligatoire par étapes (réception depuis
-        septembre 2026, émission à partir de septembre 2027 pour les PME) : vérifie avec ton expert-comptable ce qu&apos;elle change pour ton organisme.
-      </p>
+      <div className="mt-8 flex items-center gap-2 text-sm text-[#5E7A6E]">
+        <span>Facture émise : non modifiable, annulée par avoir · relances J+1, J+15, J+30</span>
+        <Info aDroite>
+          Facturation électronique : réception depuis septembre 2026, émission dès septembre 2027 pour les PME. Vérifie avec ton expert-comptable.
+        </Info>
+      </div>
     </>
   );
 }

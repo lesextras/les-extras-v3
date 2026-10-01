@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { apiAcademie, sessionAcademie } from '../_session';
@@ -40,8 +41,8 @@ export default async function QualitePage({ searchParams }: { searchParams: Prom
   return (
     <>
       <Titre
-        surtitre="Gestion de l’organisme · indicateur 2 du référentiel"
-        sousTitre="Satisfaction, recommandation, mise en œuvre des acquis, abandons : calculés tout seuls à partir des enquêtes de tes sessions."
+        surtitre="Gestion de l’organisme · indicateur 2"
+        sousTitre="Calculés depuis les enquêtes de tes sessions."
         actions={
           <nav className="flex gap-2" aria-label="Année">
             {[courante - 1, courante].map((a) => (

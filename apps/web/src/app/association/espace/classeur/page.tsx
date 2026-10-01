@@ -1,3 +1,4 @@
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 import Link from 'next/link';
 import { apiEspace, sessionAssociation } from '../../_session';
 import { nomCourt } from '../../_nom';
@@ -28,10 +29,11 @@ export default async function ClasseurPage() {
     <>
       <Titre
         surtitre="Le classeur"
-        sousTitre="Les treize papiers que les financeurs demandent. Tu déposes un fichier, tu notes sa date : on te prévient 60 jours avant qu'il expire."
+        sousTitre="Les papiers demandés par les financeurs."
+        info="Dépose chaque papier avec sa date : alerte 60 jours avant expiration."
         actions={
           <Link href="/chemin/les-cinq-pieces-d-identite" className="inline-flex items-center rounded-xl border-2 border-[#D9D6EE] bg-white px-4 py-2 text-sm font-bold text-[#1D1B5C] no-underline hover:border-[#4F46E5]">
-            Où trouver chaque papier
+            Où les trouver
           </Link>
         }
       >
@@ -63,13 +65,13 @@ export default async function ClasseurPage() {
       <section className={`${CARTE} mt-8 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between`}>
         <div>
           <h2 className="text-lg font-extrabold text-[#1D1B5C]">Mes autres documents</h2>
-          <p className="mt-1 text-sm text-[#6B6A8A]">Tout ce qui n&apos;est pas une pièce du classeur : conventions, courriers, photos, affiches.</p>
+          <p className="mt-1 text-sm text-[#6B6A8A]">Conventions, courriers, photos, affiches</p>
         </div>
         <Link href="/espace/documents" className={BTN_SECONDAIRE}>
-          Ouvrir mes documents →
+          Ouvrir →
         </Link>
       </section>
-      <p className="mt-6 text-xs text-[#6B6A8A]">Référentiel des pièces vérifié le {data.versionReferentiel}.</p>
+      <p className="mt-6 text-xs text-[#6B6A8A]">Référentiel du {data.versionReferentiel}</p>
     </>
   );
 }

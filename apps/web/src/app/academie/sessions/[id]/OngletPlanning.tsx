@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { appel } from '../../_client';
@@ -140,7 +141,7 @@ export function OngletPlanning({ ctx }: { ctx: ContexteFiche }) {
 
       <Bloc
         titre={`Planning : ${s.creneaux.length} créneau${s.creneaux.length > 1 ? 'x' : ''}, ${String(Math.round(heuresTotal * 100) / 100).replace('.', ',')} h`}
-        aide="Chaque créneau devient une demi-journée à émarger. Les heures réalisées des stagiaires se calculent sur ce planning."
+        aide="Un créneau = une demi-journée à émarger."
       >
         <div className="mb-4 flex flex-wrap gap-2">
           <button type="button" className={mode === 'serie' ? BTN_PRIMAIRE : BTN_SECONDAIRE} onClick={() => setMode(mode === 'serie' ? 'aucun' : 'serie')}>
@@ -236,7 +237,7 @@ export function OngletPlanning({ ctx }: { ctx: ContexteFiche }) {
         ) : null}
 
         {!s.creneaux.length ? (
-          <Encart ton="attention">Aucun créneau. Sans planning, les heures réalisées ne peuvent être qu&apos;estimées, et la convocation ne dit pas les horaires.</Encart>
+          <Encart ton="attention">Aucun créneau.</Encart>
         ) : (
           <ul className="grid gap-3">
             {parJour.map(([jour, liste]) => (

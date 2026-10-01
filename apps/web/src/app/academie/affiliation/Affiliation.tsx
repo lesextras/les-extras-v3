@@ -1,4 +1,5 @@
 'use client';
+/* Textes allégés le 01/10/2026 (demande : le moins de texte possible) */
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { appel, messageDe } from '../_ecole/api';
@@ -184,10 +185,7 @@ export function Affiliation({ initiaux, ventes, slug }: { initiaux: Affilie[]; v
 
       {ouvert ? (
         <form onSubmit={ajouter} className={`${CARTE} mb-6 p-5`}>
-          <p className="mb-4 max-w-[70ch] text-[14px] leading-relaxed text-[#5E7A6E]">
-            Tu crées le code, tu lui envoies son lien. Aucun compte n&apos;est ouvert à sa place : le code suffit pour
-            que la vente lui soit attribuée.
-          </p>
+          <p className="mb-4 text-[14px] text-[#5E7A6E]">Le code suffit, sans compte.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1.5 block text-[13px] font-bold text-[#12312A]">Nom</span>
@@ -278,8 +276,7 @@ export function Affiliation({ initiaux, ventes, slug }: { initiaux: Affilie[]; v
         </ul>
       ) : (
         <Encart ton="info">
-          Tu n&apos;as pas encore d&apos;affilié. L&apos;affiliation marche bien avec des personnes qui ont déjà suivi
-          ta formation : elles en parlent juste, et le code fait le reste.
+          Aucun affilié.
         </Encart>
       )}
     </>
