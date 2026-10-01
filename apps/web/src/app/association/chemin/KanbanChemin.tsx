@@ -51,11 +51,10 @@ export function KanbanChemin({
 }) {
   const router = useRouter();
   const [attrape, setAttrape] = useState<string | null>(null);
-  const [survolee, setSurvolee] = useState<Colonne | null>(null);
+  const [survolee, setSurvolee] = useState<string | null>(null);
   const [deplaces, setDeplaces] = useState<Record<string, boolean>>({});
   const [erreur, setErreur] = useState<string | null>(null);
 
-  const titrePartie = new Map(parties.map((p) => [p.code, p.titre]));
   const confirmees = new Set(verifiees);
   const cochees = new Set(faites);
   const estFaite = (slug: string) => confirmees.has(slug) || (deplaces[slug] ?? cochees.has(slug));
@@ -89,7 +88,7 @@ export function KanbanChemin({
   }
 
   return (
-    <div id="partie-1" className="mb-8 scroll-mt-24 space-y-4">
+    <div id="chemin-etapes" className="mb-8 scroll-mt-24 space-y-4">
       <p className="text-sm text-[#6B6A8A]">Glisse une étape dans « Fait » pour la cocher.</p>
       {erreur ? (
         <p role="alert" className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">
@@ -97,29 +96,45 @@ export function KanbanChemin({
         </p>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-2" aria-label="Mon chemin en colonnes">
+      {/* LES TROIS ÉTAPES DU CHEMIN RESTENT (01/10/2026, Siham : « il fallait
+          laisser les étapes et juste mettre à l'intérieur les kanban ») :
+          chaque partie garde son titre, et ses étapes se rangent dedans en
+          deux colonnes. */}
+      {parties.map((partie) => {
+        const teintePartie = TEINTES_PARTIE[partie.code];
+        const dePartie = triees.filter((e) => e.partie === partie.code);
+        if (!dePartie.length) return null;
+        const faitesIci = dePartie.filter((e) => estFaite(e.slug)).length;
+        return (
+      <section key={partie.code} id={`partie-${parties.indexOf(partie) + 1}`} className="scroll-mt-24 pt-4" aria-label={partie.titre}>
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.12em]">
+          <span className={`h-2.5 w-2.5 rounded-full ${teintePartie.pastille}`} aria-hidden="true" />
+          <span className={teintePartie.texte}>{partie.titre}</span>
+          {partie.code === 'SUBVENTION' ? <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] text-[#1D1B5C]">Le but</span> : null}
+          <span className="ml-auto text-[#6B6A8A]">{faitesIci} / {dePartie.length}</span>
+        </h2>
+      <div className="grid gap-4 md:grid-cols-2">
         {COLONNES.map((col) => {
-          const siennes = triees.filter((e) => (col.code === 'FAIT') === estFaite(e.slug));
-          const cible = survolee === col.code;
+          const siennes = dePartie.filter((e) => (col.code === 'FAIT') === estFaite(e.slug));
+          const cle = `${partie.code}:${col.code}`;
+          const cible = survolee === cle;
           return (
             <div
               key={col.code}
               onDragOver={(e) => {
                 e.preventDefault();
-                setSurvolee(col.code);
+                setSurvolee(cle);
               }}
-              onDragLeave={() => setSurvolee((s) => (s === col.code ? null : s))}
+              onDragLeave={() => setSurvolee((s) => (s === cle ? null : s))}
               onDrop={(e) => surDepot(e, col.code)}
               className={`rounded-2xl p-3 transition motion-reduce:transition-none ${cible ? 'bg-[#ECEBFC] ring-2 ring-[#4F46E5]' : 'bg-[#ECEBFC]/60'}`}
             >
-              <h2 className="px-2 font-extrabold text-[#1D1B5C]">
+              <h3 className="px-2 font-extrabold text-[#1D1B5C]">
                 {col.titre} <span className="text-[#6B6A8A]">{siennes.length}</span>
-              </h2>
-              <p className="px-2 text-xs text-[#6B6A8A]">{col.aide}</p>
+              </h3>
 
               <ul className="mt-3 space-y-2">
                 {siennes.map((e) => {
-                  const teinte = TEINTES_PARTIE[e.partie];
                   const confirmee = confirmees.has(e.slug);
                   const estProchaine = prochaine === e.slug;
                   const faite = estFaite(e.slug);
@@ -149,10 +164,6 @@ export function KanbanChemin({
                           <div className="min-w-0 flex-1">
                             <p className={`font-extrabold leading-snug ${faite ? 'text-[#6B6A8A]' : 'text-[#1D1B5C]'}`}>{e.titre}</p>
                             <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-bold">
-                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 ${teinte.fond} ${teinte.texte}`}>
-                                <span className={`h-2 w-2 rounded-full ${teinte.pastille}`} aria-hidden="true" />
-                                {titrePartie.get(e.partie) ?? e.partie}
-                              </span>
                               {estProchaine ? <span className="rounded-full bg-[#4F46E5] px-2 py-0.5 text-white">Prochaine</span> : null}
                               {confirmee ? <span className="rounded-full bg-[#E3F5EC] px-2 py-0.5 text-[#0F5F3E]">Confirmée</span> : null}
                             </p>
@@ -197,7 +208,10 @@ export function KanbanChemin({
             </div>
           );
         })}
+      </div>
       </section>
+        );
+      })}
     </div>
   );
 }

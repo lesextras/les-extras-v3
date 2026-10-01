@@ -4,6 +4,7 @@ import { chargerChemin, TEMPS, TEINTES } from '../_chemin';
 import { academieConnectee, apiAcademie, sessionAcademie } from '../_session';
 import { Accent, CARTE, Encart, SousTitre, Titre } from '../_ui';
 import type { EspaceAcademie } from '../_types';
+import { KanbanCheminAcademie } from './KanbanCheminAcademie';
 
 export const metadata: Metadata = {
   title: 'Le chemin',
@@ -90,6 +91,14 @@ export default async function CheminPage() {
         )}
       </div>
 
+      {nom ? (
+        <KanbanCheminAcademie
+          temps={TEMPS.map((t) => ({ titre: t.titre, de: t.de, a: t.a, resume: t.resume, teinte: TEINTES[t.titre] }))}
+          etapes={chemin.etapes.map((e) => ({ slug: e.slug, numero: e.numero, titre: e.titre, pourPasser: e.pourPasser }))}
+          faites={[...faites]}
+          automatiques={[...automatiques]}
+        />
+      ) : (
       <div className="space-y-10">
         {TEMPS.map((t, i) => {
           const etapes = chemin.etapes.filter((e) => e.numero >= t.de && e.numero <= t.a);
@@ -167,6 +176,7 @@ export default async function CheminPage() {
           );
         })}
       </div>
+      )}
 
       {nom ? null : (
         <section className={`${CARTE} mt-10 p-5 sm:p-7`}>
