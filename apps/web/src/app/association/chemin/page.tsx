@@ -6,6 +6,7 @@ import { etapesFaitesSiConnecte } from '../_session';
 import { AVANTAGES, FAMILLES_AVANTAGES, VERIFIE_LE } from '../_avantages';
 import { CarteAvantage } from '../CarteAvantage';
 import { FamillesAvantages } from '../FamillesAvantages';
+import { KanbanChemin } from './KanbanChemin';
 import { LIBELLES_COUT } from '../_avantages';
 
 export const metadata: Metadata = {
@@ -97,59 +98,68 @@ export default async function CheminPage() {
         </div>
       )}
 
-      {/* ------------------------------------------------ le chemin, en une ligne */}
-      <div id="partie-1" className="scroll-mt-24">
-        {parties.map((p) => {
-          const teinte = TEINTES_PARTIE[p.code];
-          const siennes = etapes.filter((e) => e.partie === p.code);
-          const faitesIci = siennes.filter((e) => faites.has(e.slug)).length;
-          return (
-            <section key={p.code} id={`partie-${p.numero}`} className="mb-8 scroll-mt-24">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.12em]">
-                <span className={`h-2.5 w-2.5 rounded-full ${teinte.pastille}`} aria-hidden="true" />
-                <span className={teinte.texte}>{p.titre}</span>
-                {p.code === 'SUBVENTION' ? <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] text-[#1D1B5C]">Le but</span> : null}
-                {connecte ? <span className="ml-auto text-[#6B6A8A]">{faitesIci} / {siennes.length}</span> : null}
-              </h2>
+      {/* ------------------------------------------------ le chemin : en colonnes une fois connecté, en une ligne sinon */}
+      {connecte && chemin ? (
+        <KanbanChemin
+          etapes={etapes.map((e) => ({ numero: e.numero, slug: e.slug, titre: e.titre, partie: e.partie }))}
+          parties={parties.map((p) => ({ code: p.code, titre: p.titre }))}
+          faites={[...faites]}
+          verifiees={[...connecte.verifiees]}
+        />
+      ) : (
+        <div id="partie-1" className="scroll-mt-24">
+          {parties.map((p) => {
+            const teinte = TEINTES_PARTIE[p.code];
+            const siennes = etapes.filter((e) => e.partie === p.code);
+            const faitesIci = siennes.filter((e) => faites.has(e.slug)).length;
+            return (
+              <section key={p.code} id={`partie-${p.numero}`} className="mb-8 scroll-mt-24">
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.12em]">
+                  <span className={`h-2.5 w-2.5 rounded-full ${teinte.pastille}`} aria-hidden="true" />
+                  <span className={teinte.texte}>{p.titre}</span>
+                  {p.code === 'SUBVENTION' ? <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] text-[#1D1B5C]">Le but</span> : null}
+                  {connecte ? <span className="ml-auto text-[#6B6A8A]">{faitesIci} / {siennes.length}</span> : null}
+                </h2>
 
-              <ol className="relative ml-5 border-l-2 border-[#E6E4F3]">
-                {siennes.map((e) => {
-                  const faite = faites.has(e.slug);
-                  const estProchaine = Boolean(connecte) && prochaine?.slug === e.slug;
-                  return (
-                    <li key={e.slug} className="relative pb-2 pl-8 last:pb-0">
-                      <span
-                        className={`absolute -left-[17px] top-3 flex h-8 w-8 items-center justify-center rounded-full text-sm font-extrabold ring-4 ring-[#F5F4FC] ${
-                          faite ? 'bg-[#1E9E6A] text-white' : estProchaine ? 'bg-[#4F46E5] text-white' : 'border-2 border-[#D9D6EE] bg-white text-[#6B6A8A]'
-                        }`}
-                        aria-label={faite ? 'Faite' : undefined}
-                      >
-                        {faite ? '✓' : e.numero}
-                      </span>
-                      <Link
-                        href={`/chemin/${e.slug}`}
-                        className={`group flex items-center gap-3 rounded-xl px-4 py-3 no-underline transition ${
-                          estProchaine
-                            ? 'border-2 border-[#4F46E5] bg-white shadow-[0_12px_28px_-20px_rgba(29,27,92,0.8)]'
-                            : 'hover:bg-white'
-                        }`}
-                      >
-                        <span className="min-w-0 flex-1">
-                          <span className={`block font-extrabold leading-snug ${faite ? 'text-[#6B6A8A]' : 'text-[#1D1B5C]'} group-hover:text-[#4F46E5]`}>{e.titre}</span>
-                          {estProchaine ? <span className="mt-0.5 block text-sm text-[#6B6A8A]">{e.enUnMot}</span> : null}
+                <ol className="relative ml-5 border-l-2 border-[#E6E4F3]">
+                  {siennes.map((e) => {
+                    const faite = faites.has(e.slug);
+                    const estProchaine = Boolean(connecte) && prochaine?.slug === e.slug;
+                    return (
+                      <li key={e.slug} className="relative pb-2 pl-8 last:pb-0">
+                        <span
+                          className={`absolute -left-[17px] top-3 flex h-8 w-8 items-center justify-center rounded-full text-sm font-extrabold ring-4 ring-[#F5F4FC] ${
+                            faite ? 'bg-[#1E9E6A] text-white' : estProchaine ? 'bg-[#4F46E5] text-white' : 'border-2 border-[#D9D6EE] bg-white text-[#6B6A8A]'
+                          }`}
+                          aria-label={faite ? 'Faite' : undefined}
+                        >
+                          {faite ? '✓' : e.numero}
                         </span>
-                        <span className={`shrink-0 text-sm font-bold ${estProchaine ? 'rounded-lg bg-[#4F46E5] px-3 py-1.5 text-white' : 'text-[#9A99B5] group-hover:text-[#4F46E5]'}`}>
-                          {estProchaine ? 'Ouvrir' : faite ? 'Revoir' : '→'}
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ol>
-            </section>
-          );
-        })}
-      </div>
+                        <Link
+                          href={`/chemin/${e.slug}`}
+                          className={`group flex items-center gap-3 rounded-xl px-4 py-3 no-underline transition ${
+                            estProchaine
+                              ? 'border-2 border-[#4F46E5] bg-white shadow-[0_12px_28px_-20px_rgba(29,27,92,0.8)]'
+                              : 'hover:bg-white'
+                          }`}
+                        >
+                          <span className="min-w-0 flex-1">
+                            <span className={`block font-extrabold leading-snug ${faite ? 'text-[#6B6A8A]' : 'text-[#1D1B5C]'} group-hover:text-[#4F46E5]`}>{e.titre}</span>
+                            {estProchaine ? <span className="mt-0.5 block text-sm text-[#6B6A8A]">{e.enUnMot}</span> : null}
+                          </span>
+                          <span className={`shrink-0 text-sm font-bold ${estProchaine ? 'rounded-lg bg-[#4F46E5] px-3 py-1.5 text-white' : 'text-[#9A99B5] group-hover:text-[#4F46E5]'}`}>
+                            {estProchaine ? 'Ouvrir' : faite ? 'Revoir' : '→'}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </section>
+            );
+          })}
+        </div>
+      )}
 
       {/* ------------------------------------------------ ce à quoi j'ai droit */}
       <section id="droits" className="mt-16 scroll-mt-24">

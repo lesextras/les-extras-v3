@@ -2,16 +2,24 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type DragEvent, type FormEvent } from 'react';
 import type { FormulaireResume, StatutFormulaire, Teinte } from './types';
 
 /**
- * MES FORMULAIRES : la liste, et le bouton qui en crée un.
+ * MES FORMULAIRES : en colonnes (brouillon, publié, fermé), et le bouton qui
+ * en crée un. On attrape une carte et on la pose dans une autre colonne pour
+ * changer son statut ; sur téléphone, le menu « Déplacer vers » fait pareil.
  *
  * Le même écran sert les deux espaces. Un formulaire naît toujours en
  * brouillon, avec deux questions déjà posées : on part de quelque chose plutôt
  * que d'une page blanche.
  */
+const COLONNES: { statut: StatutFormulaire; titre: string; aide: string }[] = [
+  { statut: 'BROUILLON', titre: 'Brouillon', aide: 'En préparation, personne ne le voit' },
+  { statut: 'PUBLIE', titre: 'Publié', aide: 'Ouvert aux réponses' },
+  { statut: 'FERME', titre: 'Fermé', aide: 'Plus de nouvelles réponses' },
+];
+
 export function Liste({
   formulaires: initiaux,
   teinte,
@@ -32,8 +40,11 @@ export function Liste({
   /** La petite case qui demande le nom avant de créer. */
   const [nomOuvert, setNomOuvert] = useState(false);
   const [nom, setNom] = useState('');
+  /** Le glisser-déposer : la carte tenue, la colonne survolée. */
+  const [attrape, setAttrape] = useState<string | null>(null);
+  const [survolee, setSurvolee] = useState<StatutFormulaire | null>(null);
 
-  async function appeler(chemin: string, methode: 'POST' | 'DELETE', corps?: unknown) {
+  async function appeler(chemin: string, methode: 'POST' | 'PATCH' | 'DELETE', corps?: unknown) {
     const res = await fetch(`/api/proxy${chemin}`, {
       method: methode,
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -41,9 +52,40 @@ export function Liste({
       body: corps ? JSON.stringify(corps) : undefined,
     });
     const texte = await res.text();
-    const data = texte ? JSON.parse(texte) : {};
-    if (!res.ok) throw new Error(data?.message ?? "L'opération n'a pas abouti.");
+    let data: { message?: string | string[] } & Record<string, unknown> = {};
+    try {
+      data = texte ? JSON.parse(texte) : {};
+    } catch {
+      data = {};
+    }
+    if (!res.ok) {
+      const message = Array.isArray(data?.message) ? data.message.join(' ') : data?.message;
+      throw new Error(message || "L'opération n'a pas abouti.");
+    }
     return data;
+  }
+
+  /** Change le statut tout de suite à l'écran ; si l'API refuse, la carte revient. */
+  async function deplacer(id: string, statut: StatutFormulaire) {
+    const avant = formulaires.find((f) => f.id === id);
+    if (!avant || avant.statut === statut) return;
+    setErreur(null);
+    setFormulaires((p) => p.map((f) => (f.id === id ? { ...f, statut } : f)));
+    try {
+      await appeler(`/formulaires/${id}`, 'PATCH', { statut });
+      router.refresh();
+    } catch (e) {
+      setFormulaires((p) => p.map((f) => (f.id === id ? { ...f, statut: avant.statut } : f)));
+      setErreur(e instanceof Error ? e.message : 'Le déplacement a échoué.');
+    }
+  }
+
+  function surDepot(e: DragEvent<HTMLElement>, statut: StatutFormulaire) {
+    e.preventDefault();
+    setSurvolee(null);
+    const id = e.dataTransfer.getData('text/plain') || attrape;
+    setAttrape(null);
+    if (id) void deplacer(id, statut);
   }
 
   async function creer(e: FormEvent) {
@@ -157,7 +199,9 @@ export function Liste({
       ) : null}
 
       {erreur ? (
-        <p className="mb-4 rounded-2xl border border-[#F3B0C2] bg-[#FDE7EC] px-5 py-4 text-[15px] font-bold text-[#8A1B3D]">{erreur}</p>
+        <p role="alert" className="mb-4 rounded-2xl border border-[#F3B0C2] bg-[#FDE7EC] px-5 py-4 text-[15px] font-bold text-[#8A1B3D]">
+          {erreur}
+        </p>
       ) : null}
 
       {formulaires.length === 0 ? (
@@ -191,79 +235,147 @@ export function Liste({
           </div>
         )
       ) : (
-        <ul className="grid gap-3">
-          {formulaires.map((f) => (
-            <li
-              key={f.id}
-              className="relative rounded-2xl border bg-white p-5 transition hover:shadow-md"
-              style={{ borderColor: teinte.bord }}
-            >
-              {/* Toute la carte ouvre le formulaire. */}
-              <Link href={`${base}/${f.id}`} aria-label={`Ouvrir « ${f.titre} »`} className="absolute inset-0 rounded-2xl" />
-              <div className="pointer-events-none flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-lg font-extrabold tracking-tight" style={{ color: teinte.encre }}>
-                      {f.titre}
-                    </span>
-                    <Etiquette statut={f.statut} teinte={teinte} />
-                  </div>
-                  <p className="mt-1 text-sm" style={{ color: teinte.sourdine }}>
-                    {dateCourte(f.creeLe, f.modifieLe)} · {f.nbChamps} question{f.nbChamps > 1 ? 's' : ''} · {f.nbReponses}{' '}
-                    réponse{f.nbReponses > 1 ? 's' : ''}
-                    {f.statut === 'PUBLIE' ? ` · ${origine.replace(/^https?:\/\//, '')}/f/${f.slug}` : ''}
-                  </p>
-                </div>
+        <section className="grid gap-4 md:grid-cols-3" aria-label="Mes formulaires en colonnes">
+          {COLONNES.map((col) => {
+            const siens = formulaires.filter((f) => f.statut === col.statut);
+            const cible = survolee === col.statut;
+            return (
+              <div
+                key={col.statut}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setSurvolee(col.statut);
+                }}
+                onDragLeave={() => setSurvolee((s) => (s === col.statut ? null : s))}
+                onDrop={(e) => surDepot(e, col.statut)}
+                className="rounded-2xl p-3 transition motion-reduce:transition-none"
+                style={{
+                  backgroundColor: teinte.fond,
+                  boxShadow: cible ? `inset 0 0 0 2px ${teinte.plein}` : `inset 0 0 0 1px ${teinte.bord}`,
+                }}
+              >
+                <h2 className="flex items-center gap-2 px-2 font-extrabold" style={{ color: teinte.encre }}>
+                  <Etiquette statut={col.statut} teinte={teinte} />
+                  <span style={{ color: teinte.sourdine }}>{siens.length}</span>
+                </h2>
+                <p className="mt-1 px-2 text-xs" style={{ color: teinte.sourdine }}>
+                  {col.aide}
+                </p>
 
-                <div className="pointer-events-auto relative z-10 flex shrink-0 items-center gap-2">
-                  {f.statut === 'PUBLIE' ? (
-                    <a
-                      href={`/f/${f.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-lg border-2 bg-white px-3 py-2 text-sm font-bold no-underline transition"
-                      style={{ borderColor: teinte.bord, color: teinte.encre }}
+                <ul className="mt-3 space-y-2">
+                  {siens.map((f) => (
+                    <li
+                      key={f.id}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', f.id);
+                        e.dataTransfer.effectAllowed = 'move';
+                        setAttrape(f.id);
+                      }}
+                      onDragEnd={() => setAttrape(null)}
+                      className={`relative cursor-grab rounded-2xl border bg-white p-4 transition hover:shadow-md active:cursor-grabbing has-[[aria-expanded=true]]:z-30 motion-reduce:transition-none ${
+                        attrape === f.id ? 'opacity-50' : ''
+                      }`}
+                      style={{ borderColor: teinte.bord }}
                     >
-                      Voir la page
-                    </a>
+                      {/* Toute la carte ouvre le formulaire. */}
+                      <Link
+                        href={`${base}/${f.id}`}
+                        draggable={false}
+                        aria-label={`Ouvrir « ${f.titre} »`}
+                        className="absolute inset-0 rounded-2xl focus:outline-none focus-visible:ring-2"
+                        style={{ ['--tw-ring-color' as string]: teinte.plein }}
+                      />
+                      <div className="pointer-events-none flex items-start justify-between gap-2">
+                        <span className="min-w-0 flex-1 break-words font-extrabold leading-snug tracking-tight" style={{ color: teinte.encre }}>
+                          {f.titre}
+                        </span>
+                        <div className="pointer-events-auto relative z-10 shrink-0">
+                          <MenuActions
+                            teinte={teinte}
+                            occupe={occupe}
+                            onDupliquer={() => dupliquer(f.id)}
+                            onSupprimer={() => setASupprimer(f.id)}
+                          />
+                        </div>
+                      </div>
+                      <p className="pointer-events-none mt-1 text-sm" style={{ color: teinte.sourdine }}>
+                        {dateCourte(f.creeLe, f.modifieLe)} · {f.nbChamps} question{f.nbChamps > 1 ? 's' : ''} · {f.nbReponses} réponse
+                        {f.nbReponses > 1 ? 's' : ''}
+                      </p>
+                      {f.statut === 'PUBLIE' ? (
+                        <p className="pointer-events-none mt-1 break-all text-xs" style={{ color: teinte.sourdine }}>
+                          {origine.replace(/^https?:\/\//, '')}/f/{f.slug}
+                        </p>
+                      ) : null}
+
+                      <div className="relative z-10 mt-3 flex flex-wrap items-center gap-2">
+                        <label className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-bold" style={{ color: teinte.sourdine }}>
+                          Déplacer vers
+                          <select
+                            value={f.statut}
+                            onChange={(e) => void deplacer(f.id, e.target.value as StatutFormulaire)}
+                            aria-label={`Déplacer « ${f.titre} » vers`}
+                            className="min-w-0 flex-1 rounded-lg border bg-white px-2 py-1 text-xs font-bold focus:outline-none"
+                            style={{ borderColor: teinte.bord, color: teinte.encre }}
+                          >
+                            {COLONNES.map((c) => (
+                              <option key={c.statut} value={c.statut}>
+                                {c.titre}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        {f.statut === 'PUBLIE' ? (
+                          <a
+                            href={`/f/${f.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            draggable={false}
+                            className="rounded-lg border-2 bg-white px-2.5 py-1 text-xs font-bold no-underline transition motion-reduce:transition-none"
+                            style={{ borderColor: teinte.bord, color: teinte.encre }}
+                          >
+                            Voir la page
+                          </a>
+                        ) : null}
+                      </div>
+
+                      {aSupprimer === f.id ? (
+                        <div className="relative z-10 mt-3 rounded-xl border border-[#F3B0C2] bg-[#FDE7EC] px-3 py-3">
+                          <p className="text-sm font-bold text-[#8A1B3D]">
+                            Supprimer « {f.titre} » et ses {f.nbReponses} réponse{f.nbReponses > 1 ? 's' : ''} ? C&apos;est définitif.
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => supprimer(f.id)}
+                              disabled={occupe}
+                              className="rounded-lg bg-[#C42B57] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#8A1B3D] disabled:opacity-60"
+                            >
+                              Oui, supprimer
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setASupprimer(null)}
+                              className="rounded-lg border-2 border-[#F3B0C2] bg-white px-4 py-2 text-sm font-bold text-[#8A1B3D]"
+                            >
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
+                  {siens.length === 0 ? (
+                    <li className="px-2 py-6 text-center text-sm" style={{ color: teinte.sourdine }}>
+                      {cible ? 'Pose la carte ici' : 'Rien ici'}
+                    </li>
                   ) : null}
-                  <MenuActions
-                    teinte={teinte}
-                    occupe={occupe}
-                    onDupliquer={() => dupliquer(f.id)}
-                    onSupprimer={() => setASupprimer(f.id)}
-                  />
-                </div>
+                </ul>
               </div>
-
-              {aSupprimer === f.id ? (
-                <div className="relative z-10 mt-4 rounded-xl border border-[#F3B0C2] bg-[#FDE7EC] px-4 py-3">
-                  <p className="text-[15px] font-bold text-[#8A1B3D]">
-                    Supprimer « {f.titre} » et ses {f.nbReponses} réponse{f.nbReponses > 1 ? 's' : ''} ? C&apos;est
-                    définitif.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => supprimer(f.id)}
-                      disabled={occupe}
-                      className="rounded-lg bg-[#C42B57] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#8A1B3D] disabled:opacity-60"
-                    >
-                      Oui, supprimer
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setASupprimer(null)}
-                      className="rounded-lg border-2 border-[#F3B0C2] bg-white px-4 py-2 text-sm font-bold text-[#8A1B3D]"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+            );
+          })}
+        </section>
       )}
     </div>
   );
