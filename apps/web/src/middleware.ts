@@ -277,7 +277,11 @@ export async function middleware(request: NextRequest) {
   if (PROTECTED.some((p) => pathname === p || pathname.startsWith(`${p}/`)) && !hasSession) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    url.searchParams.set('next', pathname);
+    // La requête suit le chemin (01/10/2026) : un lien « Adapter avec LEX »
+    // d'une ressource ouvre LEX déjà réglé, y compris après la connexion.
+    const suite = pathname + request.nextUrl.search;
+    url.search = '';
+    url.searchParams.set('next', suite);
     return NextResponse.redirect(url);
   }
 

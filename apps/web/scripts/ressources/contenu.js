@@ -1,0 +1,467 @@
+// Contenu des ressources gratuites. Textes originaux ADéPA, exemples fictifs.
+// ⚠ Pas de tiret cadratin, pas de diagnostic, pas de prix.
+
+const L = (n) => `<div class="lignes">${'<i></i>'.repeat(n)}</div>`;
+const blocs = (...b) => b.join('');
+const bloc = (titre, contenu, couleur = '') => `<div class="bloc ${couleur}"><h2>${titre}</h2><div class="c">${contenu}</div></div>`;
+const g = (n, ...b) => `<div class="grille g${n}">${b.join('')}</div>`;
+const etapes = (items) => `<ol>${items.map(([t, x]) => `<li><span class="temps">${t}</span> ${x}</li>`).join('')}</ol>`;
+const puces = (items) => `<ul>${items.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+
+/** Une fiche activité : même squelette pour toutes. */
+function activite(a) {
+  return blocs(
+    `<div class="bandeau"><b>L’essentiel :</b> ${a.essentiel}</div>`,
+    g(3,
+      bloc('Pour qui', a.pourQui, 'indigo'),
+      bloc('Durée et lieu', a.duree, 'indigo'),
+      bloc('Matériel', a.materiel, 'indigo'),
+    ),
+    g(2,
+      bloc('Objectifs observables', puces(a.objectifs)),
+      bloc('Ce qu’on dit au groupe', `<p class="dit">${a.consigne}</p>`, 'jaune'),
+    ),
+    bloc('Déroulé minuté', etapes(a.deroule)),
+    g(2,
+      bloc('Variantes et adaptations', puces(a.variantes), 'vert'),
+      bloc('Points de vigilance', puces(a.vigilance), 'corail'),
+    ),
+    `<div class="aretenir"><h3>Ce qu’on observe pour le compte rendu</h3>${puces(a.observe)}</div>`,
+  );
+}
+
+module.exports = [
+  // ═══ ACTIVITÉS ═══════════════════════════════════════════════════════════
+  {
+    id: 'activite-noeud-humain',
+    kicker: 'Activité · coopération',
+    titre1: 'Le nœud humain',
+    titre2: 'coopérer en 20 minutes',
+    sous: 'sans matériel',
+    format: 'Fiche activité · 1 page',
+    meta: '<br>8 à 12 participants · dès 11 ans',
+    corps: activite({
+      essentiel: 'le groupe forme un nœud en se tenant les mains, puis le défait sans jamais lâcher. Personne ne peut réussir seul : il faut s’écouter, proposer et décider ensemble.',
+      pourQui: '8 à 12 participants, à partir de 11 ans : adolescents, jeunes adultes, équipes.',
+      duree: '20 minutes. Une salle dégagée ou un espace extérieur plat.',
+      materiel: 'Aucun. Un minuteur si vous voulez fixer un temps.',
+      objectifs: [
+        'Chaque participant propose au moins une idée au groupe.',
+        'Le groupe défait le nœud, ou décide ensemble d’arrêter.',
+        'Au bilan, chacun nomme une chose qui a aidé le groupe.',
+      ],
+      consigne: '« Fermez le cercle, épaule contre épaule. Tendez les mains au centre et attrapez deux mains différentes, pas celles de vos voisins. Maintenant, sans lâcher, on redevient un cercle. On ne tire pas, on parle doucement. »',
+      deroule: [
+        ['0 à 3 min', 'Accueil et règles : on ne lâche pas, on ne tire pas, on s’arrête si quelqu’un a mal.'],
+        ['3 à 5 min', 'Formation du nœud. L’adulte vérifie que personne ne tient deux fois la même personne.'],
+        ['5 à 15 min', 'Le groupe démêle. L’adulte n’aide pas ; il peut proposer un « temps mort » de 30 secondes si la tension monte.'],
+        ['15 à 20 min', 'Retour au calme, assis : « Qu’est-ce qui a aidé ? Qu’est-ce qui a gêné ? Qui a eu une idée qui a marché ? »'],
+      ],
+      variantes: [
+        'Sans contact : « le compte jusqu’à 20 ». Chacun dit un nombre à son tour, sans se concerter ; si deux voix parlent ensemble, on recommence à 1.',
+        'Pour qui ne veut pas parler devant le groupe : le rôle d’observateur, qui note ce qui aide ; au bilan, il répond par un geste ou à l’oral seul à seul.',
+        'Plus difficile : interdiction de parler, seulement des gestes.',
+      ],
+      vigilance: [
+        'Le contact physique se propose, il ne s’impose pas : gardez la variante sans contact prête.',
+        'Poignets et épaules : on desserre la prise dès qu’un participant grimace.',
+        'Un groupe tendu ou qui se moque : l’adulte reste dans le cercle et arrête à temps.',
+      ],
+      observe: [
+        'Qui prend la parole, qui écoute, comment le groupe tranche entre deux idées.',
+        'Comment la frustration est gérée quand ça bloque.',
+        'Ce que les participants disent eux-mêmes au bilan.',
+      ],
+    }),
+    fictif: false,
+  },
+  {
+    id: 'activite-meteo-du-jour',
+    kicker: 'Activité · rituel d’accueil',
+    titre1: 'La météo du jour',
+    titre2: 'un accueil en 10 minutes',
+    sous: 'chacun dit comment il arrive',
+    format: 'Fiche activité · 1 page',
+    meta: '<br>4 à 10 enfants · 6 à 11 ans',
+    corps: activite({
+      essentiel: 'chaque enfant accroche sa pince sur une météo (soleil, nuage, pluie, orage) pour dire comment il arrive. L’adulte repère en deux minutes qui aura besoin d’un temps seul.',
+      pourQui: '4 à 10 enfants de 6 à 11 ans. Adaptable aux plus grands avec une échelle de 1 à 5.',
+      duree: '10 minutes, en début de journée ou de séance, dans le lieu habituel.',
+      materiel: 'L’affiche « Comment je me sens ? » ou quatre dessins de météo, une pince à linge par enfant avec son prénom.',
+      objectifs: [
+        'Chaque enfant place sa pince sans aide.',
+        'Les enfants qui le souhaitent disent une phrase sur leur météo.',
+        'L’adulte note qui a besoin d’un temps individuel dans la journée.',
+      ],
+      consigne: '« Ce matin, tu te sens plutôt soleil, nuage, pluie ou orage ? Accroche ta pince. Tu peux dire pourquoi si tu veux, tu n’es pas obligé. »',
+      deroule: [
+        ['0 à 2 min', 'Accueil, rappel de la règle : on a le droit de ne pas parler, on ne commente pas la météo des autres.'],
+        ['2 à 6 min', 'Chaque enfant accroche sa pince, à son rythme.'],
+        ['6 à 9 min', 'Tour de parole volontaire : « Aujourd’hui je suis plutôt… parce que… »'],
+        ['9 à 10 min', 'L’adulte remercie, sans commenter, et rappelle qu’on peut changer sa pince dans la journée.'],
+      ],
+      variantes: [
+        'Enfants qui ne lisent pas : les dessins seuls, sans les mots.',
+        'Sans parole : montrer du doigt ou poser un objet sur l’image.',
+        'Adolescents : une échelle de 1 à 5, ou des mots qu’ils choisissent eux-mêmes.',
+      ],
+      vigilance: [
+        'Ne jamais obliger à se justifier, ni classer les enfants entre eux.',
+        'Un « orage » qui revient plusieurs jours : un échange seul à seul plus tard, puis en équipe.',
+        'Ce n’est pas une évaluation de l’enfant : la météo ne va pas dans un dossier.',
+      ],
+      observe: [
+        'Qui place sa pince seul, qui a besoin d’être accompagné.',
+        'Les changements de pince au cours de la journée, s’il y en a.',
+        'Ce que les enfants choisissent de dire, mot pour mot.',
+      ],
+    }),
+  },
+  {
+    id: 'activite-grand-jeu-cinq-iles',
+    kicker: 'Animation · grand jeu',
+    titre1: 'Le trésor',
+    titre2: 'des cinq îles',
+    sous: 'un grand jeu de coopération',
+    format: 'Fiche grand jeu · 1 page',
+    meta: '<br>20 à 30 enfants · 8 à 12 ans',
+    corps: blocs(
+      `<div class="bandeau"><b>L’imaginaire :</b> un vieux capitaine a déchiré sa carte au trésor en cinq morceaux, gardés sur cinq îles. Chaque équipe gagne un morceau sur chaque île. Le trésor ne s’ouvre que si <b>toutes</b> les équipes assemblent leur carte : on gagne ensemble.</div>`,
+      g(3,
+        bloc('Pour qui', '20 à 30 enfants de 8 à 12 ans, en 5 équipes de 4 à 6.', 'indigo'),
+        bloc('Durée et lieu', '1 h 30 en extérieur, terrain délimité et visible. Repli en salle : une île par table.', 'indigo'),
+        bloc('Équipe', 'Un gardien par île, plus un référent sécurité et horaires. Respectez le taux d’encadrement de votre accueil.', 'indigo'),
+      ),
+      g(2,
+        bloc('Les cinq îles', puces([
+          '<b>Île du silence</b> : faire passer un objet de main en main, sans un mot, en moins d’une minute.',
+          '<b>Île des mots</b> : trouver dix mots qui commencent par la lettre tirée au sort.',
+          '<b>Île de l’équilibre</b> : traverser un chemin tracé à la craie en se tenant par les épaules.',
+          '<b>Île des énigmes</b> : résoudre trois devinettes, en se mettant d’accord sur chaque réponse.',
+          '<b>Île des bâtisseurs</b> : construire la plus haute tour possible avec dix gobelets.',
+        ])),
+        bloc('Les règles, à lire aux enfants', `<p class="dit">« Votre équipe reste toujours ensemble. On marche entre les îles, on ne court pas. Au coup de sifflet, on change d’île. Sur chaque île, le gardien vous donne un morceau de carte quand vous avez essayé ensemble, même si vous n’avez pas réussi du premier coup. »</p>`, 'jaune'),
+      ),
+      bloc('Déroulé minuté', etapes([
+        ['0 à 10 min', 'Lancement : un animateur lit la lettre du capitaine, les équipes reçoivent leur couleur.'],
+        ['10 à 70 min', 'Rotation : 10 minutes par île, déplacements compris. On compte les enfants à chaque changement.'],
+        ['70 à 80 min', 'Les cinq équipes assemblent leurs cartes et trouvent ensemble le coffre (un goûter ou un objet à partager).'],
+        ['80 à 90 min', 'Retour au calme : chaque équipe raconte son île préférée et ce qui l’a aidée.'],
+      ])),
+      g(2,
+        bloc('Matériel', puces(['5 cartes découpées en 5 morceaux, une couleur par équipe', 'Craie, 10 gobelets, un petit objet, les devinettes écrites', 'Sifflet, trousse de secours, eau, liste des enfants par équipe']), 'vert'),
+        bloc('Sécurité', puces(['Terrain délimité et visible depuis chaque île', 'Le référent sécurité ne tient pas d’île : il circule', 'Chaleur ou pluie : raccourcir les rotations ou passer en salle']), 'corail'),
+      ),
+    ),
+  },
+  {
+    id: 'activite-brochettes-de-fruits',
+    kicker: 'Activité · cuisine sans cuisson',
+    titre1: 'Les brochettes',
+    titre2: 'de fruits en étapes',
+    sous: 'avec des repères visuels',
+    format: 'Fiche activité · 1 page',
+    meta: '<br>4 à 6 participants · dès 6 ans',
+    corps: activite({
+      essentiel: 'un atelier court où chacun suit six étapes affichées dans l’ordre. Il convient aux participants qui ont besoin de repères visuels et de temps d’attente courts.',
+      pourQui: '4 à 6 participants à partir de 6 ans, dont ceux qui s’appuient sur des repères visuels.',
+      duree: '45 minutes, autour d’une table, avec un point d’eau à proximité.',
+      materiel: 'Fruits lavés (banane, raisin, clémentine, fraise), piques à bout rond, couteaux à bout rond, planches, assiettes, tabliers. La bande des six étapes imprimée.',
+      objectifs: [
+        'Suivre les six étapes dans l’ordre en regardant la bande affichée.',
+        'Réaliser seul au moins une étape.',
+        'Attendre son tour pour un ustensile partagé.',
+      ],
+      consigne: '« Regardez la bande : on lave les mains, on met le tablier, on coupe, on enfile, on goûte, on range. Quand une étape est finie, on la montre du doigt. »',
+      deroule: [
+        ['0 à 5 min', 'Étapes 1 et 2 : lavage des mains et tablier, montrés par l’adulte.'],
+        ['5 à 10 min', 'Présentation des fruits : chacun en nomme un ou le montre.'],
+        ['10 à 25 min', 'Étape 3 : couper la banane en rondelles, séparer la clémentine en quartiers.'],
+        ['25 à 35 min', 'Étape 4 : enfiler les morceaux en suivant un modèle de couleurs dessiné.'],
+        ['35 à 45 min', 'Étapes 5 et 6 : dégustation, puis rangement. Chacun dit ce qu’il a réussi seul.'],
+      ],
+      variantes: [
+        'Fruits déjà coupés pour qui ne manipule pas encore le couteau.',
+        'Modèle de couleurs posé devant chaque participant.',
+        'Le droit de toucher et de sentir sans goûter.',
+      ],
+      vigilance: [
+        'Allergies et régimes : vérifiez avant l’atelier avec l’équipe et les familles.',
+        'Piques à bout rond et surveillance continue.',
+        'Hygiène : mains lavées, plan de travail nettoyé.',
+      ],
+      observe: [
+        'Les étapes faites seul, celles faites avec aide.',
+        'Le recours à la bande affichée sans qu’on le rappelle.',
+        'L’attente du tour : spontanée, rappelée, difficile.',
+      ],
+    }),
+  },
+  {
+    id: 'activite-boite-a-sons',
+    kicker: 'Activité · retour au calme',
+    titre1: 'La boîte',
+    titre2: 'à sons',
+    sous: 'un retour au calme en 15 minutes',
+    format: 'Fiche activité · 1 page',
+    meta: '<br>6 à 15 participants · dès 5 ans',
+    corps: activite({
+      essentiel: 'l’adulte fait entendre des sons du quotidien cachés dans une boîte. Pour deviner, il faut se taire et écouter : le groupe redescend sans qu’on ait à le demander.',
+      pourQui: '6 à 15 participants à partir de 5 ans, après un temps agité ou avant un temps calme.',
+      duree: '15 minutes, dans une salle où l’on peut baisser la lumière.',
+      materiel: 'Une boîte ou un paravent, 4 à 6 objets sonores : trousseau de clés, papier froissé, verre et cuillère, boîte de riz, livre qu’on feuillette.',
+      objectifs: [
+        'Rester installé cinq minutes de suite.',
+        'Reconnaître au moins deux sons.',
+        'Revenir à un niveau sonore calme avant l’activité suivante.',
+      ],
+      consigne: '« Installez-vous comme vous voulez. Je vais faire des sons. Gardez la réponse dans votre tête, on la dira tous ensemble à la fin. »',
+      deroule: [
+        ['0 à 2 min', 'Installation : lumière baissée, chacun choisit sa place, assis ou allongé.'],
+        ['2 à 4 min', 'Trois respirations guidées : « On gonfle le ventre comme un ballon, puis on le vide doucement. »'],
+        ['4 à 11 min', 'Un son à la fois, deux fois chacun. Après chaque son, on révèle l’objet.'],
+        ['11 à 14 min', 'Le dernier son est très doux, puis on écoute le silence vingt secondes.'],
+        ['14 à 15 min', 'On se relève lentement et on dit un son qu’on a aimé.'],
+      ],
+      variantes: [
+        'Adolescents : yeux fermés, on lève la main quand on a trouvé.',
+        'Pour qui supporte mal le bruit : sons doux seulement, casque disponible.',
+        'Un participant devient celui qui fait les sons.',
+      ],
+      vigilance: [
+        'Aucun son fort ou surprenant.',
+        'Fermer les yeux reste un choix.',
+        'Un participant qui ne tient pas allongé peut rester assis ou dessiner.',
+      ],
+      observe: [
+        'Le temps pendant lequel chacun reste installé.',
+        'Le niveau sonore du groupe avant et après.',
+        'Les sons reconnus, et ce qui a plu.',
+      ],
+    }),
+  },
+
+  // ═══ TRAMES D'ÉCRITS ═════════════════════════════════════════════════════
+  {
+    id: 'trame-note-observation',
+    kicker: 'Trame d’écrit · à remplir',
+    titre1: 'Note',
+    titre2: 'd’observation',
+    sous: 'les faits d’abord, les hypothèses ensuite',
+    format: 'Trame · 1 page',
+    corps: blocs(
+      `<div class="bandeau"><b>Le test qui tranche :</b> une caméra aurait-elle pu filmer cette phrase ? Si oui, c’est un fait. Sinon, c’est une hypothèse, et elle s’annonce : « je fais l’hypothèse que… ».</div>`,
+      g(3,
+        `<div class="cadre"><div class="etiquette">Date et heure</div></div>`,
+        `<div class="cadre"><div class="etiquette">Lieu et activité</div></div>`,
+        `<div class="cadre"><div class="etiquette">Présents</div></div>`,
+      ),
+      bloc('Ce que j’ai vu et entendu', L(6)),
+      bloc('Paroles rapportées, entre guillemets', L(3), 'indigo'),
+      bloc('Mes hypothèses, présentées comme telles', L(3), 'jaune'),
+      g(2, bloc('Ce que je propose', L(3), 'vert'), bloc('À compléter avant de transmettre', L(3), 'corail')),
+    ),
+  },
+  {
+    id: 'trame-transmission',
+    kicker: 'Trame d’écrit · à remplir',
+    titre1: 'Transmission',
+    titre2: 'à l’équipe suivante',
+    sous: 'à lire en trente secondes',
+    format: 'Trame · 2 transmissions par page',
+    corps: blocs(
+      `<div class="bandeau"><b>La règle :</b> une transmission dit ce que l’équipe suivante doit savoir et faire. Une ligne par information, des faits, pas de récit.</div>`,
+      ...[1, 2].map(() => `<div class="bloc"><h2>Transmission du ____ / ____ · de ________ à ________</h2><div class="c">${g(3,
+        `<div><div class="etiquette">À savoir</div>${L(4)}</div>`,
+        `<div><div class="etiquette">À faire</div>${L(4)}</div>`,
+        `<div><div class="etiquette">Points de vigilance</div>${L(4)}</div>`,
+      )}</div></div>`),
+      `<div class="aretenir"><h3>Avant de la laisser</h3>${puces(['Chaque ligne commence par qui ou quoi : un prénom, un lieu, un horaire.', 'Une heure précise vaut mieux que « en fin de journée ».', 'Ce qui ne peut pas attendre se dit aussi de vive voix.'])}</div>`,
+    ),
+  },
+  {
+    id: 'trame-compte-rendu-reunion',
+    kicker: 'Trame d’écrit · à remplir',
+    titre1: 'Compte rendu',
+    titre2: 'de réunion',
+    sous: 'décisions et qui fait quoi',
+    format: 'Trame · 1 page',
+    corps: blocs(
+      g(3,
+        `<div class="cadre"><div class="etiquette">Date et lieu</div></div>`,
+        `<div class="cadre"><div class="etiquette">Présents</div></div>`,
+        `<div class="cadre"><div class="etiquette">Excusés</div></div>`,
+      ),
+      bloc('Ordre du jour', L(2), 'indigo'),
+      bloc('Points abordés : l’essentiel, pas le mot à mot', L(5)),
+      bloc('Décisions prises', L(3), 'vert'),
+      bloc('Qui fait quoi, pour quand', `<table><tr><th>Action</th><th style="width:30%">Qui</th><th style="width:20%">Pour quand</th></tr>${'<tr><td class="vide"></td><td></td><td></td></tr>'.repeat(4)}</table>`, 'jaune'),
+      `<div class="cadre" style="min-height:14mm"><div class="etiquette">Prochaine réunion</div></div>`,
+    ),
+  },
+  {
+    id: 'trame-bilan-action',
+    kicker: 'Associations · à remplir',
+    titre1: 'Bilan',
+    titre2: 'd’une action',
+    sous: 'pour le bureau ou le financeur',
+    format: 'Trame · 1 page',
+    corps: blocs(
+      `<div class="bandeau"><b>La règle :</b> un bilan dit ce qui a été fait et ce qu’on a constaté, avec des chiffres réels. Un effet qu’on ne peut pas montrer s’écrit comme une hypothèse ou ne s’écrit pas.</div>`,
+      g(3,
+        `<div class="cadre"><div class="etiquette">Action</div></div>`,
+        `<div class="cadre"><div class="etiquette">Période</div></div>`,
+        `<div class="cadre"><div class="etiquette">Public visé</div></div>`,
+      ),
+      bloc('Prévu et réalisé', `<table><tr><th>Ce qui était prévu</th><th>Ce qui a été réalisé</th><th style="width:22%">Écart et pourquoi</th></tr>${'<tr><td class="vide"></td><td></td><td></td></tr>'.repeat(3)}</table>`),
+      g(2,
+        bloc('Participation (chiffres réels)', L(4), 'indigo'),
+        bloc('Effets constatés, et comment on le sait', L(4), 'vert'),
+      ),
+      g(2, bloc('Difficultés', L(3), 'corail'), bloc('Suites proposées', L(3), 'jaune')),
+      `<div class="cadre" style="min-height:14mm"><div class="etiquette">Pièces jointes (feuilles d’émargement, photos autorisées, questionnaires)</div></div>`,
+    ),
+  },
+  {
+    id: 'memo-faits-jugements',
+    kicker: 'Mémo · observer et écrire',
+    titre1: 'Faits, hypothèses',
+    titre2: 'ou jugements ?',
+    sous: 'huit exemples avant / après',
+    format: 'Mémo · 1 page',
+    fictif: true,
+    corps: blocs(
+      `<div class="bandeau"><b>Pourquoi c’est important :</b> la personne et sa famille peuvent lire ce qui est écrit sur elles. Un jugement voyage d’un écrit à l’autre ; un fait daté peut se vérifier et se discuter.</div>`,
+      bloc('Huit phrases reprises (exemples fictifs)', `<table><tr><th style="width:38%">Avant : ce qu’on écrit vite</th><th>Après : ce qu’on a vu ou entendu</th></tr>${[
+        ['« Elle est paresseuse. »', 'Elle n’a pas commencé l’exercice pendant les quinze minutes prévues.'],
+        ['« Il est insolent. »', 'Quand je lui ai demandé de ranger, il a répondu : « T’es pas ma mère. »'],
+        ['« La famille ne s’investit pas. »', 'La mère n’est pas venue aux deux derniers rendez-vous et n’a pas prévenu.'],
+        ['« Il ne fait aucun effort. »', 'Il a refusé les trois activités proposées cet après-midi.'],
+        ['« Elle ne tient pas en place. »', 'Elle s’est levée six fois pendant le repas, qui a duré trente minutes.'],
+        ['« Le groupe était ingérable. »', 'Quatre jeunes sur huit sont sortis de la salle avant la fin.'],
+        ['« Il manipule les adultes. »', 'Il a demandé la même autorisation à trois adultes en une heure.'],
+        ['« Elle va mieux. »', 'Elle a participé aux trois ateliers de la semaine, contre un la semaine précédente.'],
+      ].map(([a, b]) => `<tr><td class="avant">${a}</td><td class="apres">${b}</td></tr>`).join('')}</table>`),
+      g(2,
+        bloc('Trois réflexes', puces(['Remplacer chaque adjectif par ce qui l’a fait penser.', 'Dater et chiffrer quand c’est possible : une fois, trois fois, depuis lundi.', 'Annoncer une hypothèse : « je fais l’hypothèse que… », « l’équipe s’interroge sur… ».']), 'vert'),
+        bloc('Ce qui n’a pas sa place', puces(['Un diagnostic que vous n’avez pas posé.', 'Un mot de métier qui juge : « opposant », « immature ».', 'Une conclusion sans le fait qui la fonde.']), 'corail'),
+      ),
+    ),
+  },
+  {
+    id: 'memo-objectifs-observables',
+    kicker: 'Mémo · projet et objectifs',
+    titre1: 'Écrire un objectif',
+    titre2: 'qu’on peut observer',
+    sous: 'verbe d’action et critère',
+    format: 'Mémo · 1 page',
+    fictif: true,
+    corps: blocs(
+      `<div class="bandeau"><b>La formule :</b> <b>qui</b> + <b>verbe d’action</b> + <b>quoi</b> + <b>dans quelle situation</b> + <b>critère</b> + <b>échéance</b>. Le critère et l’échéance se décident en équipe : notez-les « à confirmer » tant qu’ils ne le sont pas.</div>`,
+      g(2,
+        bloc('Des verbes qu’on peut voir', `<p>nommer · demander · choisir · attendre son tour · ranger · terminer · commencer seul · participer · proposer · se déplacer · utiliser · expliquer · prévenir · saluer · refuser poliment · se servir · répondre · montrer</p>`, 'vert'),
+        bloc('Des verbes qu’on ne peut pas voir', `<p>comprendre · prendre conscience · s’épanouir · gagner en confiance · s’investir · mûrir · accepter · intégrer</p><p style="margin-top:2mm">Ils disent l’intention. Gardez-les pour le sens, et écrivez à côté ce qu’on verra.</p>`, 'corail'),
+      ),
+      bloc('Cinq objectifs repris (exemples fictifs)', `<table><tr><th style="width:38%">Avant</th><th>Après</th></tr>${[
+        ['« Gagner en autonomie. »', 'Prendre sa douche seul, le matin, avec la liste des étapes affichée, cinq jours sur sept d’ici les vacances (à confirmer).'],
+        ['« Mieux gérer sa colère. »', 'Demander une pause avec la carte prévue au lieu de quitter la salle, lors des ateliers du mardi.'],
+        ['« S’intégrer au groupe. »', 'Participer à un jeu collectif de dix minutes, une fois par jour, sur le temps d’accueil.'],
+        ['« Respecter les règles. »', 'Ranger son matériel à la fin de l’atelier, sans rappel, trois séances sur quatre.'],
+        ['« Prendre confiance en elle. »', 'Proposer une idée au groupe lors du conseil du vendredi, au moins une fois par mois.'],
+      ].map(([a, b]) => `<tr><td class="avant">${a}</td><td class="apres">${b}</td></tr>`).join('')}</table>`),
+      `<div class="aretenir"><h3>Le test</h3><p>Deux professionnels qui observent la même scène diraient-ils tous les deux « c’est atteint » ? Si oui, l’objectif est observable.</p></div>`,
+    ),
+  },
+
+  // ═══ AFFICHES ════════════════════════════════════════════════════════════
+  {
+    id: 'affiche-regles-de-vie',
+    kicker: 'Affiche · à remplir avec le groupe',
+    titre1: 'Nos règles',
+    titre2: 'de vie',
+    sous: 'décidées ensemble',
+    format: 'Affiche A4',
+    classe: 'poster',
+    corps: blocs(
+      `<div class="bandeau"><b>Mode d’emploi :</b> le groupe propose, on garde six règles au plus, écrites comme ce qu’on fait (« on lève la main ») plutôt que ce qu’on interdit. Chacun signe.</div>`,
+      `<div class="grille g2" style="flex:1">${[1, 2, 3, 4, 5, 6].map((n) => `<div class="cadre" style="display:flex;gap:4mm;align-items:flex-start;min-height:36mm"><span style="font-size:26pt;font-weight:800;color:var(--indigo);line-height:1">${n}</span><span style="flex:1">${L(3)}</span></div>`).join('')}</div>`,
+      `<div class="cadre" style="min-height:30mm"><div class="etiquette">Signé par le groupe le ____ / ____ / ________</div></div>`,
+    ),
+  },
+  {
+    id: 'affiche-etapes-de-ma-journee',
+    kicker: 'Affiche · repères',
+    titre1: 'Les étapes',
+    titre2: 'de ma journée',
+    sous: 'je regarde, je fais, je coche',
+    format: 'Affiche A4',
+    classe: 'poster',
+    corps: blocs(
+      `<div class="bandeau"><b>Mode d’emploi :</b> dans chaque case, une heure, un mot et un dessin ou une photo. Une seule étape par case, dans l’ordre réel de la journée. On coche quand c’est fait.</div>`,
+      `<div class="grille g2" style="flex:1">${[1, 2, 3, 4, 5, 6, 7, 8].map((n) => `<div class="cadre" style="display:grid;grid-template-columns:22mm 1fr 9mm;gap:3mm;align-items:center;min-height:42mm"><div style="border:1.4px solid var(--ligne);border-radius:2mm;height:30mm;display:grid;place-items:center;font-size:7pt;text-align:center">dessin ou photo</div><div><div class="etiquette">Étape ${n} · ____ h ____</div>${L(2)}</div><div style="width:8mm;height:8mm;border:2px solid var(--vert);border-radius:1.6mm"></div></div>`).join('')}</div>`,
+    ),
+  },
+  {
+    id: 'affiche-comment-je-me-sens',
+    kicker: 'Affiche · émotions',
+    titre1: 'Comment',
+    titre2: 'je me sens ?',
+    sous: 'je montre, je choisis ce qui m’aide',
+    format: 'Affiche A4',
+    classe: 'poster',
+    corps: blocs(
+      `<div style="display:flex;flex-direction:column;gap:3.5mm;flex:1">${[
+        ['#1f8a5b', 'Je suis calme', 'Je peux continuer ce que je fais.'],
+        ['#7cb342', 'Ça va à peu près', 'Je respire lentement trois fois.'],
+        ['#f4c542', 'Je commence à m’énerver', 'Je préviens un adulte ou je prends ma carte pause.'],
+        ['#f08a3c', 'Je suis très énervé', 'Je vais dans le coin calme, l’adulte vient me voir.'],
+        ['#d9454b', 'J’ai besoin d’aide maintenant', 'Je reste à côté de l’adulte, on attend ensemble que ça redescende.'],
+      ].map(([c, t, a], i) => `<div style="display:grid;grid-template-columns:22mm 1fr;gap:4mm;align-items:stretch;flex:1"><div style="background:${c};border-radius:3mm;display:grid;place-items:center;color:#fff;font-size:26pt;font-weight:800">${5 - i}</div><div class="cadre" style="min-height:0;display:flex;flex-direction:column;justify-content:center;border-color:${c}"><div style="font-size:15pt;font-weight:700;color:var(--navy)">${t}</div><div style="font-size:11pt;margin-top:1mm">${a}</div></div></div>`).join('')}</div>`,
+      `<p style="font-size:8pt;color:var(--gris)">À adapter avec la personne : les mots, les couleurs et ce qui l’aide sont les siens. Ce support ne remplace pas le projet d’accompagnement.</p>`,
+    ),
+  },
+
+  // ═══ PRÉSENTATIONS (A4 paysage) ═════════════════════════════════════════
+  {
+    id: 'presentation-atelier-familles',
+    kicker: 'Présentation · à compléter',
+    titre1: 'Présenter un atelier',
+    titre2: 'aux familles',
+    format: 'Présentation · 6 diapositives',
+    paysage: true,
+    pages: () => diapos('Présenter un atelier aux familles', [
+      ['Le titre', 'Le nom de l’atelier', ['Une phrase qui dit ce que les enfants vont faire', 'Le nom de votre structure et la date de la réunion']],
+      ['Pourquoi', 'Pourquoi cet atelier', ['Ce que vous avez remarqué dans le groupe', 'Ce que l’atelier doit permettre, en mots simples', 'Ce que l’atelier n’est pas (ni un cours, ni un soin)']],
+      ['Le cadre', 'Comment ça se passe', ['Jour, horaire et lieu', 'Qui encadre, combien d’enfants', 'Combien de séances, jusqu’à quand']],
+      ['Une séance', 'Ce que votre enfant va faire', ['Le déroulé d’une séance, en trois temps', 'Une photo ou un dessin du matériel', 'Ce qu’il pourra montrer ou raconter à la maison']],
+      ['Vous', 'Ce dont nous avons besoin de vous', ['Les autorisations à signer', 'La tenue ou le matériel à prévoir', 'Ce qu’il est utile de nous dire avant (allergies, peurs, habitudes)']],
+      ['Questions', 'Vos questions', ['Qui contacter, et comment', 'Quand vous aurez des nouvelles de l’atelier', 'Merci !']],
+    ]),
+  },
+  {
+    id: 'presentation-accueil-benevole',
+    kicker: 'Associations · présentation à compléter',
+    titre1: 'Accueillir',
+    titre2: 'un nouveau bénévole',
+    format: 'Présentation · 6 diapositives',
+    paysage: true,
+    pages: () => diapos('Accueillir un nouveau bénévole', [
+      ['Bienvenue', 'Bienvenue dans l’association', ['Le prénom du bénévole, la date', 'Qui l’accueille aujourd’hui']],
+      ['Nous', 'L’association en trois phrases', ['Ce que nous faisons, pour qui', 'Où et quand nous agissons', 'Ce dont nous sommes fiers']],
+      ['Votre rôle', 'Ce que vous allez faire', ['Vos missions, en verbes d’action', 'Avec qui vous travaillez', 'Ce que vous n’avez pas à faire seul']],
+      ['Les règles', 'Les règles à connaître', ['Confidentialité : ce qu’on voit et entend ici reste ici', 'Sécurité et gestes à connaître', 'Horaires, absences : qui prévenir']],
+      ['Contacts', 'Qui contacter', ['Votre référent, et comment le joindre', 'En cas d’urgence', 'Pour une question pratique']],
+      ['La suite', 'Votre première semaine', ['Ce que vous allez découvrir', 'Le point d’étape prévu avec votre référent', 'Merci de nous rejoindre !']],
+    ]),
+  },
+];
+
+/** Diaporama A4 paysage : une page de titre, puis les diapositives à compléter. */
+function diapos(titre, liste) {
+  return liste.map(([court, grand, items], i) => `<section class="page paysage diapo">
+    <div class="kicker">${String(i + 1).padStart(2, '0')} · ${court}</div>
+    <div class="titre-diapo">${grand}</div>
+    <div class="zone"><div class="etiquette">À écrire ici</div><ul class="puces">${items.map((x) => `<li>${x}</li>`).join('')}</ul></div>
+    <div class="num">${titre} · modèle gratuit ADéPA · les-extras.fr/ressources · ${i + 1} / ${liste.length}</div>
+  </section>`);
+}

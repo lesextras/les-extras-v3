@@ -20,6 +20,8 @@ const links = [
   // cliquer « LEX » renvoyait donc à l'accueil pour trois paragraphes, et la
   // page /lex — qui raconte l'offre en entier — n'était liée de nulle part.
   { label: 'LEX', href: '/lex' },
+  // Les ressources gratuites (01/10/2026) : ce qui attire, LEX ce qui se paie.
+  { label: 'Ressources', href: '/ressources' },
   { label: 'Édublog', href: '/edublog' },
   // « Tarifs » et « Aide » ont quitté la barre le 5/8/2026 (demande Siham).
   // Sept entrées, c'était trop : les produits — ce qu'on est venu chercher —

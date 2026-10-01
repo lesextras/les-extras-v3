@@ -155,7 +155,11 @@ export default async function LexCreditsPage({
   const repere = planActif?.monthlyCredits ?? offreGratuite.mensuel;
   // Les formules d'établissement ne sont montrées qu'aux établissements, et
   // réciproquement : afficher les deux transformait un tarif en énigme.
-  const formules = plans.filter((p) => p.pour === session.account.type);
+  // ⚠ TOUT LE MONDE VOIT LES DEUX FAMILLES (01/10/2026, décision de Siham) :
+  // chacun peut s'abonner pour lui-même, et une personne peut aussi prendre
+  // l'offre équipe pour sa structure et en partager les crédits. Le filtre
+  // par type de compte laissait un compte PARTICULIER sans aucune formule.
+  const formules = [...plans].sort((a, b) => Number(a.pour === "ESTABLISHMENT") - Number(b.pour === "ESTABLISHMENT"));
   const pilote = true; // plus de rôles sur Les Extras (24/09/2026)
   const pct = Math.max(0, Math.min(100, Math.round((credits / repere) * 100)));
 

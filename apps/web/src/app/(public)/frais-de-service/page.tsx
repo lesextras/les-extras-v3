@@ -41,7 +41,7 @@ const PAYANT = [
     titre: "Vous utilisez LEX, l’assistant IA",
     prix: "À crédits, un crédit par génération",
     detail:
-      "Écrits professionnels, activités, fiches pré-remplies : chaque génération consomme un crédit. 15 générations offertes chaque mois, sans carte bancaire et sans date de fin ; au-delà, LEX à 19 € par mois pour 200 générations, ou un pack dès 9 €. L’Assistant d’aide reste gratuit.",
+      "Écrits professionnels, activités, fiches pré-remplies : chaque génération consomme un crédit. 15 générations offertes chaque mois, sans carte bancaire et sans date de fin ; au-delà, un pack de 20 résultats à 4,90 € sans abonnement, LEX à 9,90 € par mois pour 60 résultats, ou 89 € par mois pour toute une équipe. L’Assistant d’aide reste gratuit.",
   },
 ];
 

@@ -44,9 +44,9 @@ import { OffreLex } from "@/app/_shared/OffreLex";
  * qui fait foi, jamais la mémoire du projet.
  */
 export const metadata: Metadata = metaPublique({
-  title: "LEX, l’assistant d’écriture des professionnels du médico-social",
+  title: "LEX, vos activités et vos écrits du quotidien",
   description:
-    "Rapports, synthèses, transmissions : LEX met en forme vos observations sans jamais voir un nom. Quinze générations offertes chaque mois, sans carte bancaire.",
+    "Préparer une activité, améliorer un écrit, mettre vos notes en compte rendu : LEX le fait en quelques étapes. Quinze résultats offerts par mois.",
   path: "/lex",
 });
 
@@ -57,33 +57,38 @@ export const metadata: Metadata = metaPublique({
  * en vrai — pas sur le nom de l'outil. L'outil est nommé dans `reponse`, et
  * seulement là. Inverser les deux redonnerait une plaquette.
  */
+/*
+ * ⚠⚠ LES TROIS TÂCHES DU 1er OCTOBRE 2026 (décision de Siham) : LEX devient
+ * l'outil du quotidien de l'éducation, de l'animation, de la protection de
+ * l'enfance, du handicap, du social et des associations. Ce sont les trois
+ * entrées du nouvel écran (`LexQuotidien`), dans le même ordre.
+ */
 const MOMENTS = [
   {
-    icone: PenLine,
-    quand: "Le soir, après le service",
-    probleme:
-      "« Le rapport de situation est pour demain. J’ai tout en tête, et je n’arrive pas à commencer. »",
-    reponse:
-      "Vous dictez ou collez vos notes telles qu’elles viennent. LEX rend un texte structuré, avec ce qui est observé d’un côté et ce qui est interprété de l’autre, que vous relisez et corrigez.",
-    preuve: "Cinq trames : observation, synthèse, rapport, transmission, projet personnalisé.",
-  },
-  {
     icone: Sparkles,
-    quand: "La veille d’une séance",
+    quand: "Préparer ou adapter une activité",
     probleme:
       "« Il faut faire quelque chose demain avec le groupe, et je n’ai ni idée ni temps de préparer. »",
     reponse:
-      "Vous décrivez le besoin réel, l’âge, le nombre, ce qui coince. LEX propose une séance complète : objectifs, matériel, déroulé en quatre temps, points de vigilance.",
-    preuve: "Une séance construite en quinze secondes, à ajuster ensuite.",
+      "Vous donnez l’objectif, l’âge, le nombre et la durée. LEX rend une fiche : déroulé minuté, consignes, variantes, points de vigilance. Une adaptation part des besoins que vous décrivez, jamais d’un diagnostic.",
+    preuve: "Des fiches gratuites à télécharger, ou adaptées à votre groupe.",
+  },
+  {
+    icone: PenLine,
+    quand: "Améliorer mon écrit",
+    probleme: "« Mon texte est trop long, et ma cheffe dit qu’il y a des jugements dedans. »",
+    reponse:
+      "Vous collez votre texte et vous choisissez : plus clair, plus factuel, plus court, ou objectifs observables. LEX rend la version proposée et signale les formulations à vérifier.",
+    preuve: "Rien n’est ajouté : ce qui manque est posé en question.",
   },
   {
     icone: BookOpen,
-    quand: "Quand il faut publier",
+    quand: "Mes notes en compte rendu",
     probleme:
-      "« Mon atelier est prêt depuis six mois. C’est la fiche à écrire qui me bloque. »",
+      "« Le rapport est pour demain. J’ai tout en tête, et je n’arrive pas à commencer. »",
     reponse:
-      "Trois lignes de brief suffisent : LEX remplit le titre, la description, le public, la durée et les objectifs. Vous corrigez, vous publiez.",
-    preuve: "C’est la friction numéro un des intervenants qui rejoignent le réseau.",
+      "Vous collez vos notes telles qu’elles viennent. LEX rend une note d’observation, une transmission, un compte rendu de réunion ou d’activité, un bilan, avec ce qui reste à compléter.",
+    preuve: "Vous relisez, vous corrigez, vous signez.",
   },
 ];
 
@@ -108,49 +113,51 @@ const JAMAIS = [
 ];
 
 /**
- * ⚠ LES MONTANTS SONT EN EUROS ENTIERS PARCE QUE LE CODE LES POSE AINSI
- * (1900, 4900, 8900, 900, 1900, 3900 centimes). Ne jamais écrire ici un prix
- * qui n'existe pas dans `billing.service.ts` — la règle n° 2 de ce projet.
+ * ⚠ GRILLE DU 1er OCTOBRE 2026 (décision de Siham), relue dans
+ * `billing.service.ts` : CREDIT_PACKS (490 centimes, 20 crédits),
+ * SUBSCRIPTION_PLANS (990 centimes, 60 par mois), ESTABLISHMENT_PLAN (8900
+ * centimes, 1 000 par mois) et FREE_MONTHLY_CREDITS (15). Trois choix payants,
+ * les mêmes fonctions partout : seule la quantité change. Ne jamais écrire
+ * ici un prix qui n'existe pas dans le code.
  */
 const FORMULES = [
   {
     nom: "Le compte gratuit",
     prix: "0 €",
-    precision: "quinze générations chaque mois",
-    pour: "Pour essayer sur de vrais écrits, sans rien engager.",
+    precision: "quinze résultats chaque mois",
+    pour: "Pour essayer sur de vraies tâches, sans rien engager.",
     points: [
       "Sans carte bancaire, sans date de fin",
-      "Les générations non utilisées se reportent trois mois",
-      "Tous les outils, sans restriction de fonction",
+      "Les résultats non utilisés se reportent trois mois",
+      "Les trois tâches, sans restriction",
     ],
     vedette: true,
   },
   {
-    nom: "LEX",
-    prix: "19 €",
-    precision: "par mois, 200 générations",
-    pour: "Pour un professionnel qui écrit toutes les semaines.",
-    points: ["Générations reportables", "Écriture, activités, fiches", "Sans engagement de durée"],
+    nom: "J’en ai besoin parfois",
+    prix: "4,90 €",
+    precision: "le pack de 20 résultats, sans abonnement",
+    pour: "Pour les semaines chargées, sans engagement.",
+    points: ["Payé une fois", "Les mêmes fonctions", "S’ajoute à votre solde"],
     vedette: false,
   },
   {
-    nom: "LEX Pro",
-    prix: "49 €",
-    precision: "par mois, 600 générations",
-    pour: "Pour un rythme d’écriture soutenu.",
-    points: ["Générations reportables", "Support prioritaire", "Accompagnement à la prise en main"],
+    nom: "Je l’utilise régulièrement",
+    prix: "9,90 €",
+    precision: "par mois, 60 résultats",
+    pour: "Pour un professionnel qui prépare et écrit chaque semaine.",
+    points: ["Résultats reportables", "Les mêmes fonctions", "Sans engagement de durée"],
     vedette: false,
   },
   {
-    nom: "LEX Équipe",
+    nom: "Pour mon équipe",
     prix: "89 €",
-    precision: "par mois, pour tout l’établissement",
+    precision: "par mois, pour toute la structure",
     pour: "Pour une équipe qui écrit avec les mêmes trames.",
     points: [
-      "1 000 générations par mois, réparties entre les personnes de votre choix",
+      "1 000 résultats par mois, répartis entre les personnes de votre choix",
       "Chacun garde son compte, avec un plafond par mois : vous voyez les chiffres, jamais les écrits",
       "Vos trames maison ouvertes à toute l’équipe",
-      "La mise en relation reste gratuite, avec ou sans abonnement",
     ],
     vedette: false,
   },
@@ -166,12 +173,13 @@ export default function LexPage() {
           LEX · l’assistant d’écriture
         </span>
         <h1 className="text-4xl font-bold tracking-tight md:text-5xl text-balance" lang="fr">
-          Il est 21&nbsp;h, le rapport est pour demain, et la page est blanche.
+          Préparez vos activités et vos écrits du quotidien, en quelques étapes.
         </h1>
         <p className="text-lg leading-relaxed text-foreground/75" lang="fr">
-          Vous avez la situation entière en tête. Ce qui manque, ce n’est pas l’analyse&nbsp;: c’est
-          la mise en forme, la phrase d’ouverture, le plan, le passage des notes du carnet à un
-          document qu’un juge, une MDPH ou une famille va lire.
+          Pour l’éducation, l’animation, la protection de l’enfance, le handicap, le social et les
+          associations. Une activité à monter pour demain, un écrit à reprendre, des notes à
+          transformer en compte rendu&nbsp;: vous choisissez la tâche, vous donnez les quelques
+          informations utiles, LEX rend un résultat court, prêt à modifier.
         </p>
         <p className="text-lg leading-relaxed text-foreground/75" lang="fr">
           LEX fait cette partie-là, et seulement celle-là. Il met en forme ce que{" "}
@@ -201,18 +209,19 @@ export default function LexPage() {
         </div>
         <p className="flex items-center gap-2 text-sm text-foreground/60">
           <Clock className="size-4 shrink-0" aria-hidden />
-          Quinze générations offertes chaque mois, sans carte bancaire et sans date de fin.
+          Quinze résultats offerts chaque mois, sans carte bancaire et sans date de fin.
         </p>
       </header>
 
       {/* ═══ 2. TROIS MOMENTS DE LA SEMAINE ════════════════════════════════ */}
       <section className="space-y-6">
         <div className="max-w-3xl space-y-3">
-          <h2 className="text-3xl font-bold tracking-tight">Trois moments où ça coince</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Trois tâches, un seul outil</h2>
           <p className="leading-relaxed text-foreground/75" lang="fr">
-            Ce ne sont pas trois fonctions du logiciel&nbsp;: ce sont trois soirées de la semaine.
-            Si aucune ne vous parle, LEX ne vous servira à rien, et il vaut mieux le savoir avant
-            de créer un compte.
+            Le premier écran de LEX pose une seule question&nbsp;: que voulez-vous terminer&nbsp;?
+            Votre métier change les exemples et les écrits proposés, pas l’outil. Si aucune de ces
+            trois tâches ne vous parle, LEX ne vous servira à rien, et il vaut mieux le savoir
+            avant de créer un compte.
           </p>
         </div>
         <ul className="grid gap-5 md:grid-cols-3">
@@ -302,8 +311,8 @@ export default function LexPage() {
         <div className="max-w-3xl space-y-3">
           <h2 className="text-3xl font-bold tracking-tight">Combien ça coûte</h2>
           <p className="leading-relaxed text-foreground/75" lang="fr">
-            Une génération = un écrit produit. Le compte gratuit n’est pas un essai&nbsp;: il n’a
-            pas de date de fin, et il suffit à beaucoup de professionnels.
+            Un crédit = un résultat&nbsp;: une fiche, un écrit amélioré ou un compte rendu. Le
+            compte gratuit n’est pas un essai&nbsp;: il n’a pas de date de fin.
           </p>
         </div>
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -335,9 +344,8 @@ export default function LexPage() {
           ))}
         </ul>
         <p className="text-sm text-foreground/70" lang="fr">
-          Sans abonnement, des recharges ponctuelles existent aussi&nbsp;: 25 générations pour
-          9&nbsp;€, 60 pour 19&nbsp;€, 150 pour 39&nbsp;€. Le détail de ce qui est facturé et de ce
-          qui ne l’est pas est sur{" "}
+          Copier, corriger et relire ne consomment rien, et un échec technique rend le
+          crédit. Le détail de ce qui est facturé et de ce qui ne l’est pas est sur{" "}
           <Link href="/frais-de-service" className="font-semibold text-primary hover:underline">
             la page des frais de service
           </Link>
@@ -359,6 +367,13 @@ export default function LexPage() {
           pas.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/ressources"
+            className="inline-flex h-11 items-center gap-2 rounded-lg border border-border px-5 text-sm font-semibold transition hover:bg-muted"
+          >
+            Les ressources gratuites à télécharger
+            <ArrowRight className="size-4" aria-hidden />
+          </Link>
           <Link
             href="/guides"
             className="inline-flex h-11 items-center gap-2 rounded-lg border border-border px-5 text-sm font-semibold transition hover:bg-muted"

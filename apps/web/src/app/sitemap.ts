@@ -101,6 +101,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Le carrefour des guides des écrits professionnels. Les guides eux-mêmes
     // sont ajoutés plus bas, comme les rubriques d'aide.
     "/guides",
+    // Les ressources gratuites à télécharger (01/10/2026).
+    "/ressources",
     // ⚠ `/lex` ET `/confiance-lex` NE FONT PAS DOUBLON : la première répond à
     // « est-ce que ça va m'aider, moi, ce soir ? » (le professionnel), la
     // seconde à « ai-je le droit de m'en servir sur un enfant placé ? » (la

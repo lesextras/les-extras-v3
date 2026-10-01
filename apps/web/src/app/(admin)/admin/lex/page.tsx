@@ -45,8 +45,9 @@ const euros = (cents: number) =>
   (cents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
 
 const PLAN_LABEL: Record<string, string> = {
-  "plan-essentiel": "LEX",
-  "plan-pro": "LEX Pro",
+  "plan-lex": "LEX régulier",
+  "plan-essentiel": "LEX (ancienne grille)",
+  "plan-pro": "LEX Pro (ancienne grille)",
 };
 
 const STATUT_ACHAT: Record<string, { label: string; variant: "success" | "warning" | "muted" }> = {

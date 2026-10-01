@@ -29,8 +29,9 @@ export const metadata: Metadata = metaPublique({
  *     à une équivalence.
  *
  * Les prix concurrents sont relevés le 2 septembre 2026 sur les pages tarifs
- * publiques. Les nôtres viennent du code (`billing.service.ts`) : 19 € pour
- * 200 générations, 49 € pour 600, dotation gratuite de 15 par mois.
+ * publiques. Les nôtres viennent du code (`billing.service.ts`), grille du
+ * 1er octobre 2026 : 4,90 € le pack de 20, 9,90 € par mois pour 60, 89 € par
+ * mois pour une équipe (1 000), dotation gratuite de 15 par mois.
  */
 
 const RELEVE_LE = '2 septembre 2026';
@@ -55,23 +56,23 @@ const OFFRES: Offre[] = [
     nous: true,
   },
   {
-    nom: 'LEX',
-    prix: '19 € / mois',
+    nom: 'LEX, pack sans abonnement',
+    prix: '4,90 €',
+    inclus: 'Un professionnel, payé une fois',
+    generations: '20 résultats',
+    unitaire: '0,245 €',
+    nous: true,
+  },
+  {
+    nom: 'LEX régulier',
+    prix: '9,90 € / mois',
     inclus: 'Un professionnel',
-    generations: '200 par mois, reportables',
-    unitaire: '0,095 €',
+    generations: '60 par mois, reportables',
+    unitaire: '0,165 €',
     nous: true,
   },
   {
-    nom: 'LEX Pro',
-    prix: '49 € / mois',
-    inclus: 'Un professionnel, support prioritaire',
-    generations: '600 par mois, reportables',
-    unitaire: '0,082 €',
-    nous: true,
-  },
-  {
-    nom: 'LEX Équipe (établissement)',
+    nom: 'LEX pour une équipe',
     prix: '89 € / mois',
     inclus: 'Les personnes de votre choix, chacune avec son compte et un plafond mensuel, trames maison partagées',
     generations: '1 000 par mois, réparties',

@@ -40,7 +40,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
       // créée le même jour, est la seule qui répond à ça, et elle appartient à
       // la colonne « Produit ». Cette colonne passe à SEPT liens, le plafond
       // fixé le 2/09 : ne rien y ajouter sans en retirer un.
-      { label: 'LEX, l’assistant d’écriture', href: '/lex' },
+      { label: 'LEX, vos activités et vos écrits', href: '/lex' },
       { label: 'Renfort par métier', href: '/renfort' },
       // « Tarifs » (/#tarifs) est retiré le 28/09/2026 avec la section de
       // l'accueil qu'il visait : il aurait mené en haut de l'accueil. La page
@@ -92,6 +92,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Ressources',
     links: [
+      { label: 'Ressources gratuites', href: '/ressources' },
       { label: 'Guides des écrits pro', href: '/guides' },
       // L'ancre `/#comment` n'existe pas sur l'accueil (les sections y sont
       // #lex, #gap, #marketplace, #tarifs) : le lien ne bougeait pas la page.
