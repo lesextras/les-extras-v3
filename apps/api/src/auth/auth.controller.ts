@@ -83,7 +83,7 @@ export class AuthController {
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.auth.demanderReinitialisation(dto.email);
+    return this.auth.demanderReinitialisation(dto.email, dto.produit);
   }
 
   /**

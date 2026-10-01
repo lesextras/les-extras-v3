@@ -691,7 +691,7 @@ export class AuthService {
    * point d'entrée devient un annuaire : il suffirait d'essayer des adresses
    * pour savoir quels établissements sont clients.
    */
-  async demanderReinitialisation(email: string) {
+  async demanderReinitialisation(email: string, produit?: 'pilote') {
     const propre = email.trim().toLowerCase();
     const user = await this.prisma.user.findUnique({
       where: { email: propre },
@@ -701,7 +701,7 @@ export class AuthService {
     if (user && user.status !== UserStatus.BANNED) {
       const token = await this.signPasswordResetToken(user.id, user.password);
       await this.mail
-        .sendPasswordReset(user.email, token, user.firstName)
+        .sendPasswordReset(user.email, token, user.firstName, produit)
         .catch(() => undefined);
     }
 
