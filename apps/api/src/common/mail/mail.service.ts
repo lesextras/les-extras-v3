@@ -1149,7 +1149,26 @@ export class MailService implements OnModuleDestroy {
    * pas une formule de politesse — c'est la seule information qui permette à
    * quelqu'un de comprendre qu'on essaie peut-être d'entrer chez lui.
    */
-  async sendPasswordReset(to: string, token: string, prenom?: string | null): Promise<void> {
+  async sendPasswordReset(to: string, token: string, prenom?: string | null, produit?: 'pilote'): Promise<void> {
+    // Demande venue de Pilote : lien vers pilote.toulali.fr, gabarit et
+    // expéditeur de Pilote. Rien de Les Extras dans le message.
+    if (produit === 'pilote') {
+      const lien = `${this.piloteUrl}/reinitialiser-mot-de-passe?token=${encodeURIComponent(token)}`;
+      await this.send(
+        to,
+        'Choisir un nouveau mot de passe',
+        this.layoutPilote(
+          `Nouveau mot de passe${prenom ? `, ${echapper(prenom)}` : ''}`,
+          `Tu as demandé à changer ton mot de passe. Le bouton ci-dessous t'y mène.
+           <br><br><strong>Ce lien est valable une heure et ne sert qu'une fois.</strong>
+           <br><br>Ce n'est pas toi ? Ignore ce message : ton mot de passe actuel reste valable.`,
+          { label: 'Choisir un nouveau mot de passe', url: lien },
+        ),
+        undefined,
+        this.expediteurPilote,
+      );
+      return;
+    }
     const url = `${this.webUrl}/reinitialiser-mot-de-passe?token=${encodeURIComponent(token)}`;
     await this.send(
       to,
