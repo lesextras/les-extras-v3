@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -21,10 +22,13 @@ import type { RequestAccount, RequestUser } from '../common/types/request-contex
 import type { FichierRecu } from '../storage/files.service';
 import { TAILLE_MAX_GLOBALE } from '../storage/file-rules';
 import { EspaceService } from './espace.service';
+import { TachesService } from './taches.service';
 import { IaFinanceursDto, IaDossierDto } from './dto/espace.dto';
 import {
   ActionDto,
   ContactDto,
+  DeplacerTacheDto,
+  FiltresTachesDto,
   MouvementDto,
   ModifierMouvementDto,
   DocumentDto,
@@ -36,8 +40,10 @@ import {
   ModifierDossierDto,
   ModifierOrganisationDto,
   ModifierPieceDto,
+  ModifierTacheDto,
   ProjetDto,
   RattacherOrganisationDto,
+  TacheDto,
   VieStatutaireDto,
 } from './dto/espace.dto';
 
@@ -51,7 +57,10 @@ import {
 @Controller('association')
 @UseGuards(JwtAuthGuard, AccountGuard)
 export class AssociationEspaceController {
-  constructor(private readonly espace: EspaceService) {}
+  constructor(
+    private readonly espace: EspaceService,
+    private readonly tachesProjets: TachesService,
+  ) {}
 
   @Get('espace')
   espaceComplet(@CurrentAccount() account: RequestAccount) {
@@ -176,6 +185,35 @@ export class AssociationEspaceController {
   @Delete('actions/:id')
   supprimerAction(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
     return this.espace.supprimerAction(account.id, id);
+  }
+
+  // ------------------------------------------------- les tâches des projets
+
+  /** Toutes les tâches (filtres : actionId, statut, responsable, miennes, ouvertes) et l'équipe à qui les attribuer. */
+  @Get('taches')
+  taches(@CurrentAccount() account: RequestAccount, @CurrentUser() user: RequestUser, @Query() filtres: FiltresTachesDto) {
+    return this.tachesProjets.taches(account.id, { id: user.id, email: user.email }, filtres);
+  }
+
+  @Post('taches')
+  creerTache(@CurrentAccount() account: RequestAccount, @Body() dto: TacheDto) {
+    return this.tachesProjets.creerTache(account.id, dto);
+  }
+
+  @Patch('taches/:id')
+  modifierTache(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Body() dto: ModifierTacheDto) {
+    return this.tachesProjets.modifierTache(account.id, id, dto);
+  }
+
+  /** Glisser-déposer dans le kanban des tâches : colonne + rang. */
+  @Post('taches/:id/deplacer')
+  deplacerTache(@CurrentAccount() account: RequestAccount, @Param('id') id: string, @Body() dto: DeplacerTacheDto) {
+    return this.tachesProjets.deplacerTache(account.id, id, dto);
+  }
+
+  @Delete('taches/:id')
+  supprimerTache(@CurrentAccount() account: RequestAccount, @Param('id') id: string) {
+    return this.tachesProjets.supprimerTache(account.id, id);
   }
 
   // --------------------------------------------------------------- l'IA

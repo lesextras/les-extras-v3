@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../_client';
+import { BadgeNature, LigneEcheance, LignePrerequis, type EcheanceEtape, type NatureEtape } from '../../_shared/chemin-obligations';
 
 /**
  * LE CHEMIN DE L'ACADÉMIE EN KANBAN, TEMPS PAR TEMPS (01/10/2026).
- * Les temps restent (Exister, Se tenir, Se certifier, puis Chaque année et
+ * Les temps restent (Exister, Se tenir, Se certifier, puis À chaque session, Chaque année et
  * Être finançable) avec leur bandeau ;
  * dans chacun, les étapes se rangent en « À faire » et « Fait ». Glisser une
  * carte coche ou décoche l'étape (POST /academie/chemin/:slug). Les étapes
@@ -36,6 +37,12 @@ export interface EtapeKanban {
   chaqueAnnee?: boolean;
   /** Peut être écartée : action « Pas concerné ». */
   peutNePasConcerner?: boolean;
+  /** Obligatoire, conseillée ou « si concerné » : un badge. */
+  nature?: NatureEtape;
+  /** L'échéance légale : une ligne à l'horloge. */
+  echeance?: EcheanceEtape;
+  /** Les étapes à faire avant : « Il faut d'abord ». */
+  prerequis?: string[];
 }
 
 export function KanbanCheminAcademie({
@@ -183,14 +190,26 @@ export function KanbanCheminAcademie({
                                       <span className="font-bold text-[#0F5F3E]">Pour passer :</span> {e.pourPasser}
                                     </p>
                                   ) : null}
-                                  {estProchaine || bloquee || e.chaqueAnnee || pasConcerne ? (
+                                  {estProchaine || bloquee || e.chaqueAnnee || pasConcerne || (!faite && e.nature) ? (
                                     <p className="mt-1 flex flex-wrap gap-1.5 text-xs font-bold">
                                       {estProchaine ? <span className="rounded-full bg-[#1E9E6A] px-2 py-0.5 text-white">Prochaine</span> : null}
                                       {bloquee ? <span className="rounded-full bg-[#E3F5EC] px-2 py-0.5 text-[#0F5F3E]">Auto</span> : null}
                                       {e.chaqueAnnee ? <span className="rounded-full bg-[#E0F4F3] px-2 py-0.5 text-[#115E59]">Chaque année</span> : null}
                                       {pasConcerne ? <span className="rounded-full bg-[#EEF0F4] px-2 py-0.5 text-[#3F4A5C]">Pas concerné</span> : null}
+                                      {faite ? null : <BadgeNature nature={e.nature} />}
                                     </p>
                                   ) : null}
+                                  {faite ? null : (
+                                    <>
+                                      <LigneEcheance echeance={e.echeance} chaqueAnnee={e.chaqueAnnee} theme="academie" />
+                                      <LignePrerequis
+                                        prerequis={e.prerequis}
+                                        etapes={etapes}
+                                        faites={etapes.filter((x) => estFaite(x.slug)).map((x) => x.slug)}
+                                        theme="academie"
+                                      />
+                                    </>
+                                  )}
                                 </div>
                                 <Link
                                   href={`/academie/chemin/${e.slug}`}

@@ -7,17 +7,23 @@
  * côté, et à chaque étape les vrais formulaires (CERFA) et des documents
  * exemples qu'on peut recopier.
  *
- * Le chemin a cinq parties :
+ * Le chemin a six parties :
  *   1. Faire naître l'association (étapes 1 à 4)
  *   2. La faire vivre (étapes 5 à 7)
  *   3. Demander une subvention ou répondre à un appel à projets (8 à 12)
- *   4. Chaque année (13 à 16) : ce qui revient tous les ans. Ces étapes
+ *   4. Chaque année (13 à 17) : ce qui revient tous les ans. Ces étapes
  *      repassent dans « À faire » au 1er janvier (voir common/chemin-suivi.ts).
- *   5. Selon ton activité (17 à 20) : ce qui ne concerne que certaines
+ *   5. Selon ton activité (18 à 24) : ce qui ne concerne que certaines
  *      associations. Chacune peut être marquée « Pas concerné ».
+ *   6. Organiser un événement (25 et 26) : la buvette, la tombola. Chacune
+ *      peut aussi être marquée « Pas concerné ».
  * La troisième est le but : c'est elle qu'on met en avant. Les parties 4 et 5
- * ont été ajoutées le 01/10/2026 ; les slugs des étapes 1 à 12 ne bougent
- * pas (les coches déjà enregistrées restent valables).
+ * ont été ajoutées le 01/10/2026, puis complétées le même jour avec la
+ * partie 6 ; les slugs ne bougent jamais (les coches enregistrées portent
+ * les slugs, pas les numéros).
+ *
+ * Chaque étape dit aussi si elle est obligatoire, ce qui la déclenche, son
+ * échéance légale et ce qu'il faut avoir fait avant (common/chemin-obligations.ts).
  *
  * Règles tenues par ce fichier :
  *  - jamais de recommandation commerciale : les renvois vont vers les services
@@ -26,11 +32,13 @@
  *  - le chemin est gratuit et le reste.
  */
 
-export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE';
+import type { ObligationEtape } from '../common/chemin-obligations';
+
+export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE' | 'EVENEMENT';
 
 export interface DescriptionPartie {
   code: PartieChemin;
-  numero: 1 | 2 | 3 | 4 | 5;
+  numero: 1 | 2 | 3 | 4 | 5 | 6;
   titre: string;
   /** Une phrase toute simple. */
   enUnMot: string;
@@ -74,6 +82,13 @@ export const PARTIES_CHEMIN: readonly DescriptionPartie[] = [
     enUnMot: "Ce qui dépend de ce que fait l'association. Si une étape ne te concerne pas, tu le dis en un clic.",
     resultat: 'Chaque obligation qui te concerne est en place, les autres sont écartées.',
   },
+  {
+    code: 'EVENEMENT',
+    numero: 6,
+    titre: 'Organiser un événement',
+    enUnMot: "Une fête, un vide-grenier, un loto : la buvette et la tombola se demandent à la mairie avant. Pas d'événement ? « Pas concerné ».",
+    resultat: 'Chaque événement a ses autorisations, demandées à temps.',
+  },
 ];
 
 export type GenreDocument = 'CERFA' | 'MODELE' | 'EXEMPLE' | 'SITE';
@@ -108,7 +123,7 @@ export interface PasAPas {
   detail: string;
 }
 
-export interface EtapeChemin {
+export interface EtapeChemin extends ObligationEtape {
   numero: number;
   slug: string;
   titre: string;
@@ -154,6 +169,8 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 1,
     slug: 'declarer-l-association',
     titre: "Déclarer l'association",
+    nature: 'OBLIGATOIRE',
+    declencheur: "Avant tout le reste : sans déclaration, pas de compte en banque, pas de subvention, pas de contrat.",
     partie: 'NAITRE',
     enUnMot: "Tu dis à l'État : « notre association existe ». En retour, tu reçois son numéro.",
     pourquoi:
@@ -256,6 +273,9 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 2,
     slug: 'obtenir-le-siret',
     titre: 'Obtenir le numéro SIRET',
+    nature: 'SI_CONCERNE',
+    declencheur: 'Dès que tu demandes une subvention, que tu embauches ou que tu paies des impôts.',
+    prerequis: ['declarer-l-association'],
     partie: 'NAITRE',
     enUnMot: "Le SIRET, c'est le numéro qui permet à quelqu'un de te verser de l'argent.",
     pourquoi:
@@ -319,6 +339,8 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 3,
     slug: 'les-cinq-pieces-d-identite',
     titre: "Les cinq papiers d'identité",
+    nature: 'CONSEILLE',
+    prerequis: ['declarer-l-association', 'obtenir-le-siret'],
     partie: 'NAITRE',
     enUnMot: "Cinq papiers que tout le monde te demandera. On les range une bonne fois.",
     pourquoi:
@@ -361,6 +383,9 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 4,
     slug: 'le-compte-bancaire-et-l-assurance',
     titre: "Le compte en banque et l'assurance",
+    nature: 'CONSEILLE',
+    declencheur: "L'assurance devient obligatoire pour certaines activités : sport, accueil de mineurs, local ouvert au public.",
+    prerequis: ['declarer-l-association'],
     partie: 'NAITRE',
     enUnMot: "Un compte à son nom pour l'argent, une assurance au cas où quelqu'un se blesse.",
     pourquoi:
@@ -414,6 +439,8 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 5,
     slug: 'les-adherents-et-les-cotisations',
     titre: 'Les membres et la cotisation',
+    nature: 'CONSEILLE',
+    prerequis: ['declarer-l-association'],
     partie: 'VIVRE',
     enUnMot: 'Qui fait partie de l\'association, et combien on paie pour en faire partie (ou rien).',
     pourquoi:
@@ -457,6 +484,9 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 6,
     slug: 'tenir-des-comptes-simples',
     titre: 'Tenir des comptes simples',
+    nature: 'SI_CONCERNE',
+    declencheur: "Obligatoire dès qu'il y a une subvention, des reçus fiscaux ou un salarié. Sinon, très conseillé.",
+    prerequis: ['le-compte-bancaire-et-l-assurance'],
     partie: 'VIVRE',
     enUnMot: "Un cahier : l'argent qui rentre à gauche, l'argent qui sort à droite.",
     pourquoi:
@@ -510,6 +540,10 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 7,
     slug: 'la-premiere-assemblee-generale',
     titre: "L'assemblée générale",
+    nature: 'OBLIGATOIRE',
+    declencheur: 'Si tes statuts la prévoient, ce qui est presque toujours le cas.',
+    echeance: { texte: 'Dans le délai fixé par tes statuts, avec une convocation envoyée à temps.' },
+    prerequis: ['les-adherents-et-les-cotisations', 'tenir-des-comptes-simples'],
     partie: 'VIVRE',
     enUnMot: "La grande réunion de l'année : les membres regardent les comptes, votent, choisissent les responsables.",
     pourquoi:
@@ -591,6 +625,7 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 8,
     slug: 'le-projet-en-une-page',
     titre: 'Raconter le projet en une page',
+    nature: 'CONSEILLE',
     partie: 'SUBVENTION',
     enUnMot: "Une page qui dit : pour qui, quoi, comment. C'est le cœur de toute demande.",
     pourquoi:
@@ -635,6 +670,9 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 9,
     slug: 'le-premier-budget',
     titre: 'Chiffrer le budget',
+    nature: 'SI_CONCERNE',
+    declencheur: 'Demandé dans toute demande de subvention.',
+    prerequis: ['le-projet-en-une-page'],
     partie: 'SUBVENTION',
     enUnMot: 'Un tableau : ce que ça va coûter à gauche, d\'où vient l\'argent à droite. Les deux totaux sont égaux.',
     pourquoi:
@@ -687,6 +725,8 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 10,
     slug: 'trouver-le-premier-financeur',
     titre: 'Trouver à qui demander',
+    nature: 'CONSEILLE',
+    prerequis: ['le-projet-en-une-page', 'le-premier-budget'],
     partie: 'SUBVENTION',
     enUnMot: "La mairie d'abord, puis l'État (le FDVA), puis le département. Et les appels à projets.",
     pourquoi:
@@ -756,6 +796,10 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 11,
     slug: 'constituer-et-deposer-le-dossier',
     titre: 'Remplir et déposer le dossier',
+    nature: 'SI_CONCERNE',
+    declencheur: "Pour toute subvention publique, avec le contrat d'engagement républicain.",
+    echeance: { texte: 'Avant la date limite du financeur.' },
+    prerequis: ['obtenir-le-siret', 'les-cinq-pieces-d-identite', 'le-premier-budget', 'trouver-le-premier-financeur'],
     partie: 'SUBVENTION',
     enUnMot: 'Le formulaire CERFA 12156, ton projet, ton budget, les papiers du classeur. Tu vérifies, tu déposes.',
     pourquoi:
@@ -843,6 +887,14 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 12,
     slug: 'rendre-compte',
     titre: "Rendre compte de l'argent reçu",
+    nature: 'SI_CONCERNE',
+    declencheur: 'Dès qu\'une subvention est reçue.',
+    echeance: {
+      texte: "Dans les 6 mois après la fin de l'exercice de la subvention, sauf autre date dans la convention.",
+      dateFixe: '06-30',
+      indicative: true,
+    },
+    prerequis: ['constituer-et-deposer-le-dossier', 'tenir-des-comptes-simples'],
     partie: 'SUBVENTION',
     enUnMot: "Tu montres ce que tu as fait avec l'argent. Sans ça, pas de subvention l'année suivante.",
     pourquoi:
@@ -900,6 +952,10 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 13,
     slug: 'assemblee-generale-de-l-annee',
     titre: "Tenir l'assemblée générale de l'année",
+    nature: 'OBLIGATOIRE',
+    declencheur: 'Chaque année, si tes statuts la prévoient (presque toujours).',
+    echeance: { texte: 'Dans le délai fixé par tes statuts, souvent dans les mois qui suivent la fin des comptes.' },
+    prerequis: ['les-adherents-et-les-cotisations', 'tenir-des-comptes-simples'],
     partie: 'CHAQUE_ANNEE',
     chaqueAnnee: true,
     enUnMot: "Une fois par an, les membres se réunissent : on raconte l'année, on montre les comptes, on vote.",
@@ -966,6 +1022,10 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 14,
     slug: 'declarer-les-changements',
     titre: "Déclarer les changements de l'année",
+    nature: 'OBLIGATOIRE',
+    declencheur: "À chaque changement de dirigeant, de siège, de nom, d'objet ou de statuts.",
+    echeance: { texte: 'Dans les 3 mois après le changement.' },
+    prerequis: ['declarer-l-association'],
     partie: 'CHAQUE_ANNEE',
     chaqueAnnee: true,
     enUnMot: 'Un nouveau président, une nouvelle adresse, des statuts modifiés : tu le déclares dans les trois mois.',
@@ -1039,6 +1099,10 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 15,
     slug: 'declarer-les-recus-fiscaux',
     titre: "Déclarer les reçus fiscaux de l'année",
+    nature: 'SI_CONCERNE',
+    declencheur: "Dès que l'association délivre des reçus fiscaux pour des dons.",
+    echeance: { texte: "Dans les 3 mois après la fin de l'exercice. Exercice civil : au plus tard le 2e jour ouvré après le 1er mai." },
+    prerequis: ['tenir-des-comptes-simples'],
     partie: 'CHAQUE_ANNEE',
     chaqueAnnee: true,
     peutNePasConcerner: true,
@@ -1099,6 +1163,10 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     numero: 16,
     slug: 'publier-les-comptes',
     titre: 'Publier les comptes au Journal officiel',
+    nature: 'SI_CONCERNE',
+    declencheur: "Au-delà de 153 000 € de subventions publiques, ou de dons avec reçu fiscal, dans l'année.",
+    echeance: { texte: "Dans les 3 mois après l'approbation des comptes par l'assemblée." },
+    prerequis: ['assemblee-generale-de-l-annee'],
     partie: 'CHAQUE_ANNEE',
     chaqueAnnee: true,
     peutNePasConcerner: true,
@@ -1163,11 +1231,75 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     ],
     piecesAjoutees: ['COMPTES_ANNUELS'],
   },
-  // --------------------------------------------- 5. SELON TON ACTIVITÉ
   {
     numero: 17,
+    slug: 'garder-les-papiers',
+    titre: 'Garder les papiers le temps qu\'il faut',
+    nature: 'OBLIGATOIRE',
+    declencheur: 'Dès le premier papier : statuts, comptes, reçus fiscaux, contrats, fiches de paie.',
+    partie: 'CHAQUE_ANNEE',
+    chaqueAnnee: true,
+    enUnMot: "Chaque papier a une durée de conservation fixée par la loi. Une fois par an, tu ranges ce qui doit rester et tu jettes ce qui a fait son temps.",
+    pourquoi:
+      "Un financeur, les impôts ou l'Urssaf peuvent demander une pièce des années plus tard. Si elle a été jetée trop tôt, l'association ne peut pas se défendre. À l'inverse, garder des données personnelles trop longtemps est interdit.",
+    ilTeFaut: ['Le classeur papier ou numérique de l\'association.', "Le tableau des durées de service-public.gouv.fr."],
+    commentFaire: [
+      {
+        titre: 'Garde pour toujours les statuts',
+        detail: "Les statuts et leurs versions successives se gardent toute la vie de l'association, avec les récépissés de la préfecture.",
+      },
+      {
+        titre: 'Garde 10 ans les comptes et les subventions',
+        detail: "Les comptes annuels, les pièces comptables (factures, relevés) et les dossiers de subvention se gardent au moins 10 ans.",
+      },
+      {
+        titre: 'Garde 6 ans les papiers fiscaux',
+        detail: 'Les documents fiscaux et les doubles des reçus remis aux donateurs se gardent au moins 6 ans.',
+      },
+      {
+        titre: 'Garde 5 ans les papiers des personnes',
+        detail: "Les procès-verbaux d'assemblée, les fiches de paie et les contrats de travail : au moins 5 ans. La liste des membres : la durée de l'adhésion, puis 5 ans.",
+      },
+      {
+        titre: 'Une fois par an, fais le tri',
+        detail: 'Range les papiers de l\'année qui vient de finir, et détruis ceux qui ont dépassé leur durée, surtout ceux qui contiennent des données personnelles.',
+      },
+    ],
+    quoiFaire: [
+      'Garde les statuts pour toujours.',
+      'Garde 10 ans les comptes et les dossiers de subvention.',
+      'Garde 6 ans les papiers fiscaux et les reçus.',
+      "Garde 5 ans les PV d'assemblée, les fiches de paie et les contrats.",
+      'Fais le tri une fois par an.',
+    ],
+    dureeEstimee: "Une heure par an, si les papiers sont rangés au fil de l'eau.",
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: "Les délais de conservation des documents d'une association",
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F32081',
+        genre: 'SITE',
+        aQuoiCaSert: 'Le tableau officiel, papier par papier.',
+      },
+    ],
+    renvois: [],
+    quandCestFini: "Les papiers de l'année sont rangés, et ceux qui avaient fait leur temps sont détruits.",
+    debloque: "Le classeur est en ordre pour un contrôle. L'étape revient l'an prochain.",
+    lexique: [
+      { mot: 'Durée de conservation', explication: 'Le temps minimum pendant lequel la loi demande de garder un papier.' },
+      { mot: 'Pièce comptable', explication: "Une facture, un ticket ou un relevé qui prouve une ligne du cahier de comptes." },
+    ],
+    piecesAjoutees: [],
+  },
+  // --------------------------------------------- 5. SELON TON ACTIVITÉ
+  {
+    numero: 18,
     slug: 'le-premier-salarie',
     titre: 'Embaucher le premier salarié',
+    nature: 'SI_CONCERNE',
+    declencheur: 'Dès le premier salarié, même à temps partiel.',
+    echeance: { texte: "DPAE dans les 8 jours avant l'embauche, puis déclaration des salaires chaque mois." },
+    prerequis: ['obtenir-le-siret'],
     partie: 'SELON_ACTIVITE',
     peutNePasConcerner: true,
     enUnMot: 'Avant le premier jour de travail, une déclaration. Ensuite, chaque mois, une déclaration des salaires.',
@@ -1251,9 +1383,13 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     piecesAjoutees: [],
   },
   {
-    numero: 18,
+    numero: 19,
     slug: 'accueillir-des-mineurs',
     titre: 'Accueillir des enfants en groupe',
+    nature: 'SI_CONCERNE',
+    declencheur: 'Dès 7 mineurs accueillis hors de la famille : accueil de loisirs, séjour, accueil de jeunes.',
+    echeance: { texte: "Fiche initiale 2 mois avant l'accueil, fiche complémentaire au plus tard 8 jours avant." },
+    prerequis: ['le-compte-bancaire-et-l-assurance'],
     partie: 'SELON_ACTIVITE',
     peutNePasConcerner: true,
     enUnMot: "Un centre de loisirs, un séjour, un accueil de jeunes : l'accueil se déclare à l'État avant de commencer.",
@@ -1319,9 +1455,12 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     piecesAjoutees: [],
   },
   {
-    numero: 19,
+    numero: 20,
     slug: 'les-donnees-des-membres',
     titre: 'Protéger les données des membres',
+    nature: 'SI_CONCERNE',
+    declencheur: "Dès que l'association garde des noms, des adresses ou des téléphones.",
+    prerequis: ['les-adherents-et-les-cotisations'],
     partie: 'SELON_ACTIVITE',
     peutNePasConcerner: true,
     enUnMot: 'La liste des membres contient des données personnelles. Tu les notes dans un registre et tu ne les gardes pas trop longtemps.',
@@ -1381,9 +1520,12 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
     piecesAjoutees: [],
   },
   {
-    numero: 20,
+    numero: 21,
     slug: 'vendre-des-activites',
     titre: 'Vérifier les impôts de ce que tu vends',
+    nature: 'SI_CONCERNE',
+    declencheur: "Dès que l'association vend quelque chose : buvette, cours payants, boutique.",
+    prerequis: ['tenir-des-comptes-simples'],
     partie: 'SELON_ACTIVITE',
     peutNePasConcerner: true,
     enUnMot: "Une buvette, des cours payants, une boutique : selon la façon de vendre, l'association peut devoir la TVA et l'impôt sur les sociétés.",
@@ -1450,6 +1592,309 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       { mot: 'Lucratif', explication: "Qui rapporte de l'argent comme une entreprise." },
       { mot: 'Règle des 4P', explication: "Produit, Public, Prix, Publicité : les quatre questions des impôts pour savoir si l'association vend comme une entreprise." },
       { mot: 'Franchise', explication: "Un plafond de recettes en dessous duquel les petites ventes ne sont pas imposées." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 22,
+    slug: 'les-frais-des-benevoles',
+    titre: 'Rembourser les frais des bénévoles',
+    nature: 'SI_CONCERNE',
+    declencheur: "Dès qu'un bénévole avance de l'argent pour l'association : trajets, achats, timbres.",
+    prerequis: ['tenir-des-comptes-simples'],
+    partie: 'SELON_ACTIVITE',
+    peutNePasConcerner: true,
+    enUnMot: "Un bénévole qui paie pour l'association peut être remboursé sur justificatifs, ou renoncer au remboursement et recevoir un reçu fiscal.",
+    pourquoi:
+      "Un bénévole ne doit pas être payé, mais il ne doit pas perdre d'argent non plus. Rembourser sans justificatif, ou au forfait, peut être vu comme un salaire caché. Et si le bénévole renonce à son remboursement, ce renoncement peut devenir un don.",
+    ilTeFaut: ['Les justificatifs : tickets, factures, billets de train, trajets notés.', "Une note de frais (un simple tableau suffit)."],
+    commentFaire: [
+      {
+        titre: 'Rembourse sur justificatifs',
+        detail: "Le bénévole remplit une note de frais avec les tickets. La voiture se rembourse au barème kilométrique si les frais réels ne sont pas connus.",
+      },
+      {
+        titre: 'Ou propose l\'abandon de frais',
+        detail:
+          "Le bénévole écrit sur la note de frais qu'il renonce à son remboursement. Si l'association est d'intérêt général, elle lui remet un reçu fiscal : il déduit une partie de la somme de ses impôts.",
+      },
+      {
+        titre: 'Garde tout dans les comptes',
+        detail: "Les notes de frais, les justificatifs et les renoncements écrits restent dans le cahier de comptes. Le reçu fiscal compte dans la déclaration des reçus de l'année.",
+      },
+      {
+        titre: 'Vérifie que les bénévoles sont assurés',
+        detail: "Demande à ton assureur si le contrat couvre les bénévoles pendant les activités et les trajets.",
+      },
+    ],
+    quoiFaire: [
+      'Rembourse seulement sur justificatifs.',
+      "Propose l'abandon de frais contre un reçu fiscal, si l'association y a droit.",
+      'Range notes de frais et renoncements dans les comptes.',
+      "Vérifie que l'assurance couvre les bénévoles.",
+    ],
+    dureeEstimee: 'Une heure pour mettre en place la note de frais.',
+    cout: "Gratuit. Les remboursements sont des dépenses de l'association.",
+    documents: [
+      {
+        titre: "Frais des bénévoles d'une association : quelle fiscalité ?",
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F1132',
+        genre: 'SITE',
+        aQuoiCaSert: "Les conditions de l'abandon de frais et du reçu fiscal.",
+      },
+    ],
+    renvois: [],
+    quandCestFini: 'Chaque frais de bénévole est remboursé sur justificatif, ou transformé en don avec un reçu.',
+    debloque: "Les frais des bénévoles sont en règle. Pas de frais ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'Note de frais', explication: "Le tableau où le bénévole liste ce qu'il a payé, avec les tickets." },
+      { mot: 'Abandon de frais', explication: "Le bénévole renonce par écrit à être remboursé : la somme devient un don." },
+      { mot: 'Barème kilométrique', explication: "Le tarif officiel par kilomètre, utilisé quand on ne connaît pas les frais réels de la voiture." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 23,
+    slug: 'ouvrir-un-local-au-public',
+    titre: 'Ouvrir un local au public',
+    nature: 'SI_CONCERNE',
+    declencheur: "Dès que l'association accueille du public dans un local, même gratuitement.",
+    prerequis: ['le-compte-bancaire-et-l-assurance'],
+    partie: 'SELON_ACTIVITE',
+    peutNePasConcerner: true,
+    enUnMot: "Un local qui reçoit du public est un « établissement recevant du public » : il a des règles de sécurité et d'accessibilité.",
+    pourquoi:
+      "En cas d'incendie ou d'accident, le responsable du lieu doit prouver qu'il a respecté les règles. Et une assurance qui couvre les activités ne couvre pas toujours le local lui-même.",
+    ilTeFaut: ['Le bail ou la convention de mise à disposition du local.', "Le nombre de personnes que le local peut accueillir."],
+    commentFaire: [
+      {
+        titre: 'Vérifie la catégorie du local',
+        detail:
+          "Un petit local (en général moins de 300 personnes) est en 5e catégorie. Si c'est une salle municipale, la mairie s'occupe souvent de la sécurité : demande-lui ce qui reste à ta charge.",
+      },
+      {
+        titre: "Assure le local",
+        detail: "Demande à ton assureur une garantie pour le local (incendie, dégâts des eaux, vol), en plus de la responsabilité civile.",
+      },
+      {
+        titre: 'Mets en place la sécurité',
+        detail: "Au moins un extincteur par niveau, l'éclairage de secours, les consignes affichées, et un registre de sécurité où tu notes les vérifications.",
+      },
+      {
+        titre: "Tiens le registre d'accessibilité",
+        detail:
+          "Tout établissement recevant du public tient un registre public d'accessibilité, consultable à l'accueil. En 5e catégorie, tu remplis toi-même l'attestation d'accessibilité.",
+      },
+    ],
+    quoiFaire: [
+      'Vérifie la catégorie du local avec la mairie.',
+      'Assure le local, pas seulement les activités.',
+      'Mets en place extincteurs, consignes et registre de sécurité.',
+      "Tiens le registre public d'accessibilité.",
+    ],
+    dureeEstimee: "Une demi-journée pour faire le point, plus si des travaux sont nécessaires.",
+    cout: "Les démarches sont gratuites. L'assurance et le matériel de sécurité sont payants.",
+    documents: [
+      {
+        titre: "Qu'est-ce qu'un établissement recevant du public ?",
+        lien: 'https://entreprendre.service-public.gouv.fr/vosdroits/F32351',
+        genre: 'SITE',
+        aQuoiCaSert: 'La définition et les catégories.',
+      },
+      {
+        titre: "Les règles de sécurité d'un ERP",
+        lien: 'https://entreprendre.service-public.gouv.fr/vosdroits/F31684',
+        genre: 'SITE',
+        aQuoiCaSert: "Extincteurs, alarme, consignes, registre de sécurité.",
+      },
+      {
+        titre: "L'accessibilité d'un ERP",
+        lien: 'https://entreprendre.service-public.gouv.fr/vosdroits/F32873',
+        genre: 'SITE',
+        aQuoiCaSert: "Le registre public d'accessibilité et l'attestation de 5e catégorie.",
+      },
+      {
+        titre: "Assurance d'une association",
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F1124',
+        genre: 'SITE',
+        aQuoiCaSert: 'Ce qui est obligatoire et ce qui est conseillé.',
+      },
+    ],
+    renvois: [],
+    quandCestFini: "Le local est assuré, la sécurité est en place, le registre d'accessibilité est à l'accueil.",
+    debloque: "Ton local est en règle. Pas de local ouvert au public ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'ERP', explication: 'Établissement recevant du public : tout lieu où des personnes extérieures entrent, même sur invitation.' },
+      { mot: 'Registre de sécurité', explication: 'Le cahier où sont notées les vérifications et les formations à la sécurité.' },
+      { mot: "Registre public d'accessibilité", explication: "Le document qui dit comment le lieu accueille les personnes handicapées." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 24,
+    slug: 'appel-a-la-generosite',
+    titre: 'Lancer un grand appel aux dons',
+    nature: 'SI_CONCERNE',
+    declencheur: "Au-delà de 153 000 € de dons collectés par une campagne publique, sur l'année en cours ou l'une des deux précédentes.",
+    echeance: { texte: 'Déclaration à la préfecture avant de lancer la campagne, puis un compte d\'emploi des ressources chaque année.' },
+    prerequis: ['tenir-des-comptes-simples', 'declarer-les-recus-fiscaux'],
+    partie: 'SELON_ACTIVITE',
+    peutNePasConcerner: true,
+    enUnMot: "Une collecte de dons auprès du grand public, en ligne ou dans la rue : au-delà d'un seuil, elle se déclare avant de commencer.",
+    pourquoi:
+      "Les donateurs doivent pouvoir savoir à quoi sert leur argent. Au-dessus du seuil, l'association déclare sa campagne à la préfecture et rend compte chaque année de l'emploi des dons.",
+    ilTeFaut: ['Le total des dons des deux dernières années.', "L'objet de la campagne."],
+    commentFaire: [
+      {
+        titre: 'Fais le total des dons',
+        detail: "Additionne les dons reçus par appel au public, cette année et les deux précédentes. En dessous de 153 000 € par an, pas de déclaration : choisis « Pas concerné ».",
+      },
+      {
+        titre: 'Déclare la campagne à la préfecture',
+        detail: "Au-dessus du seuil, la déclaration préalable part à la préfecture du siège, avant le début de la campagne.",
+      },
+      {
+        titre: "Établis le compte d'emploi des ressources",
+        detail: "Chaque année, un tableau dit d'où viennent les dons et à quoi ils ont servi. Il suit un modèle fixé par arrêté.",
+      },
+    ],
+    quoiFaire: [
+      'Fais le total des dons collectés auprès du public.',
+      'Au-delà de 153 000 €, déclare la campagne avant de la lancer.',
+      "Établis chaque année le compte d'emploi des ressources.",
+    ],
+    dureeEstimee: "Une heure pour vérifier le seuil. Plus si tu es concerné.",
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: "L'appel à la générosité du public (préfecture d'Île-de-France)",
+        lien: 'https://www.prefectures-regions.gouv.fr/ile-de-france/Region-et-institutions/Demarches-administratives/Associations-Fondations/Creation-et-droits/L-appel-a-la-generosite-du-public',
+        genre: 'SITE',
+        aQuoiCaSert: "Le seuil, la déclaration et le compte d'emploi. Chaque préfecture a sa page.",
+      },
+    ],
+    renvois: [],
+    quandCestFini: "La campagne est déclarée et le compte d'emploi est tenu, ou l'association reste sous le seuil.",
+    debloque: "Ta collecte est en règle. Pas de grande campagne ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'Appel à la générosité du public', explication: "Une campagne qui demande des dons à tout le monde, et pas seulement aux membres." },
+      { mot: "Compte d'emploi des ressources", explication: "Le tableau annuel qui montre d'où viennent les dons et à quoi ils ont servi." },
+    ],
+    piecesAjoutees: [],
+  },
+  // --------------------------------------------- 6. ORGANISER UN ÉVÉNEMENT
+  {
+    numero: 25,
+    slug: 'tenir-une-buvette',
+    titre: 'Ouvrir une buvette',
+    nature: 'SI_CONCERNE',
+    declencheur: "À chaque buvette lors d'une fête, d'une vente ou d'une manifestation organisée par l'association.",
+    echeance: { texte: 'Demande au maire au moins 15 jours avant. 5 autorisations par an au maximum.' },
+    prerequis: ['le-compte-bancaire-et-l-assurance'],
+    partie: 'EVENEMENT',
+    peutNePasConcerner: true,
+    enUnMot: "Une buvette, même d'un jour, se demande au maire. Seules les boissons sans alcool et les boissons fermentées (vin, bière, cidre) sont permises.",
+    pourquoi:
+      "Vendre à boire sans autorisation est interdit, même pour une bonne cause. L'autorisation est limitée à cinq par an pour une association, et la buvette d'un équipement sportif a ses propres règles.",
+    ilTeFaut: ["La date, le lieu et l'horaire de l'événement.", 'La liste des boissons vendues.'],
+    commentFaire: [
+      {
+        titre: 'Écris au maire au moins 15 jours avant',
+        detail: "Une lettre qui donne la date, le lieu, l'horaire et les boissons. Un modèle officiel existe ci-dessous.",
+      },
+      {
+        titre: 'Limite-toi aux boissons permises',
+        detail: "Groupe 1 : sans alcool. Groupe 3 : vin, bière, cidre, jusqu'à 18°. Pas d'alcools forts.",
+      },
+      {
+        titre: 'Dans un stade ou un gymnase, vérifie la dérogation',
+        detail: "L'alcool y est interdit, sauf dérogation du maire pour 48 heures au plus. Une association sportive agréée a droit à 10 dérogations par an.",
+      },
+      {
+        titre: 'Note les recettes',
+        detail: "Les recettes de la buvette entrent dans le cahier de comptes. Si les ventes deviennent régulières, regarde l'étape sur les impôts de ce que tu vends.",
+      },
+    ],
+    quoiFaire: [
+      'Demande au maire au moins 15 jours avant.',
+      "Vends seulement des boissons sans alcool, du vin, de la bière ou du cidre.",
+      'Pas plus de 5 buvettes par an.',
+      'Note les recettes dans le cahier de comptes.',
+    ],
+    dureeEstimee: 'Un quart d\'heure pour la lettre.',
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'Buvette ou bar tenu par une association',
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F24345',
+        genre: 'SITE',
+        aQuoiCaSert: 'Les règles officielles : délai, boissons, nombre de buvettes par an.',
+      },
+      {
+        titre: "Demande d'ouverture d'une buvette temporaire",
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/R24390',
+        genre: 'MODELE',
+        aQuoiCaSert: 'La lettre au maire, à compléter.',
+      },
+    ],
+    renvois: [],
+    quandCestFini: "L'autorisation du maire est reçue avant l'événement.",
+    debloque: "Ta buvette est en règle. Pas de buvette ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'Débit de boissons temporaire', explication: "Une buvette ouverte le temps d'un événement, avec l'accord du maire." },
+      { mot: 'Groupe 3', explication: "Les boissons fermentées jusqu'à 18° : vin, bière, cidre." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 26,
+    slug: 'organiser-une-tombola',
+    titre: 'Organiser une tombola ou un loto',
+    nature: 'SI_CONCERNE',
+    declencheur: 'Pour une tombola ou une loterie : autorisation du maire. Un loto traditionnel entre proches n\'en demande pas.',
+    echeance: { texte: 'Tombola : autorisation du maire avant de vendre les billets.' },
+    partie: 'EVENEMENT',
+    peutNePasConcerner: true,
+    enUnMot: "Une tombola se demande au maire avant de vendre les billets. Un loto traditionnel est libre s'il reste en cercle restreint, avec de petites mises.",
+    pourquoi:
+      "Les jeux d'argent sont interdits en principe. Les associations ont une exception, à condition que l'argent serve une cause sociale, culturelle, éducative, sportive, humanitaire ou philanthropique, et que les lots ne soient pas de l'argent.",
+    ilTeFaut: ['La date du tirage.', 'La liste des lots et leur valeur.', 'Le nombre et le prix des billets.'],
+    commentFaire: [
+      {
+        titre: 'Tombola : demande l\'autorisation au maire',
+        detail: "Avant de vendre le moindre billet, écris au maire de la commune du siège (à Paris, au préfet de police). Les lots sont des objets, jamais de l'argent.",
+      },
+      {
+        titre: 'Loto traditionnel : vérifie les conditions',
+        detail: "Un cercle restreint, un but social, culturel, éducatif, sportif ou d'animation, des mises de moins de 20 €, des lots en nature. Alors aucune autorisation n'est demandée.",
+      },
+      {
+        titre: 'Note les recettes',
+        detail: "Les recettes vont dans le cahier de comptes. Elles restent exonérées d'impôts dans la limite de six manifestations par an.",
+      },
+    ],
+    quoiFaire: [
+      'Tombola : demande l\'autorisation au maire avant de vendre les billets.',
+      'Loto : cercle restreint, mises de moins de 20 €, lots en nature.',
+      'Jamais de lots en argent.',
+      'Note les recettes dans le cahier de comptes.',
+    ],
+    dureeEstimee: "Un quart d'heure pour la demande.",
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'Une association peut-elle organiser une loterie ou un loto ?',
+        lien: 'https://www.economie.gouv.fr/cedef/loterie-associations',
+        genre: 'SITE',
+        aQuoiCaSert: 'Les conditions officielles, la tombola et le loto côte à côte.',
+      },
+    ],
+    renvois: [],
+    quandCestFini: "La tombola est autorisée avant la vente des billets, ou le loto respecte les conditions.",
+    debloque: "Ton jeu est en règle. Pas de tombola ni de loto ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'Tombola (loterie)', explication: 'Un tirage au sort de lots, avec des billets vendus à l\'avance.' },
+      { mot: 'Loto traditionnel', explication: 'Le loto de salle avec des cartons, entre membres et proches, pour de petites mises.' },
     ],
     piecesAjoutees: [],
   },

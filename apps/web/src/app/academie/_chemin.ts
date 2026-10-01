@@ -1,8 +1,10 @@
 import { fetchPublic } from '../_shared/server';
+import type { ObligationEtape } from '../_shared/chemin-obligations';
 
 /** Le chemin de l'académie, tel que l'API le renvoie (apps/api/src/academie/chemin.ts). */
 
-export interface EtapeChemin {
+/** Avec, pour chaque étape : obligatoire ou non, déclencheur, échéance, prérequis (01/10/2026). */
+export interface EtapeChemin extends ObligationEtape {
   slug: string;
   numero: number;
   titre: string;
@@ -45,23 +47,30 @@ export async function chargerEtape(slug: string): Promise<EtapeDetaillee | null>
  * les étapes d'affilée, on lit des moments de deux à cinq étapes. Les bornes
  * suivent les numéros de l'API (apps/api/src/academie/chemin.ts) : une étape
  * ajoutée là-bas doit tomber dans un temps ici. « Chaque année » et « Être
- * finançable » ont été ajoutés le 01/10/2026.
+ * finançable » ont été ajoutés le 01/10/2026, puis « À chaque session ».
  */
 export const TEMPS = [
   { titre: 'Exister', de: 1, a: 5, resume: "Vérifier que c'est bien de la formation, choisir le porteur, obtenir le SIRET, signer la première convention, déclarer l'activité." },
   { titre: 'Se tenir', de: 6, a: 8, resume: 'Les documents socles, le référent handicap, la première fiche programme conforme.' },
   { titre: 'Se certifier', de: 9, a: 12, resume: "Le dossier Qualiopi, le certificateur, l'audit, puis les financements." },
   {
-    titre: 'Chaque année',
+    titre: 'À chaque session',
     de: 13,
-    a: 17,
-    resume: 'Le bilan pédagogique et financier, Qualiopi dans la durée, les preuves des sessions, les réclamations, les formateurs. Ces étapes repassent dans « À faire » chaque 1er janvier.',
+    a: 15,
+    resume: "Ce qui se refait pour chaque formation vendue : une convention ou un contrat conforme, l'information avant l'entrée, l'attestation de fin.",
+  },
+  {
+    titre: 'Chaque année',
+    de: 16,
+    a: 22,
+    resume:
+      'Le bilan pédagogique et financier, Qualiopi dans la durée, les preuves des sessions, les réclamations, les formateurs, les changements à déclarer, les résultats à publier. Ces étapes repassent dans « À faire » chaque 1er janvier.',
   },
   {
     titre: 'Être finançable',
-    de: 18,
+    de: 23,
     a: 99,
-    resume: "Mon Compte Formation, le Carif-Oref et France Travail. Une étape ne te concerne pas ? Marque-la « Pas concerné ».",
+    resume: "Mon Compte Formation, le Carif-Oref et France Travail, la TVA. Une étape ne te concerne pas ? Marque-la « Pas concerné ».",
   },
 ] as const;
 
@@ -77,11 +86,12 @@ export function tempsDe(numero: number) {
   return TEMPS.find((t) => numero >= t.de && numero <= t.a) ?? TEMPS[0];
 }
 
-/** Une teinte par temps : vert clair, ambre, indigo, sarcelle pour « Chaque année », ardoise pour « Être finançable ». */
+/** Une teinte par temps : vert clair, ambre, indigo, bleu ciel pour « À chaque session », sarcelle pour « Chaque année », ardoise pour « Être finançable ». */
 export const TEINTES: Record<string, { fond: string; texte: string; bord: string; pastille: string }> = {
   Exister: { fond: 'bg-[#E3F5EC]', texte: 'text-[#0F5F3E]', bord: 'border-[#B7E4CE]', pastille: 'bg-[#1E9E6A]' },
   'Se tenir': { fond: 'bg-[#FEF3E2]', texte: 'text-[#7C3E06]', bord: 'border-[#F5D6A8]', pastille: 'bg-[#F5B400]' },
   'Se certifier': { fond: 'bg-[#ECEBFC]', texte: 'text-[#4338CA]', bord: 'border-[#C7C4F2]', pastille: 'bg-[#4F46E5]' },
+  'À chaque session': { fond: 'bg-[#E0F2FE]', texte: 'text-[#075985]', bord: 'border-[#BAE6FD]', pastille: 'bg-[#0284C7]' },
   'Chaque année': { fond: 'bg-[#E0F4F3]', texte: 'text-[#115E59]', bord: 'border-[#A7DCD8]', pastille: 'bg-[#0D9488]' },
   'Être finançable': { fond: 'bg-[#EEF0F4]', texte: 'text-[#3F4A5C]', bord: 'border-[#D3D8E2]', pastille: 'bg-[#64748B]' },
 };

@@ -4,7 +4,7 @@ import { useEffect, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../../_client';
 import { CARTE } from '../../_ui';
-import { LIBELLES_ETAT_ACTION, dateCourte, formaterEuros, type ActionAssociation, type EtatAction } from '../_types';
+import { LIBELLES_ETAT_ACTION, dateCourte, formaterEuros, type ActionAssociation, type EtatAction, type MembreEquipe, type TacheProjet } from '../_types';
 import { FicheProjet } from './FicheProjet';
 
 /**
@@ -19,7 +19,17 @@ const COLONNES: { etat: EtatAction; titre: string; aide: string }[] = [
   { etat: 'TERMINEE', titre: 'Terminés', aide: 'À raconter dans le rapport' },
 ];
 
-export function Kanban({ projets, iaDisponible }: { projets: ActionAssociation[]; iaDisponible: boolean }) {
+export function Kanban({
+  projets,
+  iaDisponible,
+  taches = [],
+  equipe = [],
+}: {
+  projets: ActionAssociation[];
+  iaDisponible: boolean;
+  taches?: TacheProjet[];
+  equipe?: MembreEquipe[];
+}) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState<ActionAssociation | null | 'nouveau'>(null);
   const [attrape, setAttrape] = useState<string | null>(null);
@@ -70,8 +80,20 @@ export function Kanban({ projets, iaDisponible }: { projets: ActionAssociation[]
       </div>
 
       {erreur ? <p className="rounded-xl border border-[#F5D6A8] bg-[#FEF3E2] px-4 py-3 text-sm text-[#7C3E06]">{erreur}</p> : null}
-      {ouvert === 'nouveau' ? <FicheProjet projet={null} onFermer={() => setOuvert(null)} iaDisponible={iaDisponible} /> : null}
-      {ouvert && ouvert !== 'nouveau' ? <FicheProjet key={ouvert.id} projet={ouvert} onFermer={() => setOuvert(null)} iaDisponible={iaDisponible} /> : null}
+      {ouvert === 'nouveau' ? (
+        <FicheProjet projet={null} onFermer={() => setOuvert(null)} iaDisponible={iaDisponible} taches={taches} equipe={equipe} projets={projets} />
+      ) : null}
+      {ouvert && ouvert !== 'nouveau' ? (
+        <FicheProjet
+          key={ouvert.id}
+          projet={projets.find((p) => p.id === ouvert.id) ?? ouvert}
+          onFermer={() => setOuvert(null)}
+          iaDisponible={iaDisponible}
+          taches={taches}
+          equipe={equipe}
+          projets={projets}
+        />
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-3">
         {COLONNES.map((col) => {
@@ -119,6 +141,7 @@ export function Kanban({ projets, iaDisponible }: { projets: ActionAssociation[]
                           {p.cout !== null ? <span className="rounded-full bg-[#F0EFF7] px-2 py-0.5">{formaterEuros(p.cout)}</span> : null}
                           {etatDe(p) === 'TERMINEE' && !p.bilan ? <span className="rounded-full bg-[#FEF3E2] px-2 py-0.5 text-[#7C3E06]">Bilan à écrire</span> : null}
                         </span>
+                        <Progression projet={p} />
                       </button>
 
                       <label className="mt-2 flex items-center gap-2 text-[11px] font-bold text-[#6B6A8A]">
@@ -147,5 +170,23 @@ export function Kanban({ projets, iaDisponible }: { projets: ActionAssociation[]
         })}
       </section>
     </div>
+  );
+}
+
+/** x/y tâches faites, en barre fine. Rien tant que le projet n'a pas de tâche. */
+function Progression({ projet }: { projet: ActionAssociation }) {
+  const total = projet.tachesTotal ?? 0;
+  if (!total) return null;
+  const faites = projet.tachesFaites ?? 0;
+  const p = Math.round((faites / total) * 100);
+  return (
+    <span className="mt-2.5 flex items-center gap-2" title={`${faites} tâche${faites > 1 ? 's' : ''} faite${faites > 1 ? 's' : ''} sur ${total}`}>
+      <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#ECEBFC]">
+        <span className={`block h-full rounded-full ${faites === total ? 'bg-[#1E9E6A]' : 'bg-[#4F46E5]'}`} style={{ width: `${p}%` }} />
+      </span>
+      <span className="text-[11px] font-bold text-[#6B6A8A]">
+        {faites}/{total}
+      </span>
+    </span>
   );
 }

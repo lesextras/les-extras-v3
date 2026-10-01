@@ -4,6 +4,7 @@ import { ClaudeService } from '../assistant/claude.service';
 import { MoteurService } from '../assistant/moteur.service';
 import { MistralService } from '../assistant/mistral.service';
 import { EspaceService } from './espace.service';
+import { TachesService } from './taches.service';
 import { AssociationPublicController } from './association-public.controller';
 import { AssociationEspaceController } from './association-espace.controller';
 import { AssociationOuvertureController } from './association-ouverture.controller';
@@ -18,7 +19,7 @@ import { AssociationOuvertureController } from './association-ouverture.controll
  */
 @Module({
   controllers: [AssociationPublicController, AssociationEspaceController, AssociationOuvertureController],
-  providers: [AssociationService, EspaceService, ClaudeService, MoteurService, MistralService],
+  providers: [AssociationService, EspaceService, TachesService, ClaudeService, MoteurService, MistralService],
   exports: [AssociationService, EspaceService],
 })
 export class AssociationModule {}

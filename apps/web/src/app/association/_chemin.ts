@@ -1,13 +1,14 @@
 import { fetchPublic } from '../_shared/server';
 import type { ModeleFabrique } from './_fabrique';
+import type { ObligationEtape } from '../_shared/chemin-obligations';
 
 /** Les types du chemin, tels que l'API les renvoie (voir apps/api/src/association/chemin.ts). */
 
-export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE';
+export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE' | 'EVENEMENT';
 
 export interface DescriptionPartie {
   code: PartieChemin;
-  numero: 1 | 2 | 3 | 4 | 5;
+  numero: 1 | 2 | 3 | 4 | 5 | 6;
   titre: string;
   enUnMot: string;
   resultat: string;
@@ -23,7 +24,8 @@ export interface DocumentEtape {
   aQuoiCaSert: string;
 }
 
-export interface EtapeChemin {
+/** Avec, pour chaque étape : obligatoire ou non, déclencheur, échéance, prérequis (01/10/2026). */
+export interface EtapeChemin extends ObligationEtape {
   numero: number;
   slug: string;
   titre: string;
@@ -88,7 +90,8 @@ export const LIBELLES_GENRE: Record<GenreDocument, string> = {
 
 /**
  * Les couleurs de chaque partie du chemin : une teinte par partie, la troisième
- * en indigo, « Chaque année » en sarcelle, « Selon ton activité » en ardoise.
+ * en indigo, « Chaque année » en sarcelle, « Selon ton activité » en ardoise,
+ * « Organiser un événement » en bleu ciel.
  * Copie dans chemin/KanbanChemin.tsx : les deux tables bougent ensemble.
  */
 export const TEINTES_PARTIE: Record<PartieChemin, { fond: string; texte: string; bord: string; pastille: string }> = {
@@ -97,4 +100,5 @@ export const TEINTES_PARTIE: Record<PartieChemin, { fond: string; texte: string;
   SUBVENTION: { fond: 'bg-[#ECEBFC]', texte: 'text-[#4338CA]', bord: 'border-[#C7C4F2]', pastille: 'bg-[#4F46E5]' },
   CHAQUE_ANNEE: { fond: 'bg-[#E0F4F3]', texte: 'text-[#115E59]', bord: 'border-[#A7DCD8]', pastille: 'bg-[#0D9488]' },
   SELON_ACTIVITE: { fond: 'bg-[#EEF0F4]', texte: 'text-[#3F4A5C]', bord: 'border-[#D3D8E2]', pastille: 'bg-[#64748B]' },
+  EVENEMENT: { fond: 'bg-[#E0F2FE]', texte: 'text-[#075985]', bord: 'border-[#BAE6FD]', pastille: 'bg-[#0284C7]' },
 };

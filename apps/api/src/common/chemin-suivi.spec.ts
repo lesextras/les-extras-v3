@@ -60,13 +60,48 @@ describe('Les chemins et leurs nouvelles étapes', () => {
     expect([...rangs].sort((a, b) => a - b)).toEqual(rangs);
     for (const e of ETAPES_CHEMIN) {
       if (e.partie === 'CHAQUE_ANNEE') expect(e.chaqueAnnee).toBe(true);
-      if (e.partie === 'SELON_ACTIVITE') expect(e.peutNePasConcerner).toBe(true);
+      if (e.partie === 'SELON_ACTIVITE' || e.partie === 'EVENEMENT') expect(e.peutNePasConcerner).toBe(true);
     }
   });
 
   it('n’écrit aucun tiret long dans le texte visible des nouvelles étapes', () => {
     const texte = JSON.stringify([ETAPES_CHEMIN.slice(12), ETAPES_ACADEMIE.slice(12), PARTIES_CHEMIN]);
     expect(texte).not.toContain('—');
+  });
+
+  it('compte 26 étapes pour l’association et 25 pour l’académie', () => {
+    expect(ETAPES_CHEMIN).toHaveLength(26);
+    expect(ETAPES_ACADEMIE).toHaveLength(25);
+  });
+
+  it.each([
+    ['association', ETAPES_CHEMIN],
+    ['académie', ETAPES_ACADEMIE],
+  ] as const)('dit pour chaque étape du chemin %s si elle est obligatoire, et ce qu’il faut avant', (_nom, etapes) => {
+    const slugs = new Set(etapes.map((e) => e.slug));
+    for (const e of etapes) {
+      expect(['OBLIGATOIRE', 'CONSEILLE', 'SI_CONCERNE']).toContain(e.nature);
+      // Une étape « Si concerné » dit toujours ce qui la déclenche.
+      if (e.nature === 'SI_CONCERNE') expect(e.declencheur?.trim()).toBeTruthy();
+      for (const p of e.prerequis ?? []) {
+        expect(slugs.has(p)).toBe(true);
+        expect(p).not.toBe(e.slug);
+      }
+      if (e.echeance) {
+        expect(e.echeance.texte.trim()).toBeTruthy();
+        if (e.echeance.dateFixe) {
+          expect(e.echeance.dateFixe).toMatch(/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
+        }
+      }
+      const visible = JSON.stringify([e.declencheur, e.echeance]);
+      expect(visible).not.toContain('—');
+    }
+  });
+
+  it('garde la date du BPF prudente : un repère, pas une certitude', () => {
+    const bpf = ETAPES_ACADEMIE.find((e) => e.slug === 'bilan-pedagogique-et-financier');
+    expect(bpf?.echeance).toMatchObject({ dateFixe: '04-30', indicative: true });
+    expect(bpf?.echeance?.texte).toContain('date fixée par le ministère');
   });
 
   it('ne renvoie que vers des adresses https', () => {

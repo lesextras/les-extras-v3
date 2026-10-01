@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { appel } from '../_client';
 import { CARTE } from '../_ui';
 import type { PartieChemin } from '../_chemin';
+import { BadgeNature, LigneEcheance, LignePrerequis, type EcheanceEtape, type NatureEtape } from '../../_shared/chemin-obligations';
 
 /* Copie de TEINTES_PARTIE (../_chemin.ts) : ce fichier-là importe du code
    serveur (« server-only »), qu'un composant client ne peut pas charger. Les
@@ -16,6 +17,7 @@ const TEINTES_PARTIE: Record<PartieChemin, { fond: string; texte: string; bord: 
   SUBVENTION: { fond: 'bg-[#ECEBFC]', texte: 'text-[#4338CA]', bord: 'border-[#C7C4F2]', pastille: 'bg-[#4F46E5]' },
   CHAQUE_ANNEE: { fond: 'bg-[#E0F4F3]', texte: 'text-[#115E59]', bord: 'border-[#A7DCD8]', pastille: 'bg-[#0D9488]' },
   SELON_ACTIVITE: { fond: 'bg-[#EEF0F4]', texte: 'text-[#3F4A5C]', bord: 'border-[#D3D8E2]', pastille: 'bg-[#64748B]' },
+  EVENEMENT: { fond: 'bg-[#E0F2FE]', texte: 'text-[#075985]', bord: 'border-[#BAE6FD]', pastille: 'bg-[#0284C7]' },
 };
 
 /**
@@ -42,12 +44,19 @@ export interface CarteEtapeChemin {
   chaqueAnnee?: boolean;
   /** Peut être écartée : action « Pas concerné ». */
   peutNePasConcerner?: boolean;
+  /** Obligatoire, conseillée ou « si concerné » : un badge. */
+  nature?: NatureEtape;
+  /** L'échéance légale : une ligne à l'horloge. */
+  echeance?: EcheanceEtape;
+  /** Les étapes à faire avant : « Il faut d'abord ». */
+  prerequis?: string[];
 }
 
 /** Une phrase sous le titre des parties qui ne se lisent pas comme les autres. */
 const AIDE_PARTIE: Partial<Record<PartieChemin, string>> = {
   CHAQUE_ANNEE: 'Ces étapes repassent dans « À faire » chaque 1er janvier.',
   SELON_ACTIVITE: 'Une étape ne te concerne pas ? Clique sur « Pas concerné ».',
+  EVENEMENT: 'Pas de buvette ni de tombola ? Clique sur « Pas concerné ».',
 };
 
 export function KanbanChemin({
@@ -191,7 +200,19 @@ export function KanbanChemin({
                               {confirmee ? <span className="rounded-full bg-[#E3F5EC] px-2 py-0.5 text-[#0F5F3E]">Confirmée</span> : null}
                               {e.chaqueAnnee ? <span className="rounded-full bg-[#E0F4F3] px-2 py-0.5 text-[#115E59]">Chaque année</span> : null}
                               {pasConcerne ? <span className="rounded-full bg-[#EEF0F4] px-2 py-0.5 text-[#3F4A5C]">Pas concerné</span> : null}
+                              {faite ? null : <BadgeNature nature={e.nature} />}
                             </p>
+                            {faite ? null : (
+                              <>
+                                <LigneEcheance echeance={e.echeance} chaqueAnnee={e.chaqueAnnee} theme="association" />
+                                <LignePrerequis
+                                  prerequis={e.prerequis}
+                                  etapes={etapes}
+                                  faites={etapes.filter((x) => estFaite(x.slug)).map((x) => x.slug)}
+                                  theme="association"
+                                />
+                              </>
+                            )}
                           </div>
                           <Link
                             href={`/chemin/${e.slug}`}

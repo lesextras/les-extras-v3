@@ -5,6 +5,7 @@ import { academieConnectee, apiAcademie, sessionAcademie } from '../_session';
 import { Accent, CARTE, Encart, SousTitre, Titre } from '../_ui';
 import type { EspaceAcademie } from '../_types';
 import { KanbanCheminAcademie } from './KanbanCheminAcademie';
+import { BadgeNature, BandeauEcheances, LigneEcheance, LignePrerequis, type EtapeRepere } from '../../_shared/chemin-obligations';
 
 export const metadata: Metadata = {
   title: 'Le chemin',
@@ -49,6 +50,17 @@ export default async function CheminPage() {
 
   const total = chemin.etapes.length;
   const prochaine = chemin.etapes.find((e) => !faites.has(e.slug)) ?? null;
+  // Ce qu'il faut pour parler d'une étape ailleurs : badge, échéance, « il faut d'abord ».
+  const reperes: EtapeRepere[] = chemin.etapes.map((e) => ({
+    slug: e.slug,
+    numero: e.numero,
+    titre: e.titre,
+    chaqueAnnee: e.chaqueAnnee,
+    nature: e.nature,
+    declencheur: e.declencheur,
+    echeance: e.echeance,
+    prerequis: e.prerequis,
+  }));
 
   return (
     <>
@@ -93,6 +105,9 @@ export default async function CheminPage() {
         )}
       </div>
 
+      {/* Les échéances obligatoires, en tête : ce qui a une date, d'abord. */}
+      {nom ? <BandeauEcheances etapes={reperes} faites={faites} theme="academie" /> : null}
+
       {nom ? (
         <KanbanCheminAcademie
           temps={TEMPS.map((t) => ({ titre: t.titre, de: t.de, a: t.a, resume: t.resume, teinte: TEINTES[t.titre] }))}
@@ -103,6 +118,9 @@ export default async function CheminPage() {
             pourPasser: e.pourPasser,
             chaqueAnnee: e.chaqueAnnee,
             peutNePasConcerner: e.peutNePasConcerner,
+            nature: e.nature,
+            echeance: e.echeance,
+            prerequis: e.prerequis,
           }))}
           faites={[...faites]}
           automatiques={[...automatiques]}
@@ -181,7 +199,16 @@ export default async function CheminPage() {
                         <span className="mt-3 block text-lg font-extrabold leading-snug text-[#12312A] group-hover:text-[#0F5F3E]">
                           {e.titre}
                         </span>
+                        <span className="mt-2 flex flex-wrap gap-1.5">
+                          <BadgeNature nature={e.nature} />
+                        </span>
                         <span className="mt-1 block text-sm leading-relaxed text-[#5E7A6E]">{e.resume}</span>
+                        {faite ? null : (
+                          <>
+                            <LigneEcheance echeance={e.echeance} chaqueAnnee={e.chaqueAnnee} theme="academie" />
+                            <LignePrerequis prerequis={e.prerequis} etapes={reperes} faites={faites} theme="academie" liens={false} />
+                          </>
+                        )}
                         <span className="mt-3 block rounded-lg bg-[#F4F9F6] px-3 py-2 text-[13px] leading-snug text-[#334A42]">
                           <span className="font-bold text-[#0F5F3E]">Pour passer :</span> {e.pourPasser}
                         </span>

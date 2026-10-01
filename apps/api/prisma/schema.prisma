@@ -46,6 +46,7 @@ model User {
 
   profile                   Profile?
   memberships               Membership[]
+  tachesProjet              TacheProjet[]             @relation("TacheProjetResponsable")
   sentInvitations           Invitation[]              @relation("InvitationInviter")
   ownedAccounts             Account[]                 @relation("AccountOwner")
   documents                 Document[]
@@ -3758,6 +3759,7 @@ model Organisation {
   contacts   ContactAssociation[]
   documents  DocumentAssociation[]
   actions    ActionAssociation[]
+  taches     TacheProjet[]
   mouvements MouvementAssociation[]
 
   @@index([siren])
@@ -3871,6 +3873,8 @@ model ContactAssociation {
   notes           String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  /// Les tâches de projet dont cette personne est responsable.
+  tachesProjet    TacheProjet[]
 
   @@index([organisationId])
 }
@@ -3901,16 +3905,16 @@ enum EtatAction {
 /// Les actions de l'association : ce qu'elle fait vraiment sur le terrain.
 /// C'est la matière du rapport d'activité et des dossiers de subvention.
 model ActionAssociation {
-  id              String       @id @default(cuid())
+  id              String        @id @default(cuid())
   organisationId  String
-  organisation    Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  organisation    Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   intitule        String
   /// À quoi ça sert, pour qui, en deux phrases.
   resume          String?
   lieu            String?
   dateDebut       DateTime?
   dateFin         DateTime?
-  etat            EtatAction   @default(PREVUE)
+  etat            EtatAction    @default(PREVUE)
   /// Combien de personnes en ont profité.
   beneficiaires   Int?
   /// Combien de bénévoles, et combien d'heures données.
@@ -3922,10 +3926,61 @@ model ActionAssociation {
   partenaires     String?
   /// Ce qu'on en retient, une fois l'action finie.
   bilan           String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  /// Les tâches qui mènent le projet jusqu'au bout.
+  taches          TacheProjet[]
 
   @@index([organisationId])
+}
+
+/// Où en est une tâche d'un projet.
+enum StatutTache {
+  A_FAIRE
+  EN_COURS
+  BLOQUEE
+  FAITE
+}
+
+/// L'urgence d'une tâche.
+enum PrioriteTache {
+  BASSE
+  NORMALE
+  HAUTE
+}
+
+/// Une tâche d'un projet (« Mes projets ») : qui fait quoi, et pour quand.
+/// Le responsable est soit une personne de « Mon équipe » (le répertoire),
+/// soit une personne qui a un accès au compte. Son nom est recopié pour que la
+/// tâche reste lisible si la personne quitte l'équipe.
+model TacheProjet {
+  id                   String              @id @default(cuid())
+  organisationId       String
+  organisation         Organisation        @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  actionId             String
+  action               ActionAssociation   @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  titre                String
+  description          String?
+  statut               StatutTache         @default(A_FAIRE)
+  priorite             PrioriteTache       @default(NORMALE)
+  debut                DateTime?
+  echeance             DateTime?
+  responsableContactId String?
+  responsableContact   ContactAssociation? @relation(fields: [responsableContactId], references: [id], onDelete: SetNull)
+  responsableUserId    String?
+  responsableUser      User?               @relation("TacheProjetResponsable", fields: [responsableUserId], references: [id], onDelete: SetNull)
+  /// Nom affiché du responsable, recopié au moment de l'attribution.
+  responsableNom       String?
+  /// Rang dans sa colonne (0 en haut).
+  ordre                Int                 @default(0)
+  faiteLe              DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@index([organisationId, statut])
+  @@index([actionId, statut, ordre])
+  @@index([responsableContactId])
+  @@index([responsableUserId])
 }
 
 /// L'argent qui entre, l'argent qui sort.

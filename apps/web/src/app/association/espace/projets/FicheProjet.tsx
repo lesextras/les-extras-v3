@@ -5,7 +5,9 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../../_client';
 import { Recherche } from '../financeurs/Recherche';
-import { LIBELLES_ETAT_ACTION, pourInput, type ActionAssociation, type EtatAction } from '../_types';
+import { LIBELLES_ETAT_ACTION, pourInput, type ActionAssociation, type EtatAction, type MembreEquipe, type TacheProjet } from '../_types';
+import { Icone } from './_taches';
+import { TachesProjet } from './TachesProjet';
 
 const CHAMP =
   'w-full rounded-xl border border-[#D9D6EE] bg-white px-4 py-3 text-base text-[#1D1B5C] focus:border-[#4F46E5] focus:outline-none focus:ring-4 focus:ring-[#ECEBFC]';
@@ -50,7 +52,22 @@ function depuis(a: ActionAssociation | null): Valeurs {
  * La fiche d'un projet : peu de champs, et seulement ceux qui servent. Les
  * chiffres du bas sont exactement ceux qu'un financeur demande.
  */
-export function FicheProjet({ projet: initial, onFermer, iaDisponible = false }: { projet: ActionAssociation | null; onFermer: () => void; iaDisponible?: boolean }) {
+export function FicheProjet({
+  projet: initial,
+  onFermer,
+  iaDisponible = false,
+  taches = [],
+  equipe = [],
+  projets = [],
+}: {
+  projet: ActionAssociation | null;
+  onFermer: () => void;
+  iaDisponible?: boolean;
+  /** Toutes les tâches de l'association : la fiche ne garde que celles du projet. */
+  taches?: TacheProjet[];
+  equipe?: MembreEquipe[];
+  projets?: ActionAssociation[];
+}) {
   const router = useRouter();
   /* Un nouveau projet, une fois ajouté, reste ouvert : on enchaîne sur ses financeurs. */
   const [cree, setCree] = useState<ActionAssociation | null>(null);
@@ -208,6 +225,26 @@ export function FicheProjet({ projet: initial, onFermer, iaDisponible = false }:
         ) : null}
       </div>
     </form>
+
+      {/* ------------------------------------------------------- les tâches */}
+      <section className="mt-6 border-t border-[#E6E4F3] pt-5" aria-label="Tâches du projet">
+        <div className="mb-3 flex items-center gap-2">
+          <span className={`flex h-7 w-7 items-center justify-center rounded-full ${projet ? 'bg-[#4F46E5] text-white' : 'bg-[#ECEBFC] text-[#6B6A8A]'}`}>
+            <Icone nom="liste" className="h-3.5 w-3.5" />
+          </span>
+          <h4 className="font-extrabold text-[#1D1B5C]">Tâches</h4>
+        </div>
+        {projet ? (
+          <TachesProjet
+            projet={projet}
+            taches={taches.filter((t) => t.actionId === projet.id)}
+            equipe={equipe}
+            projets={projets.some((p) => p.id === projet.id) ? projets : [projet, ...projets]}
+          />
+        ) : (
+          <p className="text-sm text-[#6B6A8A]">S’ouvre dès que le projet est ajouté.</p>
+        )}
+      </section>
 
       {/* ------------------------------------------- trouver des financeurs */}
       <section className="mt-6 border-t border-[#E6E4F3] pt-5">

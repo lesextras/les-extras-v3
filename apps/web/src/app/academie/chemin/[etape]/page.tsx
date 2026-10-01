@@ -3,7 +3,8 @@ import type { Metadata } from 'next';
 import { descriptionSeo } from '@/lib/meta';
 import { titrePilote } from '../../../_pilote-seo';
 import { notFound } from 'next/navigation';
-import { chargerEtape, tempsDe, TEINTES } from '../../_chemin';
+import { chargerChemin, chargerEtape, tempsDe, TEINTES } from '../../_chemin';
+import { InfosObligation } from '../../../_shared/chemin-obligations';
 import { academieConnectee, apiAcademie, sessionAcademie } from '../../_session';
 import { Accent, CARTE, Encart, Pastille, Titre } from '../../_ui';
 import type { EspaceAcademie } from '../../_types';
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 /** UNE ÉTAPE DU CHEMIN : ce qu'elle est, ce qu'il faut pour passer à la suivante. */
 export default async function EtapePage({ params }: Params) {
   const { etape: slug } = await params;
-  const d = await chargerEtape(slug);
+  const [d, chemin] = await Promise.all([chargerEtape(slug), chargerChemin()]);
   if (!d) notFound();
 
   const { etape, precedente, suivante, total } = d;
@@ -37,11 +38,13 @@ export default async function EtapePage({ params }: Params) {
   let automatique = false;
   let pasConcerne = false;
   let connectee = false;
+  let faites = new Set<string>();
   if (await academieConnectee()) {
     connectee = true;
     const s = await sessionAcademie(`/academie/chemin/${slug}`);
     const { data } = await apiAcademie<EspaceAcademie>(s, '/academie/espace');
     const trouvee = data?.chemin.etapes.find((e) => e.slug === slug);
+    faites = new Set((data?.chemin.etapes ?? []).filter((e) => e.faite).map((e) => e.slug));
     faite = Boolean(trouvee?.faite);
     automatique = Boolean(trouvee?.automatique);
     pasConcerne = Boolean(trouvee?.faite && trouvee?.pasConcerne);
@@ -62,6 +65,9 @@ export default async function EtapePage({ params }: Params) {
         </span>
         {etape.titre}
       </Titre>
+
+      {/* Obligatoire ? Quand ? Quelle échéance ? Que faire avant ? */}
+      <InfosObligation etape={etape} etapes={chemin?.etapes ?? []} faites={connectee ? faites : undefined} theme="academie" />
 
       <div className={`${CARTE} mb-6 p-5 sm:p-6`}>
         <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-[#5E7A6E]">Pour passer à la suivante</h2>

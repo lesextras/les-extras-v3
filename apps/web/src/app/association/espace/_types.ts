@@ -251,6 +251,46 @@ export interface ActionAssociation {
   cout: number | null;
   partenaires: string | null;
   bilan: string | null;
+  /** Avancement des tâches du projet (absent sur les anciennes réponses). */
+  tachesTotal?: number;
+  tachesFaites?: number;
+}
+
+/** Les tâches d'un projet : qui fait quoi, et pour quand. */
+export type StatutTache = 'A_FAIRE' | 'EN_COURS' | 'BLOQUEE' | 'FAITE';
+export type PrioriteTache = 'BASSE' | 'NORMALE' | 'HAUTE';
+
+/** Une personne à qui attribuer une tâche : `contact:<id>` (Mon équipe) ou `user:<id>` (accès au compte). */
+export interface MembreEquipe {
+  cle: string;
+  nom: string;
+  initiales: string;
+  source: 'EQUIPE' | 'ACCES';
+  moi: boolean;
+}
+
+export interface TacheProjet {
+  id: string;
+  actionId: string;
+  titre: string;
+  description: string | null;
+  statut: StatutTache;
+  priorite: PrioriteTache;
+  debut: string | null;
+  echeance: string | null;
+  ordre: number;
+  faiteLe: string | null;
+  createdAt: string;
+  responsable: { cle: string; nom: string } | null;
+  projet: { id: string; intitule: string };
+  aMoi: boolean;
+  enRetard: boolean;
+}
+
+export interface ListeTaches {
+  taches: TacheProjet[];
+  equipe: MembreEquipe[];
+  resume: { total: number; ouvertes: number; enRetard: number; miennes: number };
 }
 
 export interface ResumeActions {

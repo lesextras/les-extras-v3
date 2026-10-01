@@ -19,7 +19,18 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { EtatAction, EtatDossier, MoyenPaiement, NatureDossier, NatureMouvement, NiveauOrganisation, RoleContact, SensMouvement } from '@prisma/client';
+import {
+  EtatAction,
+  EtatDossier,
+  MoyenPaiement,
+  NatureDossier,
+  NatureMouvement,
+  NiveauOrganisation,
+  PrioriteTache,
+  RoleContact,
+  SensMouvement,
+  StatutTache,
+} from '@prisma/client';
 
 /**
  * L'inscription. Deux portes, comme chez les grands : soit on a déjà une
@@ -265,6 +276,49 @@ export class ModifierActionDto {
   @IsOptional() @IsInt() @Min(0) @Max(100000000) cout?: number | null;
   @IsOptional() @IsString() @MaxLength(400) partenaires?: string | null;
   @IsOptional() @IsString() @MaxLength(4000) bilan?: string | null;
+}
+
+/**
+ * Une tâche d'un projet. `responsable` est une clé unique : `contact:<id>`
+ * (une personne de « Mon équipe ») ou `user:<id>` (une personne qui a un
+ * accès au compte) ; `null` pour personne.
+ */
+export class TacheDto {
+  @IsString() @IsNotEmpty({ message: 'Le projet de la tâche est nécessaire.' }) @MaxLength(40) actionId!: string;
+  @IsString() @IsNotEmpty({ message: 'Le titre de la tâche est nécessaire.' }) @MaxLength(200) titre!: string;
+  @IsOptional() @IsString() @MaxLength(4000) description?: string | null;
+  @IsOptional() @IsEnum(StatutTache) statut?: StatutTache;
+  @IsOptional() @IsEnum(PrioriteTache) priorite?: PrioriteTache;
+  @IsOptional() @IsDateString() debut?: string | null;
+  @IsOptional() @IsDateString() echeance?: string | null;
+  @IsOptional() @IsString() @MaxLength(60) responsable?: string | null;
+}
+
+export class ModifierTacheDto {
+  /** Changer de projet est permis : la tâche suit. */
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(40) actionId?: string;
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(200) titre?: string;
+  @IsOptional() @IsString() @MaxLength(4000) description?: string | null;
+  @IsOptional() @IsEnum(StatutTache) statut?: StatutTache;
+  @IsOptional() @IsEnum(PrioriteTache) priorite?: PrioriteTache;
+  @IsOptional() @IsDateString() debut?: string | null;
+  @IsOptional() @IsDateString() echeance?: string | null;
+  @IsOptional() @IsString() @MaxLength(60) responsable?: string | null;
+}
+
+/** Poser une tâche dans une colonne, à un rang donné (0 = en haut). */
+export class DeplacerTacheDto {
+  @IsEnum(StatutTache) statut!: StatutTache;
+  @IsOptional() @IsInt() @Min(0) @Max(10000) position?: number;
+}
+
+/** Les filtres de la liste des tâches (paramètres d'URL). */
+export class FiltresTachesDto {
+  @IsOptional() @IsString() @MaxLength(40) actionId?: string;
+  @IsOptional() @IsEnum(StatutTache) statut?: StatutTache;
+  @IsOptional() @IsString() @MaxLength(60) responsable?: string;
+  @IsOptional() @IsIn(['1', 'true']) miennes?: string;
+  @IsOptional() @IsIn(['1', 'true']) ouvertes?: string;
 }
 
 /** Une ligne du cahier de comptes : un don, une vente, une adhésion, une dépense. */

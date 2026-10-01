@@ -5,7 +5,8 @@ import { titrePilote } from '../../../_pilote-seo';
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import { BTN_PRIMAIRE, BTN_SECONDAIRE, CARTE, Pastille } from '../../_ui';
-import { chargerEtape, chargerModeles, TEINTES_PARTIE } from '../../_chemin';
+import { chargerChemin, chargerEtape, chargerModeles, TEINTES_PARTIE } from '../../_chemin';
+import { InfosObligation } from '../../../_shared/chemin-obligations';
 import { contexteChemin } from '../../_session';
 import { preremplissageDeBase } from '../../_fabrique';
 import { BoutonEtapeFaite } from '../../BoutonEtapeFaite';
@@ -79,7 +80,7 @@ function Repli({ titre, children }: { titre: string; children: ReactNode }) {
 
 export default async function EtapePage({ params }: { params: Promise<{ etape: string }> }) {
   const { etape: slug } = await params;
-  const [d, modelesTous, connecte] = await Promise.all([chargerEtape(slug), chargerModeles(), contexteChemin()]);
+  const [d, modelesTous, connecte, chemin] = await Promise.all([chargerEtape(slug), chargerModeles(), contexteChemin(), chargerChemin()]);
   if (!d) notFound();
   const { etape, partie, pieces, total, precedente, suivante } = d;
   const teinte = TEINTES_PARTIE[etape.partie];
@@ -117,6 +118,9 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
           <span>{etape.cout}</span>
         </p>
       </header>
+
+      {/* ------------------------------ obligatoire ? quand ? échéance ? avant ? */}
+      <InfosObligation etape={etape} etapes={chemin?.etapes ?? []} faites={connecte?.faites} theme="association" />
 
       {/* ---------------------------------------------- comment faire */}
       <section className={`${CARTE} mb-6 grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]`}>

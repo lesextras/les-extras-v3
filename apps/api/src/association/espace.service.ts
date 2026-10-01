@@ -51,6 +51,7 @@ import {
 } from './referentiel-pieces';
 import { ETAPES_CHEMIN } from './chemin';
 import { etatEtape, lireSuivi, marquerSuivi } from '../common/chemin-suivi';
+import { progressionParProjet } from './taches';
 import type {
   ActionDto,
   ContactDto,
@@ -811,14 +812,25 @@ export class EspaceService {
 
   // ----------------------------------------------------------------- actions
 
-  /** Les actions de l'association, la plus récente d'abord. */
+  /** Les actions de l'association, la plus récente d'abord, avec l'avancement de leurs tâches. */
   async actions(accountId: string) {
     const organisation = await this.organisationDuCompte(accountId);
-    const actions = await this.prisma.actionAssociation.findMany({
-      where: { organisationId: organisation.id },
-      orderBy: [{ dateDebut: 'desc' }, { createdAt: 'desc' }],
-    });
-    return { actions, resume: this.resumeActions(actions) };
+    const [actions, groupes] = await Promise.all([
+      this.prisma.actionAssociation.findMany({
+        where: { organisationId: organisation.id },
+        orderBy: [{ dateDebut: 'desc' }, { createdAt: 'desc' }],
+      }),
+      this.prisma.tacheProjet.groupBy({
+        by: ['actionId', 'statut'],
+        where: { organisationId: organisation.id },
+        _count: { _all: true },
+      }),
+    ]);
+    const progression = progressionParProjet(groupes);
+    return {
+      actions: actions.map((a) => ({ ...a, ...(progression.get(a.id) ?? { tachesTotal: 0, tachesFaites: 0 }) })),
+      resume: this.resumeActions(actions),
+    };
   }
 
   async creerAction(accountId: string, dto: ActionDto) {
