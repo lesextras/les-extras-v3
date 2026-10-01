@@ -3,11 +3,11 @@ import type { ModeleFabrique } from './_fabrique';
 
 /** Les types du chemin, tels que l'API les renvoie (voir apps/api/src/association/chemin.ts). */
 
-export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION';
+export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE';
 
 export interface DescriptionPartie {
   code: PartieChemin;
-  numero: 1 | 2 | 3;
+  numero: 1 | 2 | 3 | 4 | 5;
   titre: string;
   enUnMot: string;
   resultat: string;
@@ -42,6 +42,10 @@ export interface EtapeChemin {
   lexique: { mot: string; explication: string }[];
   piecesAjoutees: string[];
   verifiableAvec?: 'RNA' | 'SIRENE';
+  /** Revient chaque année : repasse « À faire » au 1er janvier. */
+  chaqueAnnee?: boolean;
+  /** Peut être marquée « Pas concerné ». */
+  peutNePasConcerner?: boolean;
 }
 
 export interface CheminComplet {
@@ -82,9 +86,15 @@ export const LIBELLES_GENRE: Record<GenreDocument, string> = {
   SITE: 'Site officiel',
 };
 
-/** Les couleurs de chaque partie du chemin : une teinte par partie, la troisième en indigo. */
+/**
+ * Les couleurs de chaque partie du chemin : une teinte par partie, la troisième
+ * en indigo, « Chaque année » en sarcelle, « Selon ton activité » en ardoise.
+ * Copie dans chemin/KanbanChemin.tsx : les deux tables bougent ensemble.
+ */
 export const TEINTES_PARTIE: Record<PartieChemin, { fond: string; texte: string; bord: string; pastille: string }> = {
   NAITRE: { fond: 'bg-[#E3F5EC]', texte: 'text-[#0F5F3E]', bord: 'border-[#BFE6D2]', pastille: 'bg-[#1E9E6A]' },
   VIVRE: { fond: 'bg-[#FEF3E2]', texte: 'text-[#7C3E06]', bord: 'border-[#F5D6A8]', pastille: 'bg-[#F5B400]' },
   SUBVENTION: { fond: 'bg-[#ECEBFC]', texte: 'text-[#4338CA]', bord: 'border-[#C7C4F2]', pastille: 'bg-[#4F46E5]' },
+  CHAQUE_ANNEE: { fond: 'bg-[#E0F4F3]', texte: 'text-[#115E59]', bord: 'border-[#A7DCD8]', pastille: 'bg-[#0D9488]' },
+  SELON_ACTIVITE: { fond: 'bg-[#EEF0F4]', texte: 'text-[#3F4A5C]', bord: 'border-[#D3D8E2]', pastille: 'bg-[#64748B]' },
 };

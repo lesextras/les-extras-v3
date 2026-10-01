@@ -12,7 +12,7 @@ import { LIBELLES_COUT } from '../_avantages';
 export const metadata: Metadata = {
   title: 'Le chemin, étape par étape',
   description:
-    "Douze étapes pour créer et faire vivre ton association, avec les CERFA, puis tout ce à quoi elle a droit : logiciels offerts, FDVA, Service civique.",
+    "Créer et faire vivre ton association étape par étape, avec les CERFA, puis ce à quoi elle a droit : logiciels offerts, FDVA, Service civique.",
   alternates: { canonical: '/chemin' },
 };
 
@@ -53,7 +53,7 @@ export default async function CheminPage() {
   return (
     <>
       <Titre surtitre="Le chemin" sousTitre="Une étape après l'autre. Tu ouvres, tu fais, tu coches.">
-        Douze étapes, <Accent>une subvention</Accent> au bout.
+        Le chemin, <Accent>une subvention</Accent> au bout.
       </Titre>
 
       {!chemin ? (
@@ -101,10 +101,18 @@ export default async function CheminPage() {
       {/* ------------------------------------------------ le chemin : en colonnes une fois connecté, en une ligne sinon */}
       {connecte && chemin ? (
         <KanbanChemin
-          etapes={etapes.map((e) => ({ numero: e.numero, slug: e.slug, titre: e.titre, partie: e.partie }))}
+          etapes={etapes.map((e) => ({
+            numero: e.numero,
+            slug: e.slug,
+            titre: e.titre,
+            partie: e.partie,
+            chaqueAnnee: e.chaqueAnnee,
+            peutNePasConcerner: e.peutNePasConcerner,
+          }))}
           parties={parties.map((p) => ({ code: p.code, titre: p.titre }))}
           faites={[...faites]}
           verifiees={[...connecte.verifiees]}
+          pasConcernees={[...connecte.pasConcernees]}
         />
       ) : (
         <div id="partie-1" className="scroll-mt-24">
@@ -120,6 +128,7 @@ export default async function CheminPage() {
                   {p.code === 'SUBVENTION' ? <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] text-[#1D1B5C]">Le but</span> : null}
                   {connecte ? <span className="ml-auto text-[#6B6A8A]">{faitesIci} / {siennes.length}</span> : null}
                 </h2>
+                {p.code === 'CHAQUE_ANNEE' || p.code === 'SELON_ACTIVITE' ? <p className="-mt-1 mb-3 text-sm text-[#6B6A8A]">{p.enUnMot}</p> : null}
 
                 <ol className="relative ml-5 border-l-2 border-[#E6E4F3]">
                   {siennes.map((e) => {
@@ -144,7 +153,12 @@ export default async function CheminPage() {
                           }`}
                         >
                           <span className="min-w-0 flex-1">
-                            <span className={`block font-extrabold leading-snug ${faite ? 'text-[#6B6A8A]' : 'text-[#1D1B5C]'} group-hover:text-[#4F46E5]`}>{e.titre}</span>
+                            <span className={`block font-extrabold leading-snug ${faite ? 'text-[#6B6A8A]' : 'text-[#1D1B5C]'} group-hover:text-[#4F46E5]`}>
+                              {e.titre}
+                              {e.chaqueAnnee ? (
+                                <span className="ml-2 inline-block rounded-full bg-[#E0F4F3] px-2 py-0.5 align-middle text-[11px] font-bold text-[#115E59]">Chaque année</span>
+                              ) : null}
+                            </span>
                             {estProchaine ? <span className="mt-0.5 block text-sm text-[#6B6A8A]">{e.enUnMot}</span> : null}
                           </span>
                           <span className={`shrink-0 text-sm font-bold ${estProchaine ? 'rounded-lg bg-[#4F46E5] px-3 py-1.5 text-white' : 'text-[#9A99B5] group-hover:text-[#4F46E5]'}`}>

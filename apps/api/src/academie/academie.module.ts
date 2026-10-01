@@ -23,7 +23,7 @@ import { GestionPublicController } from './gestion/gestion-public.controller';
  * PILOTER MON ACADÉMIE (pilote.toulali.fr/academie).
  *
  * Le poste de pilotage d'un organisme de formation : la fiche de l'organisme,
- * le chemin en douze étapes, le journal de veille et le registre des
+ * le chemin étape par étape, le journal de veille et le registre des
  * réclamations. Le catalogue, les sessions, les inscriptions et les preuves
  * Qualiopi vivent dans leurs modules d'origine — ce module les compose.
  *

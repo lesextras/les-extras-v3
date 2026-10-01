@@ -17,7 +17,7 @@ import type { ResumeFinancements, ResumeProspects } from './_gestion/types';
 /**
  * L'ACCUEIL DE « PILOTER MON ACADÉMIE ».
  *
- * Sans compte : ce que l'espace fait, et le chemin en douze étapes.
+ * Sans compte : ce que l'espace fait, et le chemin étape par étape.
  * Avec un compte : ce qui presse cette semaine, et où en est la certification.
  */
 export default async function AccueilAcademiePage() {

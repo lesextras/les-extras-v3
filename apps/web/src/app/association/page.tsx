@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       title: { absolute: 'Piloter mon association, par Toulali' },
       description:
-        "Le chemin en 12 étapes, le classeur qui prévient, les subventions, la comptabilité et les agréments. Gratuit pour démarrer.",
+        "Le chemin étape par étape, le classeur qui prévient, les subventions, la comptabilité et les agréments. Gratuit pour démarrer.",
       alternates: { canonical: '/association' },
     };
   }
@@ -357,7 +357,7 @@ const POURQUOI = [
   {
     titre: 'Le chemin, pas la paperasse',
     texte:
-      "Douze étapes dans l'ordre où elles se posent vraiment : naître, vivre, demander. Chaque étape dit ce qu'il te faut, ce que ça coûte, et à quoi tu sais que c'est fini.",
+      "Les étapes dans l'ordre où elles se posent vraiment : naître, vivre, demander, puis ce qui revient chaque année. Chaque étape dit ce qu'il te faut, ce que ça coûte, et à quoi tu sais que c'est fini.",
   },
   {
     titre: 'Le classeur qui prévient',
@@ -387,7 +387,7 @@ const PORTES = [
     texte: 'text-[#3B3A66]',
     pilule: 'bg-white text-[#4338CA]',
     bouton: 'bg-[#4F46E5] group-hover:bg-[#4338CA]',
-    mots: ['Le chemin en 12 étapes', 'Classeur', 'Subventions', 'Comptabilité', 'Agréments'],
+    mots: ['Le chemin étape par étape', 'Classeur', 'Subventions', 'Comptabilité', 'Agréments'],
   },
   {
     href: '/academie',

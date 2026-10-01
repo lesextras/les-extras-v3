@@ -7,7 +7,8 @@ import { appel } from '../_client';
 
 /**
  * LE CHEMIN DE L'ACADÉMIE EN KANBAN, TEMPS PAR TEMPS (01/10/2026).
- * Les trois temps restent (Exister, Se tenir, Se certifier) avec leur bandeau ;
+ * Les temps restent (Exister, Se tenir, Se certifier, puis Chaque année et
+ * Être finançable) avec leur bandeau ;
  * dans chacun, les étapes se rangent en « À faire » et « Fait ». Glisser une
  * carte coche ou décoche l'étape (POST /academie/chemin/:slug). Les étapes
  * cochées toutes seules par la donnée (« Auto ») ne se déplacent pas.
@@ -31,6 +32,10 @@ export interface EtapeKanban {
   numero: number;
   titre: string;
   pourPasser: string;
+  /** Revient chaque année : badge « Chaque année ». */
+  chaqueAnnee?: boolean;
+  /** Peut être écartée : action « Pas concerné ». */
+  peutNePasConcerner?: boolean;
 }
 
 export function KanbanCheminAcademie({
@@ -38,32 +43,41 @@ export function KanbanCheminAcademie({
   etapes,
   faites,
   automatiques,
+  pasConcernees = [],
 }: {
   temps: TempsKanban[];
   etapes: EtapeKanban[];
   faites: string[];
   automatiques: string[];
+  pasConcernees?: string[];
 }) {
   const router = useRouter();
   const [attrape, setAttrape] = useState<string | null>(null);
   const [survolee, setSurvolee] = useState<string | null>(null);
-  const [deplaces, setDeplaces] = useState<Record<string, boolean>>({});
+  /** Ce qui a bougé ici, en attendant la réponse : faite ou non, et « pas concerné ». */
+  const [deplaces, setDeplaces] = useState<Record<string, { faite: boolean; pasConcerne: boolean }>>({});
   const [erreur, setErreur] = useState<string | null>(null);
 
   const auto = new Set(automatiques);
   const cochees = new Set(faites);
-  const estFaite = (slug: string) => deplaces[slug] ?? cochees.has(slug);
+  const ecartees = new Set(pasConcernees);
+  const estFaite = (slug: string) => deplaces[slug]?.faite ?? cochees.has(slug);
+  const estPasConcernee = (slug: string) => estFaite(slug) && (deplaces[slug]?.pasConcerne ?? ecartees.has(slug));
+  // L'ordre des numéros suit l'ordre voulu pour « Prochaine » : le chemin
+  // d'abord, puis ce qui revient chaque année, puis ce qui dépend de l'activité.
   const triees = [...etapes].sort((a, b) => a.numero - b.numero);
   const prochaine = triees.find((e) => !estFaite(e.slug))?.slug ?? null;
   const verrouillee = (slug: string) => auto.has(slug) && cochees.has(slug);
 
-  async function deplacer(slug: string, colonne: Colonne) {
-    const faite = colonne === 'FAIT';
-    if (verrouillee(slug) || estFaite(slug) === faite) return;
+  // Glisser ou choisir une colonne coche ou décoche, sans toucher à « Pas concerné ».
+  const deplacer = (slug: string, colonne: Colonne) => (estFaite(slug) === (colonne === 'FAIT') ? undefined : marquer(slug, colonne === 'FAIT'));
+
+  async function marquer(slug: string, faite: boolean, pasConcerne = false) {
+    if (verrouillee(slug) || (estFaite(slug) === faite && estPasConcernee(slug) === pasConcerne)) return;
     setErreur(null);
-    setDeplaces((x) => ({ ...x, [slug]: faite }));
+    setDeplaces((x) => ({ ...x, [slug]: { faite, pasConcerne } }));
     try {
-      await appel(`/academie/chemin/${encodeURIComponent(slug)}`, { method: 'POST', body: { faite } });
+      await appel(`/academie/chemin/${encodeURIComponent(slug)}`, { method: 'POST', body: pasConcerne ? { faite, pasConcerne } : { faite } });
       router.refresh();
     } catch (err) {
       setDeplaces((x) => {
@@ -94,6 +108,9 @@ export function KanbanCheminAcademie({
 
       {temps.map((t, i) => {
         const deTemps = triees.filter((e) => e.numero >= t.de && e.numero <= t.a);
+        if (!deTemps.length) return null;
+        const premier = deTemps[0].numero;
+        const dernier = deTemps[deTemps.length - 1].numero;
         const faitesIci = deTemps.filter((e) => estFaite(e.slug)).length;
         return (
           <section key={t.titre} className="scroll-mt-24" aria-label={t.titre}>
@@ -102,7 +119,7 @@ export function KanbanCheminAcademie({
                 <span className={`flex h-10 w-10 items-center justify-center rounded-full text-lg font-extrabold text-white ${t.teinte.pastille}`}>{i + 1}</span>
                 <h2 className={`text-2xl font-extrabold tracking-tight ${t.teinte.texte}`}>{t.titre}</h2>
                 <span className={`rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide ${t.teinte.texte}`}>
-                  étapes {t.de} à {t.a}
+                  {premier === dernier ? `étape ${premier}` : `étapes ${premier} à ${dernier}`}
                 </span>
                 <span className="ml-auto text-sm font-bold text-[#5E7A6E]">
                   {faitesIci} / {deTemps.length}
@@ -135,6 +152,7 @@ export function KanbanCheminAcademie({
                         const faite = estFaite(e.slug);
                         const bloquee = verrouillee(e.slug);
                         const estProchaine = prochaine === e.slug;
+                        const pasConcerne = estPasConcernee(e.slug);
                         return (
                           <li key={e.slug}>
                             <div
@@ -165,10 +183,12 @@ export function KanbanCheminAcademie({
                                       <span className="font-bold text-[#0F5F3E]">Pour passer :</span> {e.pourPasser}
                                     </p>
                                   ) : null}
-                                  {estProchaine || bloquee ? (
-                                    <p className="mt-1 flex gap-1.5 text-xs font-bold">
+                                  {estProchaine || bloquee || e.chaqueAnnee || pasConcerne ? (
+                                    <p className="mt-1 flex flex-wrap gap-1.5 text-xs font-bold">
                                       {estProchaine ? <span className="rounded-full bg-[#1E9E6A] px-2 py-0.5 text-white">Prochaine</span> : null}
                                       {bloquee ? <span className="rounded-full bg-[#E3F5EC] px-2 py-0.5 text-[#0F5F3E]">Auto</span> : null}
+                                      {e.chaqueAnnee ? <span className="rounded-full bg-[#E0F4F3] px-2 py-0.5 text-[#115E59]">Chaque année</span> : null}
+                                      {pasConcerne ? <span className="rounded-full bg-[#EEF0F4] px-2 py-0.5 text-[#3F4A5C]">Pas concerné</span> : null}
                                     </p>
                                   ) : null}
                                 </div>
@@ -183,6 +203,15 @@ export function KanbanCheminAcademie({
                                   Ouvrir
                                 </Link>
                               </div>
+                              {e.peutNePasConcerner && !faite ? (
+                                <button
+                                  type="button"
+                                  onClick={() => void marquer(e.slug, true, true)}
+                                  className="mt-2 rounded-lg border border-[#D3D8E2] bg-white px-2.5 py-1 text-xs font-bold text-[#3F4A5C] hover:bg-[#EEF0F4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#64748B]"
+                                >
+                                  Pas concerné
+                                </button>
+                              ) : null}
                               {bloquee ? null : (
                                 <label className="mt-2 flex items-center gap-2 text-[11px] font-bold text-[#5E7A6E]">
                                   Déplacer vers

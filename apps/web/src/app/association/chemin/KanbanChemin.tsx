@@ -14,6 +14,8 @@ const TEINTES_PARTIE: Record<PartieChemin, { fond: string; texte: string; bord: 
   NAITRE: { fond: 'bg-[#E3F5EC]', texte: 'text-[#0F5F3E]', bord: 'border-[#BFE6D2]', pastille: 'bg-[#1E9E6A]' },
   VIVRE: { fond: 'bg-[#FEF3E2]', texte: 'text-[#7C3E06]', bord: 'border-[#F5D6A8]', pastille: 'bg-[#F5B400]' },
   SUBVENTION: { fond: 'bg-[#ECEBFC]', texte: 'text-[#4338CA]', bord: 'border-[#C7C4F2]', pastille: 'bg-[#4F46E5]' },
+  CHAQUE_ANNEE: { fond: 'bg-[#E0F4F3]', texte: 'text-[#115E59]', bord: 'border-[#A7DCD8]', pastille: 'bg-[#0D9488]' },
+  SELON_ACTIVITE: { fond: 'bg-[#EEF0F4]', texte: 'text-[#3F4A5C]', bord: 'border-[#D3D8E2]', pastille: 'bg-[#64748B]' },
 };
 
 /**
@@ -36,38 +38,54 @@ export interface CarteEtapeChemin {
   slug: string;
   titre: string;
   partie: PartieChemin;
+  /** Revient chaque année : badge « Chaque année ». */
+  chaqueAnnee?: boolean;
+  /** Peut être écartée : action « Pas concerné ». */
+  peutNePasConcerner?: boolean;
 }
+
+/** Une phrase sous le titre des parties qui ne se lisent pas comme les autres. */
+const AIDE_PARTIE: Partial<Record<PartieChemin, string>> = {
+  CHAQUE_ANNEE: 'Ces étapes repassent dans « À faire » chaque 1er janvier.',
+  SELON_ACTIVITE: 'Une étape ne te concerne pas ? Clique sur « Pas concerné ».',
+};
 
 export function KanbanChemin({
   etapes,
   parties,
   faites,
   verifiees,
+  pasConcernees = [],
 }: {
   etapes: CarteEtapeChemin[];
   parties: { code: PartieChemin; titre: string }[];
   faites: string[];
   verifiees: string[];
+  pasConcernees?: string[];
 }) {
   const router = useRouter();
   const [attrape, setAttrape] = useState<string | null>(null);
   const [survolee, setSurvolee] = useState<string | null>(null);
-  const [deplaces, setDeplaces] = useState<Record<string, boolean>>({});
+  /** Ce qui a bougé ici, en attendant la réponse : faite ou non, et « pas concerné ». */
+  const [deplaces, setDeplaces] = useState<Record<string, { faite: boolean; pasConcerne: boolean }>>({});
   const [erreur, setErreur] = useState<string | null>(null);
 
   const confirmees = new Set(verifiees);
   const cochees = new Set(faites);
-  const estFaite = (slug: string) => confirmees.has(slug) || (deplaces[slug] ?? cochees.has(slug));
+  const ecartees = new Set(pasConcernees);
+  const estFaite = (slug: string) => confirmees.has(slug) || (deplaces[slug]?.faite ?? cochees.has(slug));
+  const estPasConcernee = (slug: string) => estFaite(slug) && (deplaces[slug]?.pasConcerne ?? ecartees.has(slug));
+  // L'ordre des numéros suit l'ordre voulu pour « Prochaine » : le chemin
+  // d'abord, puis ce qui revient chaque année, puis ce qui dépend de l'activité.
   const triees = [...etapes].sort((a, b) => a.numero - b.numero);
   const prochaine = triees.find((e) => !estFaite(e.slug))?.slug ?? null;
 
-  async function deplacer(slug: string, colonne: Colonne) {
-    const faite = colonne === 'FAIT';
-    if (confirmees.has(slug) || estFaite(slug) === faite) return;
+  async function marquer(slug: string, faite: boolean, pasConcerne = false) {
+    if (confirmees.has(slug) || (estFaite(slug) === faite && estPasConcernee(slug) === pasConcerne)) return;
     setErreur(null);
-    setDeplaces((x) => ({ ...x, [slug]: faite }));
+    setDeplaces((x) => ({ ...x, [slug]: { faite, pasConcerne } }));
     try {
-      await appel(`/association/chemin/${slug}`, { method: 'POST', body: { faite } });
+      await appel(`/association/chemin/${slug}`, { method: 'POST', body: pasConcerne ? { faite, pasConcerne } : { faite } });
       router.refresh();
     } catch (err) {
       setDeplaces((x) => {
@@ -78,6 +96,9 @@ export function KanbanChemin({
       setErreur(err instanceof Error ? err.message : 'Le déplacement a échoué.');
     }
   }
+
+  // Glisser ou choisir une colonne coche ou décoche, sans toucher à « Pas concerné ».
+  const deplacer = (slug: string, colonne: Colonne) => (estFaite(slug) === (colonne === 'FAIT') ? undefined : marquer(slug, colonne === 'FAIT'));
 
   function surDepot(e: DragEvent<HTMLDivElement>, colonne: Colonne) {
     e.preventDefault();
@@ -113,6 +134,7 @@ export function KanbanChemin({
           {partie.code === 'SUBVENTION' ? <span className="rounded-full bg-[#F5B400] px-2 py-0.5 text-[10px] text-[#1D1B5C]">Le but</span> : null}
           <span className="ml-auto text-[#6B6A8A]">{faitesIci} / {dePartie.length}</span>
         </h2>
+        {AIDE_PARTIE[partie.code] ? <p className="-mt-1 mb-3 text-sm text-[#6B6A8A]">{AIDE_PARTIE[partie.code]}</p> : null}
       <div className="grid gap-4 md:grid-cols-2">
         {COLONNES.map((col) => {
           const siennes = dePartie.filter((e) => (col.code === 'FAIT') === estFaite(e.slug));
@@ -138,6 +160,7 @@ export function KanbanChemin({
                   const confirmee = confirmees.has(e.slug);
                   const estProchaine = prochaine === e.slug;
                   const faite = estFaite(e.slug);
+                  const pasConcerne = estPasConcernee(e.slug);
                   return (
                     <li key={e.slug}>
                       <div
@@ -166,6 +189,8 @@ export function KanbanChemin({
                             <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-bold">
                               {estProchaine ? <span className="rounded-full bg-[#4F46E5] px-2 py-0.5 text-white">Prochaine</span> : null}
                               {confirmee ? <span className="rounded-full bg-[#E3F5EC] px-2 py-0.5 text-[#0F5F3E]">Confirmée</span> : null}
+                              {e.chaqueAnnee ? <span className="rounded-full bg-[#E0F4F3] px-2 py-0.5 text-[#115E59]">Chaque année</span> : null}
+                              {pasConcerne ? <span className="rounded-full bg-[#EEF0F4] px-2 py-0.5 text-[#3F4A5C]">Pas concerné</span> : null}
                             </p>
                           </div>
                           <Link
@@ -179,6 +204,16 @@ export function KanbanChemin({
                             Ouvrir
                           </Link>
                         </div>
+
+                        {e.peutNePasConcerner && !faite ? (
+                          <button
+                            type="button"
+                            onClick={() => void marquer(e.slug, true, true)}
+                            className="mt-2 rounded-lg border border-[#D3D8E2] bg-white px-2.5 py-1 text-xs font-bold text-[#3F4A5C] hover:bg-[#EEF0F4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#64748B]"
+                          >
+                            Pas concerné
+                          </button>
+                        ) : null}
 
                         {confirmee ? null : (
                           <label className="mt-2 flex items-center gap-2 text-[11px] font-bold text-[#6B6A8A]">

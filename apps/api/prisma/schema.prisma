@@ -3738,6 +3738,9 @@ model Organisation {
   moisClotureExercice Int                @default(12)
   /// Étapes du chemin cochées « je l'ai fait » (slugs).
   etapesFaites        String[]           @default([])
+  /// Suivi des étapes cochées (01/10/2026) : { slug: { le: date ISO, pasConcerne?: true } }.
+  /// Une étape « chaque année » ne compte que si elle a été cochée dans l'année.
+  etapesSuivi         Json?
   /// Le projet en une page : quatre questions, et ce qu'on demande.
   projetPourQui       String?
   projetQuoi          String?
@@ -4066,6 +4069,9 @@ model Academie {
 
   /// Les étapes du chemin cochées à la main. Le reste se déduit des données.
   etapesFaites String[] @default([])
+  /// Suivi des étapes cochées (01/10/2026) : { slug: { le: date ISO, pasConcerne?: true } }.
+  /// Une étape « chaque année » ne compte que si elle a été cochée dans l'année.
+  etapesSuivi  Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

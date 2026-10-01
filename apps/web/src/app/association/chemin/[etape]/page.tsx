@@ -30,6 +30,12 @@ const LIENS_ESPACE: Record<string, LienEspace[]> = {
   'la-premiere-assemblee-generale': [
     { titre: 'La date de l’assemblée', detail: 'Note la date : on te rappelle la prochaine un an après.', href: '/espace/association', bouton: 'Noter la date' },
   ],
+  'assemblee-generale-de-l-annee': [
+    { titre: 'La date de l’assemblée', detail: 'Note la date : on te rappelle la prochaine un an après.', href: '/espace/association', bouton: 'Noter la date' },
+  ],
+  'declarer-les-changements': [
+    { titre: 'Mon équipe', detail: 'Mets à jour le président, le trésorier et le secrétaire après le changement.', href: '/espace/repertoire', bouton: 'Ouvrir mon équipe' },
+  ],
   'le-projet-en-une-page': [
     { titre: 'Mes projets', detail: 'Note ici ce que tu veux faire : le texte se recopie dans tes demandes de subvention.', href: '/espace/projets', bouton: 'Ouvrir mes projets' },
   ],
@@ -79,6 +85,7 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
   const teinte = TEINTES_PARTIE[etape.partie];
   const faite = connecte?.faites.has(etape.slug) ?? false;
   const verifiee = connecte?.verifiees.has(etape.slug) ?? false;
+  const pasConcerne = connecte?.pasConcernees.has(etape.slug) ?? false;
   const modeles = modelesTous.filter((m) => m.etapes.includes(etape.slug));
   const prerempli = { ...preremplissageDeBase(), ...(connecte?.prerempli ?? {}) };
 
@@ -93,7 +100,14 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
         <div className="flex flex-wrap items-center gap-3">
           <span className={`flex h-10 w-10 items-center justify-center rounded-full text-lg font-extrabold text-white ${teinte.pastille}`}>{etape.numero}</span>
           <h1 className="text-3xl font-extrabold tracking-tight text-[#1D1B5C] sm:text-4xl">{etape.titre}</h1>
-          {faite ? <Pastille ton="ok">Fait</Pastille> : <Pastille ton="attention">À faire</Pastille>}
+          {faite && pasConcerne ? (
+            <Pastille ton="neutre">Pas concerné</Pastille>
+          ) : faite ? (
+            <Pastille ton="ok">Fait</Pastille>
+          ) : (
+            <Pastille ton="attention">À faire</Pastille>
+          )}
+          {etape.chaqueAnnee ? <span className="inline-flex items-center rounded-full bg-[#E0F4F3] px-2.5 py-0.5 text-xs font-bold text-[#115E59]">Chaque année</span> : null}
         </div>
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-[#6B6A8A]">
           <span>
@@ -152,7 +166,14 @@ export default async function EtapePage({ params }: { params: Promise<{ etape: s
         </p>
         {connecte ? (
           <div className="w-full max-w-sm">
-            <BoutonEtapeFaite slug={etape.slug} faite={faite} verifiee={verifiee} />
+            <BoutonEtapeFaite
+              slug={etape.slug}
+              faite={faite}
+              verifiee={verifiee}
+              pasConcerne={pasConcerne}
+              peutNePasConcerner={Boolean(etape.peutNePasConcerner)}
+              chaqueAnnee={Boolean(etape.chaqueAnnee)}
+            />
           </div>
         ) : (
           <div className="flex flex-wrap justify-center gap-2">

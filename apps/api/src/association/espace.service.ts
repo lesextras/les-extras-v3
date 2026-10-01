@@ -50,6 +50,7 @@ import {
   type TypeDePiece,
 } from './referentiel-pieces';
 import { ETAPES_CHEMIN } from './chemin';
+import { etatEtape, lireSuivi, marquerSuivi } from '../common/chemin-suivi';
 import type {
   ActionDto,
   ContactDto,
@@ -491,18 +492,19 @@ export class EspaceService {
 
   // -------------------------------------------------------------------- chemin
 
-  async marquerEtape(accountId: string, slug: string, faite: boolean) {
+  async marquerEtape(accountId: string, slug: string, faite: boolean, pasConcerne = false) {
     const etape = ETAPES_CHEMIN.find((e) => e.slug === slug);
     if (!etape) throw new NotFoundException("Cette étape n'existe pas.");
+    if (pasConcerne && (!faite || !etape.peutNePasConcerner)) {
+      throw new BadRequestException('Cette étape ne peut pas être marquée « Pas concerné ».');
+    }
     const organisation = await this.organisationDuCompte(accountId);
-    const actuelles = new Set(organisation.etapesFaites);
-    if (faite) actuelles.add(slug);
-    else actuelles.delete(slug);
+    const suite = marquerSuivi(organisation.etapesFaites, lireSuivi(organisation.etapesSuivi), slug, faite, pasConcerne);
     await this.prisma.organisation.update({
       where: { id: organisation.id },
-      data: { etapesFaites: [...actuelles] },
+      data: { etapesFaites: suite.faites, etapesSuivi: suite.suivi as unknown as Prisma.InputJsonValue },
     });
-    return { etapesFaites: [...actuelles] };
+    return { etapesFaites: suite.faites };
   }
 
   // ------------------------------------------------------------------ dossiers
@@ -1218,18 +1220,25 @@ export class EspaceService {
       return { type, piece: decoree, situation: decoree?.situation ?? 'MANQUANTE' };
     });
 
-    const etapes = ETAPES_CHEMIN.map((e) => ({
-      numero: e.numero,
-      slug: e.slug,
-      titre: e.titre,
-      faite:
-        organisation.etapesFaites.includes(e.slug) ||
-        (e.verifiableAvec === 'RNA' && Boolean(organisation.rna)) ||
-        (e.verifiableAvec === 'SIRENE' && Boolean(organisation.siret)),
-      verifiee:
-        (e.verifiableAvec === 'RNA' && Boolean(organisation.rna)) ||
-        (e.verifiableAvec === 'SIRENE' && Boolean(organisation.siret)),
-    }));
+    // Une étape « chaque année » cochée une autre année repasse à faire ;
+    // une étape « Pas concerné » compte comme faite (common/chemin-suivi.ts).
+    const suivi = lireSuivi(organisation.etapesSuivi);
+    const etapes = ETAPES_CHEMIN.map((e) => {
+      const verifiee = (e.verifiableAvec === 'RNA' && Boolean(organisation.rna)) || (e.verifiableAvec === 'SIRENE' && Boolean(organisation.siret));
+      const etat = etatEtape(e, organisation.etapesFaites, suivi);
+      return {
+        numero: e.numero,
+        slug: e.slug,
+        titre: e.titre,
+        partie: e.partie,
+        faite: etat.faite || verifiee,
+        verifiee,
+        pasConcerne: etat.pasConcerne,
+        faiteLe: etat.faiteLe,
+        chaqueAnnee: Boolean(e.chaqueAnnee),
+        peutNePasConcerner: Boolean(e.peutNePasConcerner),
+      };
+    });
     const etapesFaites = etapes.filter((e) => e.faite).length;
     const projet = this.projetDe(organisation);
     const vieStatutaire = this.vieStatutaireDe(organisation, contacts);
@@ -1254,7 +1263,7 @@ export class EspaceService {
       classeur,
       dossiers: dossiers.map((d) => this.decorerDossier(d)),
       chemin: { etapes, faites: etapesFaites, total: etapes.length, pourcentage: Math.round((etapesFaites / etapes.length) * 100) },
-      lundi: this.ecranDuLundi(classeur, dossiers, organisation.etapesFaites.length + etapes.filter((e) => e.verifiee).length),
+      lundi: this.ecranDuLundi(classeur, dossiers, etapesFaites),
       projet,
       vieStatutaire,
       repertoire,

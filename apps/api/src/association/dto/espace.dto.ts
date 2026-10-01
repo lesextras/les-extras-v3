@@ -117,6 +117,11 @@ export class ModifierPieceDto {
 export class EtapeFaiteDto {
   @IsBoolean()
   faite!: boolean;
+
+  /** « Pas concerné » : l'étape compte comme faite, avec son badge. */
+  @IsOptional()
+  @IsBoolean()
+  pasConcerne?: boolean;
 }
 
 export class DossierDto {

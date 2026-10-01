@@ -68,6 +68,14 @@ export interface EtapeAcademie {
   faite: boolean;
   /** Cochée toute seule parce que la donnée est arrivée : on ne la décoche pas à la main. */
   automatique: boolean;
+  /** Marquée « Pas concerné » (elle compte comme faite). */
+  pasConcerne?: boolean;
+  /** Date ISO de la coche, quand on la connaît. */
+  faiteLe?: string | null;
+  /** Revient chaque année. */
+  chaqueAnnee?: boolean;
+  /** Peut être marquée « Pas concerné ». */
+  peutNePasConcerner?: boolean;
 }
 
 export interface CheminAcademie {

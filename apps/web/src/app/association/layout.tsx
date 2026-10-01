@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     type: 'website',
     title: `${NOM_SITE}, par Toulali`,
     description:
-      "Faire naître ton association, la faire vivre, demander une subvention : douze étapes expliquées simplement, avec les CERFA et des documents exemples. Gratuit.",
+      "Faire naître ton association, la faire vivre, demander une subvention : les étapes expliquées simplement, avec les CERFA et des documents exemples. Gratuit.",
     images: [
       {
         url: '/association/partage-piloter.png',
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     images: ['/association/partage-piloter.png'],
     title: `${NOM_SITE}, par Toulali`,
-    description: 'Douze étapes expliquées simplement, jusqu’à la première subvention. Gratuit.',
+    description: 'Les étapes expliquées simplement, jusqu’à la première subvention et chaque année ensuite. Gratuit.',
   },
   robots: { index: true, follow: true },
 };

@@ -69,7 +69,7 @@ export class AcademieEspaceController {
     @Param('slug') slug: string,
     @Body() dto: EtapeAcademieFaiteDto,
   ) {
-    return this.academie.marquerEtape(account.id, slug, dto.faite);
+    return this.academie.marquerEtape(account.id, slug, dto.faite, dto.pasConcerne === true);
   }
 
   // ----------------------------------------------------------------- veille

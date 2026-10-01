@@ -86,6 +86,11 @@ export class ModifierAcademieDto {
 export class EtapeAcademieFaiteDto {
   @IsBoolean()
   faite!: boolean;
+
+  /** « Pas concerné » : l'étape compte comme faite, avec son badge. */
+  @IsOptional()
+  @IsBoolean()
+  pasConcerne?: boolean;
 }
 
 /** Une entrée du journal de veille — critère 6. */

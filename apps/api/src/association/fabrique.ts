@@ -270,7 +270,7 @@ export const MODELES: Modele[] = [
     titre: "Le procès-verbal de l'assemblée générale",
     enUnMot: 'Le compte rendu de votre réunion annuelle : rapports approuvés, comptes votés, bureau élu.',
     piece: 'PV_DERNIERE_AG',
-    etapes: ['la-premiere-assemblee-generale'],
+    etapes: ['la-premiere-assemblee-generale', 'assemblee-generale-de-l-annee'],
     pages: [{ titre: 'La réunion', champs: ['nom', 'date', 'lieu', 'nbPresents', 'nbMembres'] }, { titre: 'Les rapports', champs: ['rapportMoral', 'recettes', 'depenses', 'cotisation', 'projets'] }, { titre: 'Le bureau', champs: ['president', 'tresorier', 'secretaire'] }],
     champs: [
       CHAMP_NOM,
@@ -323,7 +323,7 @@ export const MODELES: Modele[] = [
     titre: "Le rapport d'activité",
     enUnMot: 'Ce que vous avez fait dans l’année, avec des chiffres : les financeurs le lisent en premier.',
     piece: 'RAPPORT_ACTIVITE',
-    etapes: ['la-premiere-assemblee-generale'],
+    etapes: ['la-premiere-assemblee-generale', 'assemblee-generale-de-l-annee'],
     pages: [{ titre: 'L’association', champs: ['nom', 'annee', 'presentation'] }, { titre: 'Les actions', champs: ['actions', 'nbBenevoles', 'partenaires'] }, { titre: 'La suite', champs: ['suite', 'president'] }],
     champs: [
       CHAMP_NOM,
@@ -408,7 +408,7 @@ export const MODELES: Modele[] = [
     titre: "Les comptes de l'année",
     enUnMot: 'Ce qui est entré, ce qui est sorti, ce qu’il reste : le compte rendu financier de l’année passée.',
     piece: 'COMPTES_ANNUELS',
-    etapes: ['tenir-des-comptes-simples', 'la-premiere-assemblee-generale'],
+    etapes: ['tenir-des-comptes-simples', 'la-premiere-assemblee-generale', 'assemblee-generale-de-l-annee'],
     pages: [{ titre: 'Les recettes', champs: ['nom', 'annee', 'soldeDebut', 'recettes'] }, { titre: 'Les dépenses', champs: ['depenses'] }, { titre: 'Approbation', champs: ['dateApprobation', 'tresorier', 'president'] }],
     champs: [
       CHAMP_NOM,
@@ -488,7 +488,7 @@ export const MODELES: Modele[] = [
     titre: "La convocation à l'assemblée générale",
     enUnMot: 'Le courrier qui convoque les membres : date, heure, lieu, ordre du jour. À envoyer 15 jours avant.',
     categorie: 'Secrétariat',
-    etapes: ['la-premiere-assemblee-generale'],
+    etapes: ['la-premiere-assemblee-generale', 'assemblee-generale-de-l-annee'],
     pages: [
       { titre: 'La réunion', champs: ['nom', 'siege', 'typeAg', 'dateAg', 'heure', 'lieu'] },
       { titre: 'L’ordre du jour', champs: ['points', 'pouvoir', 'ville', 'date', 'president'] },

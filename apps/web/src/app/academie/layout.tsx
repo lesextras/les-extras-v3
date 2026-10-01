@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: `%s · ${NOM_SITE}`,
   },
   description:
-    "Déclarer ton organisme de formation, obtenir Qualiopi, ouvrir tes financements : douze étapes expliquées simplement, avec les preuves à réunir. Gratuit.",
+    "Déclarer ton organisme de formation, obtenir Qualiopi, ouvrir tes financements : les étapes expliquées simplement, avec les preuves à réunir. Gratuit.",
   keywords: [
     'organisme de formation',
     'Qualiopi',
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     type: 'website',
     title: `${NOM_SITE}, par Toulali`,
     description:
-      "Déclarer son organisme, obtenir Qualiopi, ouvrir ses financements : douze étapes expliquées simplement. Gratuit.",
+      "Déclarer son organisme, obtenir Qualiopi, ouvrir ses financements : les étapes expliquées simplement. Gratuit.",
   },
   robots: { index: true, follow: true },
 };

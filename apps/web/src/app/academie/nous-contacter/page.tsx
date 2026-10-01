@@ -60,7 +60,7 @@ export default function NousContacterAcademiePage() {
             <p className="mt-2 text-sm leading-relaxed text-[#334A42]">
               Beaucoup de questions trouvent déjà leur réponse dans{' '}
               <Link href="/academie/chemin" className="font-bold text-[#0F5F3E] underline underline-offset-4">
-                les douze étapes du chemin
+                les étapes du chemin
               </Link>
               , qui disent dans quel ordre s&apos;y prendre et ce qu&apos;il faut pour passer à la suivante.
             </p>

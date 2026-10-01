@@ -35,6 +35,7 @@ export default async function EtapePage({ params }: Params) {
 
   let faite = false;
   let automatique = false;
+  let pasConcerne = false;
   let connectee = false;
   if (await academieConnectee()) {
     connectee = true;
@@ -43,6 +44,7 @@ export default async function EtapePage({ params }: Params) {
     const trouvee = data?.chemin.etapes.find((e) => e.slug === slug);
     faite = Boolean(trouvee?.faite);
     automatique = Boolean(trouvee?.automatique);
+    pasConcerne = Boolean(trouvee?.faite && trouvee?.pasConcerne);
   }
 
   return (
@@ -64,12 +66,30 @@ export default async function EtapePage({ params }: Params) {
       <div className={`${CARTE} mb-6 p-5 sm:p-6`}>
         <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-[#5E7A6E]">Pour passer à la suivante</h2>
         <p className="mt-2 text-lg font-extrabold leading-snug text-[#12312A]">{etape.pourPasser}</p>
-        {faite ? (
-          <p className="mt-3">
-            <Pastille ton="ok">{automatique ? "cochée d'elle-même" : 'faite'}</Pastille>
+        {faite || etape.chaqueAnnee ? (
+          <p className="mt-3 flex flex-wrap gap-2">
+            {faite ? <Pastille ton="ok">{automatique ? "cochée d'elle-même" : pasConcerne ? 'pas concerné' : 'faite'}</Pastille> : null}
+            {etape.chaqueAnnee ? (
+              <span className="inline-flex items-center rounded-full bg-[#E0F4F3] px-2.5 py-0.5 text-xs font-bold text-[#115E59]">Chaque année</span>
+            ) : null}
           </p>
         ) : null}
       </div>
+
+      {etape.liens?.length ? (
+        <div className={`${CARTE} mb-6 p-5 sm:p-6`}>
+          <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-[#5E7A6E]">Les pages officielles</h2>
+          <ul className="mt-2 space-y-1.5">
+            {etape.liens.map((l) => (
+              <li key={l.lien}>
+                <a href={l.lien} target="_blank" rel="noopener" className="font-bold text-[#0F5F3E] underline underline-offset-4">
+                  {l.nom} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {connectee ? (
         automatique ? (
@@ -77,7 +97,13 @@ export default async function EtapePage({ params }: Params) {
             Cette étape s&apos;est cochée toute seule : la donnée est arrivée dans ta fiche. Rien à faire de plus.
           </Encart>
         ) : (
-          <BoutonEtape slug={slug} faite={faite} />
+          <BoutonEtape
+            slug={slug}
+            faite={faite}
+            pasConcerne={pasConcerne}
+            peutNePasConcerner={Boolean(etape.peutNePasConcerner)}
+            chaqueAnnee={Boolean(etape.chaqueAnnee)}
+          />
         )
       ) : (
         <Encart ton="info">

@@ -7,11 +7,17 @@
  * côté, et à chaque étape les vrais formulaires (CERFA) et des documents
  * exemples qu'on peut recopier.
  *
- * Le chemin a trois parties :
+ * Le chemin a cinq parties :
  *   1. Faire naître l'association (étapes 1 à 4)
  *   2. La faire vivre (étapes 5 à 7)
  *   3. Demander une subvention ou répondre à un appel à projets (8 à 12)
- * La troisième est le but : c'est elle qu'on met en avant.
+ *   4. Chaque année (13 à 16) : ce qui revient tous les ans. Ces étapes
+ *      repassent dans « À faire » au 1er janvier (voir common/chemin-suivi.ts).
+ *   5. Selon ton activité (17 à 20) : ce qui ne concerne que certaines
+ *      associations. Chacune peut être marquée « Pas concerné ».
+ * La troisième est le but : c'est elle qu'on met en avant. Les parties 4 et 5
+ * ont été ajoutées le 01/10/2026 ; les slugs des étapes 1 à 12 ne bougent
+ * pas (les coches déjà enregistrées restent valables).
  *
  * Règles tenues par ce fichier :
  *  - jamais de recommandation commerciale : les renvois vont vers les services
@@ -20,11 +26,11 @@
  *  - le chemin est gratuit et le reste.
  */
 
-export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION';
+export type PartieChemin = 'NAITRE' | 'VIVRE' | 'SUBVENTION' | 'CHAQUE_ANNEE' | 'SELON_ACTIVITE';
 
 export interface DescriptionPartie {
   code: PartieChemin;
-  numero: 1 | 2 | 3;
+  numero: 1 | 2 | 3 | 4 | 5;
   titre: string;
   /** Une phrase toute simple. */
   enUnMot: string;
@@ -53,6 +59,20 @@ export const PARTIES_CHEMIN: readonly DescriptionPartie[] = [
     titre: 'Demander une subvention',
     enUnMot: "Tu racontes ton projet, tu chiffres ce qu'il coûte, tu déposes le dossier, tu rends compte.",
     resultat: 'Un dossier déposé chez un financeur, puis un compte rendu qui ouvre la porte au suivant.',
+  },
+  {
+    code: 'CHAQUE_ANNEE',
+    numero: 4,
+    titre: 'Chaque année',
+    enUnMot: 'Ce qui revient tous les ans. Ces étapes repassent dans « À faire » au 1er janvier.',
+    resultat: 'Une assemblée tenue, des changements déclarés, des comptes en règle.',
+  },
+  {
+    code: 'SELON_ACTIVITE',
+    numero: 5,
+    titre: 'Selon ton activité',
+    enUnMot: "Ce qui dépend de ce que fait l'association. Si une étape ne te concerne pas, tu le dis en un clic.",
+    resultat: 'Chaque obligation qui te concerne est en place, les autres sont écartées.',
   },
 ];
 
@@ -120,6 +140,10 @@ export interface EtapeChemin {
   piecesAjoutees: string[];
   /** Peut-on vérifier l'étape automatiquement avec les données publiques ? */
   verifiableAvec?: 'RNA' | 'SIRENE';
+  /** L'étape revient chaque année : cochée une autre année, elle est à refaire. */
+  chaqueAnnee?: boolean;
+  /** L'étape peut être marquée « Pas concerné » (elle compte alors comme faite). */
+  peutNePasConcerner?: boolean;
 }
 
 const MODELES = '/association/modeles';
@@ -754,12 +778,23 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
           "Le financeur donne une liste : statuts, récépissé, RIB, dernier procès-verbal, comptes, budget… Dans « Mes dossiers », tu coches chaque papier ; ceux du classeur sont déjà là.",
       },
       {
+        titre: "Signe le contrat d'engagement républicain",
+        detail:
+          "Chaque demande de subvention publique engage l'association à respecter ce contrat : sept engagements, comme le respect des lois de la République, la liberté de conscience, l'égalité et la dignité des personnes. Tu le souscris en signant l'attestation sur l'honneur du formulaire. L'association veille ensuite à ce que ses dirigeants, salariés, membres et bénévoles le respectent.",
+      },
+      {
         titre: 'Vérifie, puis dépose toi-même',
         detail:
           "Chaque papier présent, à jour, lisible. Puis tu déposes : en ligne (Le Compte Asso pour l'État, le site de la mairie ou du département) ou en main propre. Note la date de dépôt dans Mes dossiers.",
       },
     ],
-    quoiFaire: ['Ouvre le CERFA 12156.', 'Recopie ton projet et ton budget.', 'Joins les papiers demandés.', 'Vérifie, puis dépose et note la date.'],
+    quoiFaire: [
+      'Ouvre le CERFA 12156.',
+      'Recopie ton projet et ton budget.',
+      'Joins les papiers demandés.',
+      "Signe l'attestation qui souscrit au contrat d'engagement républicain.",
+      'Vérifie, puis dépose et note la date.',
+    ],
     dureeEstimee: 'Deux à trois heures la première fois, moins ensuite.',
     cout: 'Gratuit.',
     documents: [
@@ -783,7 +818,13 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
         aQuoiCaSert: 'Les lignes de ce tableau correspondent aux cases budget du CERFA.',
       },
     ],
-    renvois: [],
+    renvois: [
+      {
+        nom: "Le contrat d'engagement républicain, le guide pratique (associations.gouv.fr)",
+        lien: 'https://www.associations.gouv.fr/le-contrat-d-engagement-republicain-le-guide-pratique.html',
+        pourQuoi: "Les sept engagements expliqués, et ce qui se passe s'ils ne sont pas respectés.",
+      },
+    ],
     quandCestFini: "Le dossier est déposé, la date est notée. Il ne reste qu'à attendre la réponse, puis à rendre compte.",
     debloque: 'Le dossier est déposé. La date du compte rendu est notée pour toi.',
     lexique: [
@@ -791,6 +832,10 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       { mot: 'CERFA 12156', explication: 'Le formulaire de demande de subvention, le même pour presque tous les financeurs publics.' },
       { mot: 'Notice', explication: 'Le mode d\'emploi du formulaire, case par case.' },
       { mot: 'Recevable', explication: "Un dossier complet, arrivé à temps : le financeur accepte de le lire." },
+      {
+        mot: "Contrat d'engagement républicain",
+        explication: "Sept engagements que toute association souscrit quand elle demande une subvention publique. La signature se fait dans l'attestation du formulaire.",
+      },
     ],
     piecesAjoutees: [],
   },
@@ -841,12 +886,570 @@ export const ETAPES_CHEMIN: readonly EtapeChemin[] = [
       },
     ],
     renvois: [],
-    quandCestFini: "Le dossier est soldé. Tu peux redemander l'année suivante. Le chemin est fini : l'écran du lundi prend le relais.",
-    debloque: "Le dossier est soldé. Le chemin est terminé : l'écran du lundi prend le relais.",
+    quandCestFini: "Le dossier est soldé. Tu peux redemander l'année suivante. La suite du chemin, c'est ce qui revient chaque année.",
+    debloque: "Le dossier est soldé. Le chemin continue avec ce qui revient chaque année.",
     lexique: [
       { mot: 'Compte rendu financier', explication: "Le document qui montre au financeur comment sa subvention a été dépensée et ce qu'elle a permis." },
       { mot: 'Convention', explication: "Le contrat signé avec le financeur pour les grosses subventions : il fixe les engagements et les dates." },
       { mot: 'Soldé', explication: "Un dossier fini : l'argent a été reçu, dépensé et justifié." },
+    ],
+    piecesAjoutees: [],
+  },
+  // ------------------------------------------------------ 4. CHAQUE ANNÉE
+  {
+    numero: 13,
+    slug: 'assemblee-generale-de-l-annee',
+    titre: "Tenir l'assemblée générale de l'année",
+    partie: 'CHAQUE_ANNEE',
+    chaqueAnnee: true,
+    enUnMot: "Une fois par an, les membres se réunissent : on raconte l'année, on montre les comptes, on vote.",
+    pourquoi:
+      "Les statuts prévoient presque toujours une assemblée par an. Les financeurs demandent le procès-verbal de la dernière assemblée et les comptes approuvés : ceux d'il y a deux ans ne suffisent plus.",
+    ilTeFaut: ["Les comptes de l'année qui vient de finir.", "Le rapport d'activité de l'année.", 'La liste des membres à jour.'],
+    commentFaire: [
+      {
+        titre: "Prépare le rapport d'activité et les comptes",
+        detail: "Une page sur ce que l'association a fait, et les totaux du cahier de comptes. Le trésorier présente les comptes, le président présente l'année.",
+      },
+      {
+        titre: 'Convoque les membres',
+        detail: "Une convocation avec la date, le lieu et l'ordre du jour, dans le délai écrit dans les statuts (souvent 15 jours). Un mail suffit, sauf si les statuts disent autre chose.",
+      },
+      {
+        titre: 'Faites voter',
+        detail:
+          "Le rapport d'activité, les comptes de l'année, le budget de l'année qui commence. Si des mandats arrivent à leur fin, on élit les responsables.",
+      },
+      {
+        titre: 'Écris le procès-verbal et range-le',
+        detail: "Signé par le président et le secrétaire, avec les comptes approuvés. Les deux vont dans le classeur. Note aussi la date dans ton espace.",
+      },
+    ],
+    quoiFaire: [
+      "Prépare le rapport d'activité et les comptes.",
+      'Convoque les membres dans le délai des statuts.',
+      "Faites voter l'année, les comptes et le budget.",
+      'Écris le procès-verbal et range-le avec les comptes.',
+    ],
+    dureeEstimee: 'Une demi-journée de préparation, une réunion, une heure pour le procès-verbal.',
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: "Exemple de procès-verbal d'assemblée générale",
+        lien: `${MODELES}/exemple-proces-verbal-assemblee-generale.docx`,
+        genre: 'EXEMPLE',
+        aQuoiCaSert: 'À recopier après la réunion, en changeant les noms et les chiffres.',
+      },
+      {
+        titre: "Exemple de rapport d'activité",
+        lien: `${MODELES}/exemple-rapport-activite.docx`,
+        genre: 'EXEMPLE',
+        aQuoiCaSert: "Une page qui raconte l'année. Les financeurs le demandent aussi.",
+      },
+    ],
+    renvois: [
+      {
+        nom: 'Faut-il déclarer quelque chose après chaque assemblée ? (service-public.gouv.fr)',
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F34728',
+        pourQuoi: 'Ce qui se déclare après la réunion, et ce qui ne se déclare pas.',
+      },
+    ],
+    quandCestFini: "Le procès-verbal de l'année est signé et les comptes sont approuvés. Les deux sont dans le classeur.",
+    debloque: "Le procès-verbal, le rapport d'activité et les comptes de l'année entrent dans le classeur. L'étape revient l'an prochain.",
+    lexique: [
+      { mot: 'Approuver les comptes', explication: "Les membres votent « oui » aux comptes présentés par le trésorier. C'est ce que les financeurs veulent voir." },
+      { mot: 'Mandat', explication: "La durée pour laquelle un responsable est élu. Elle est écrite dans les statuts." },
+    ],
+    piecesAjoutees: ['PV_DERNIERE_AG', 'RAPPORT_ACTIVITE', 'COMPTES_ANNUELS'],
+  },
+  {
+    numero: 14,
+    slug: 'declarer-les-changements',
+    titre: "Déclarer les changements de l'année",
+    partie: 'CHAQUE_ANNEE',
+    chaqueAnnee: true,
+    enUnMot: 'Un nouveau président, une nouvelle adresse, des statuts modifiés : tu le déclares dans les trois mois.',
+    pourquoi:
+      "Tant qu'un changement n'est pas déclaré, il ne compte pas pour les autres : la banque, la mairie et les financeurs voient encore l'ancien président ou l'ancienne adresse. Ne pas déclarer expose aussi les dirigeants à une amende.",
+    ilTeFaut: ["Le procès-verbal de la réunion qui a décidé le changement.", 'Les statuts à jour, si tu les as modifiés.', 'Ton numéro RNA.'],
+    commentFaire: [
+      {
+        titre: "Fais la liste des changements de l'année",
+        detail:
+          "Les responsables (président, trésorier, secrétaire), l'adresse du siège, le nom, l'objet, les statuts. Rien n'a bougé ? Tu n'as rien à déclarer : coche l'étape, tu as vérifié.",
+      },
+      {
+        titre: 'Déclare en ligne dans les trois mois',
+        detail:
+          "La déclaration part au greffe des associations, en ligne et gratuitement. Joins le procès-verbal, et les nouveaux statuts s'ils ont changé.",
+      },
+      {
+        titre: "Préviens l'INSEE si le nom, l'objet ou l'adresse changent",
+        detail: "Ton SIRET doit suivre. Sinon, les financeurs trouvent une adresse qui n'est plus la bonne.",
+      },
+      {
+        titre: 'Range le récépissé dans le classeur',
+        detail: "Le greffe renvoie un récépissé de modification. C'est la preuve que le changement est enregistré.",
+      },
+    ],
+    quoiFaire: [
+      "Fais la liste des changements de l'année.",
+      'Déclare-les en ligne dans les trois mois (gratuit).',
+      "Préviens l'INSEE si le nom, l'objet ou l'adresse changent.",
+      'Range le récépissé dans le classeur.',
+    ],
+    dureeEstimee: 'Dix minutes pour vérifier. Un quart d\'heure en ligne par changement.',
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'Déclarer un changement de dirigeants',
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F34797',
+        genre: 'SITE',
+        aQuoiCaSert: 'Si le président, le trésorier ou le secrétaire change.',
+      },
+      {
+        titre: "Modifier le nom, l'objet ou le siège (service en ligne)",
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/R19468',
+        genre: 'SITE',
+        aQuoiCaSert: "Le service officiel pour déclarer les autres changements, gratuit.",
+      },
+      {
+        titre: 'Modifier les statuts',
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F1123',
+        genre: 'SITE',
+        aQuoiCaSert: 'Comment on décide une modification, et comment on la déclare.',
+      },
+    ],
+    renvois: [
+      {
+        nom: 'Faut-il déclarer quelque chose après chaque assemblée ? (service-public.gouv.fr)',
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F34728',
+        pourQuoi: 'La liste officielle de ce qui se déclare dans les trois mois.',
+      },
+    ],
+    quandCestFini: "Chaque changement de l'année est déclaré, ou tu as vérifié qu'il n'y en a pas eu.",
+    debloque: "La liste des dirigeants du classeur est à jour. L'étape revient l'an prochain.",
+    lexique: [
+      { mot: 'Greffe des associations', explication: "Le service de l'État qui enregistre les associations et leurs changements." },
+      { mot: 'Récépissé de modification', explication: "Le papier qui prouve que le changement est enregistré." },
+    ],
+    piecesAjoutees: ['LISTE_DIRIGEANTS'],
+  },
+  {
+    numero: 15,
+    slug: 'declarer-les-recus-fiscaux',
+    titre: "Déclarer les reçus fiscaux de l'année",
+    partie: 'CHAQUE_ANNEE',
+    chaqueAnnee: true,
+    peutNePasConcerner: true,
+    enUnMot: "Si l'association donne des reçus pour les dons, elle dit chaque année aux impôts combien elle a reçu et combien de reçus elle a donnés.",
+    pourquoi:
+      "C'est obligatoire pour les dons reçus depuis 2021 (article 222 bis du code général des impôts). Les impôts peuvent contrôler les reçus : une association qui en délivre sans y avoir droit risque une amende.",
+    ilTeFaut: ["Le cahier de comptes de l'année.", 'La liste des reçus fiscaux délivrés.'],
+    commentFaire: [
+      {
+        titre: 'Fais deux totaux',
+        detail: "Le montant des dons pour lesquels tu as donné un reçu fiscal, et le nombre de reçus délivrés pendant l'exercice.",
+      },
+      {
+        titre: 'Choisis le bon formulaire',
+        detail:
+          "Si l'association dépose déjà une déclaration de résultat (formulaire 2065 ou 2070), les deux chiffres vont dans le cadre prévu. Sinon, il existe un formulaire en ligne, indiqué sur impots.gouv.fr.",
+      },
+      {
+        titre: "Envoie dans les trois mois après la fin de l'exercice",
+        detail: "Pour un exercice du 1er janvier au 31 décembre, c'est début mai.",
+      },
+      {
+        titre: 'Pas de reçus fiscaux ? Choisis « Pas concerné »',
+        detail: "Si l'association ne donne aucun reçu, il n'y a rien à déclarer. L'étape revient l'an prochain, au cas où.",
+      },
+    ],
+    quoiFaire: [
+      'Additionne les dons reçus avec reçu fiscal.',
+      'Compte les reçus délivrés.',
+      "Déclare les deux chiffres dans les trois mois après la fin de l'exercice.",
+    ],
+    dureeEstimee: 'Une demi-heure si le cahier de comptes est à jour.',
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'Déclaration des dons et reçus (impots.gouv.fr)',
+        lien: 'https://www.impots.gouv.fr/professionnel/declaration-des-dons-et-recus',
+        genre: 'SITE',
+        aQuoiCaSert: 'Qui déclare, quoi, où et quand : la page officielle des impôts.',
+      },
+      {
+        titre: 'Déclaration des dons et des reçus fiscaux (associations.gouv.fr)',
+        lien: 'https://associations.gouv.fr/declaration-des-dons-et-des-recus-fiscaux',
+        genre: 'SITE',
+        aQuoiCaSert: 'La même obligation, expliquée pour les associations.',
+      },
+    ],
+    renvois: [],
+    quandCestFini: "Les deux chiffres de l'année sont déclarés, ou l'association n'a donné aucun reçu.",
+    debloque: "Tes reçus fiscaux sont en règle pour l'année. L'étape revient l'an prochain.",
+    lexique: [
+      { mot: 'Reçu fiscal', explication: "Le papier qui permet au donateur de déduire une partie de son don de ses impôts." },
+      { mot: 'Exercice', explication: "L'année sur laquelle on fait les comptes, souvent du 1er janvier au 31 décembre." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 16,
+    slug: 'publier-les-comptes',
+    titre: 'Publier les comptes au Journal officiel',
+    partie: 'CHAQUE_ANNEE',
+    chaqueAnnee: true,
+    peutNePasConcerner: true,
+    enUnMot: "Au-delà de 153 000 € de subventions ou de dons dans l'année, les comptes sont certifiés puis publiés en ligne.",
+    pourquoi:
+      "Une association qui reçoit plus de 153 000 € de subventions publiques dans l'année doit établir des comptes complets, les faire certifier par un commissaire aux comptes et les publier. Même chose au-delà de 153 000 € de dons qui donnent droit à une réduction d'impôt. Les deux seuils se comptent séparément.",
+    ilTeFaut: ["Le total des subventions publiques de l'année.", "Le total des dons avec reçu fiscal de l'année."],
+    commentFaire: [
+      {
+        titre: "Fais les deux totaux de l'année",
+        detail:
+          "D'un côté les subventions publiques, de l'autre les dons qui donnent droit à une réduction d'impôt. Aucun des deux ne dépasse 153 000 € ? Choisis « Pas concerné ».",
+      },
+      {
+        titre: 'Nomme un commissaire aux comptes',
+        detail: "Si un seuil est dépassé, l'association désigne un commissaire aux comptes et un suppléant. Il vérifie les comptes et les certifie.",
+      },
+      {
+        titre: "Fais approuver les comptes par l'assemblée",
+        detail: "Les comptes complets (bilan, compte de résultat, annexe) et le rapport du commissaire sont présentés aux membres.",
+      },
+      {
+        titre: 'Publie en ligne, dans les trois mois',
+        detail: "Dans les trois mois qui suivent l'approbation, les comptes et le rapport du commissaire se publient sur le service en ligne du Journal officiel. C'est gratuit.",
+      },
+    ],
+    quoiFaire: [
+      'Fais le total des subventions publiques et celui des dons.',
+      'Au-delà de 153 000 €, nomme un commissaire aux comptes.',
+      "Fais approuver les comptes par l'assemblée.",
+      'Publie les comptes en ligne dans les trois mois.',
+    ],
+    dureeEstimee: "Une heure pour vérifier les seuils. Si tu es concerné, compte plusieurs jours pour la certification.",
+    cout: 'La publication est gratuite. Le commissaire aux comptes est payant.',
+    documents: [
+      {
+        titre: 'Publier les comptes annuels (service en ligne)',
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/R823',
+        genre: 'SITE',
+        aQuoiCaSert: 'Le service officiel et gratuit pour publier les comptes au Journal officiel.',
+      },
+      {
+        titre: 'Quand faut-il un commissaire aux comptes ?',
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F2907',
+        genre: 'SITE',
+        aQuoiCaSert: 'Les seuils officiels, avec un exemple chiffré.',
+      },
+    ],
+    renvois: [
+      {
+        nom: 'Obligations comptables et publicité des comptes (associations.gouv.fr)',
+        lien: 'https://associations.gouv.fr/obligations-comptables-et-publicite-des-comptes',
+        pourQuoi: 'Ce que la loi demande selon la taille de l\'association.',
+      },
+    ],
+    quandCestFini: "Les comptes de l'année sont publiés, ou l'association reste sous les seuils.",
+    debloque: "Les comptes certifiés entrent dans le classeur. L'étape revient l'an prochain.",
+    lexique: [
+      { mot: 'Commissaire aux comptes', explication: "Un professionnel indépendant qui vérifie les comptes et dit s'ils sont justes." },
+      { mot: 'Certifier', explication: "Le commissaire aux comptes signe un rapport qui dit que les comptes sont réguliers et sincères." },
+      { mot: 'Journal officiel', explication: "Le journal de l'État où sont publiés les comptes des grandes associations." },
+    ],
+    piecesAjoutees: ['COMPTES_ANNUELS'],
+  },
+  // --------------------------------------------- 5. SELON TON ACTIVITÉ
+  {
+    numero: 17,
+    slug: 'le-premier-salarie',
+    titre: 'Embaucher le premier salarié',
+    partie: 'SELON_ACTIVITE',
+    peutNePasConcerner: true,
+    enUnMot: 'Avant le premier jour de travail, une déclaration. Ensuite, chaque mois, une déclaration des salaires.',
+    pourquoi:
+      "Employer quelqu'un fait de l'association un employeur, avec les mêmes obligations qu'une entreprise. Le chèque emploi associatif de l'Urssaf fait une grande partie des démarches à ta place, gratuitement.",
+    ilTeFaut: ['Le SIRET de l\'association (étape 2).', 'Le budget qui montre que le salaire est payable.', 'Les papiers du futur salarié.'],
+    commentFaire: [
+      {
+        titre: "Déclare l'embauche avant le premier jour",
+        detail:
+          "La déclaration préalable à l'embauche (DPAE) se fait en ligne, dans les huit jours qui précèdent l'embauche. Avec le chèque emploi associatif, un seul document sert de DPAE et de contrat de travail.",
+      },
+      {
+        titre: 'Trouve ta convention collective',
+        detail:
+          "Elle dépend de l'activité de l'association. Pour l'animation, l'éducation populaire et les loisirs, c'est souvent la convention ÉCLAT (IDCC 1518). Vérifie sur le Code du travail numérique.",
+      },
+      {
+        titre: 'Propose une mutuelle',
+        detail: "Tout employeur privé, association comprise, doit proposer une complémentaire santé collective à ses salariés, sauf exceptions.",
+      },
+      {
+        titre: 'Adhère à un service de santé au travail',
+        detail: "Le salarié passe une visite d'information et de prévention dans les trois mois qui suivent sa prise de poste.",
+      },
+      {
+        titre: 'Déclare les salaires chaque mois',
+        detail: "La déclaration sociale nominative (DSN) se fait en ligne chaque mois, dès le premier salaire. Le chèque emploi associatif la fait pour toi.",
+      },
+    ],
+    quoiFaire: [
+      "Fais la DPAE dans les huit jours avant l'embauche.",
+      'Trouve la convention collective qui s\'applique.',
+      'Propose une complémentaire santé collective.',
+      'Adhère à un service de santé au travail.',
+      'Déclare les salaires chaque mois (DSN).',
+    ],
+    dureeEstimee: 'Une demi-journée pour tout mettre en place, puis quelques minutes par mois avec le chèque emploi associatif.',
+    cout: "Les démarches sont gratuites. Le salaire, les cotisations et la mutuelle sont à la charge de l'association.",
+    documents: [
+      {
+        titre: 'Le chèque emploi associatif (Urssaf)',
+        lien: 'https://www.urssaf.fr/accueil/services/services-employeurs/service-cea.html',
+        genre: 'SITE',
+        aQuoiCaSert: 'Le service gratuit qui fait la DPAE, les bulletins de paie et la DSN pour les associations.',
+      },
+      {
+        titre: "Les démarches d'un nouvel employeur (Urssaf)",
+        lien: 'https://www.urssaf.fr/accueil/employeur/embaucher-gerer-salaries/embaucher/employeur-demarches-embauche.html',
+        genre: 'SITE',
+        aQuoiCaSert: "La DPAE, la DSN et le reste, dans l'ordre.",
+      },
+      {
+        titre: 'La convention collective ÉCLAT',
+        lien: 'https://code.travail.gouv.fr/convention-collective/1518-education-culture-loisirs-et-animation-au-service-des-territoires-eclat',
+        genre: 'SITE',
+        aQuoiCaSert: "La convention de l'animation, expliquée sur le Code du travail numérique.",
+      },
+      {
+        titre: 'La complémentaire santé obligatoire',
+        lien: 'https://entreprendre.service-public.gouv.fr/vosdroits/F33754',
+        genre: 'SITE',
+        aQuoiCaSert: "Ce que l'employeur doit proposer, et les cas de dispense.",
+      },
+      {
+        titre: "La visite d'information et de prévention",
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F34061',
+        genre: 'SITE',
+        aQuoiCaSert: 'La visite de médecine du travail après l\'embauche.',
+      },
+    ],
+    renvois: [],
+    quandCestFini: 'Le salarié est déclaré, couvert, suivi par la médecine du travail, et ses salaires sont déclarés chaque mois.',
+    debloque: "L'association est en règle comme employeur. Pas de salarié ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'DPAE', explication: "La déclaration préalable à l'embauche, à faire avant le premier jour de travail." },
+      { mot: 'DSN', explication: 'La déclaration sociale nominative : chaque mois, les salaires et les cotisations déclarés en ligne.' },
+      { mot: 'Convention collective', explication: "Les règles d'un secteur (salaires minimum, congés, primes) qui s'ajoutent au code du travail." },
+      { mot: 'Chèque emploi associatif', explication: "Le service gratuit de l'Urssaf qui fait la paie et les déclarations des associations." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 18,
+    slug: 'accueillir-des-mineurs',
+    titre: 'Accueillir des enfants en groupe',
+    partie: 'SELON_ACTIVITE',
+    peutNePasConcerner: true,
+    enUnMot: "Un centre de loisirs, un séjour, un accueil de jeunes : l'accueil se déclare à l'État avant de commencer.",
+    pourquoi:
+      "À partir de 7 mineurs, un accueil de loisirs ou un séjour est en général un accueil collectif de mineurs. Il se déclare au service jeunesse de l'État de ton département (SDJES), qui vérifie que les personnes qui encadrent ont le droit de travailler avec des enfants.",
+    ilTeFaut: ["Le projet éducatif de l'association.", "La liste de l'équipe (directeur, animateurs, bénévoles).", 'Les dates et le lieu de l\'accueil.'],
+    commentFaire: [
+      {
+        titre: 'Vérifie que ton activité est un accueil collectif de mineurs',
+        detail:
+          "Accueil de loisirs (7 à 300 mineurs, au moins 14 jours par an), séjours avec nuits, accueil de jeunes. Un simple atelier ne l'est pas toujours. En cas de doute, demande au SDJES de ton département.",
+      },
+      {
+        titre: 'Déclare en ligne avec TAM',
+        detail:
+          "Dans la plupart des cas, la fiche initiale part deux mois avant le début de l'accueil. Puis une fiche complémentaire, avec l'équipe, au plus tard huit jours avant.",
+      },
+      {
+        titre: "Vérifie l'honorabilité de toute l'équipe",
+        detail:
+          "Salariés ou bénévoles : l'organisateur vérifie qu'aucune personne n'est interdite d'encadrer des mineurs. La consultation se fait dans TAM, et l'administration contrôle le casier judiciaire de l'équipe déclarée.",
+      },
+      {
+        titre: 'Écris le projet éducatif',
+        detail: "Il est demandé avec la déclaration. Le directeur et son équipe écrivent ensuite le projet pédagogique de l'accueil.",
+      },
+      {
+        titre: "Respecte les règles d'encadrement",
+        detail: "Le nombre d'animateurs et leurs diplômes (BAFA, BAFD) sont fixés par la réglementation. Le SDJES te dit ce qui s'applique à ton accueil.",
+      },
+    ],
+    quoiFaire: [
+      "Vérifie que ton activité est un accueil collectif de mineurs.",
+      'Déclare-le en ligne avec TAM, dans les délais.',
+      "Vérifie l'honorabilité de chaque personne de l'équipe.",
+      'Écris le projet éducatif.',
+    ],
+    dureeEstimee: "Une demi-journée pour la première déclaration. Commence au moins deux mois avant l'accueil.",
+    cout: 'La déclaration est gratuite.',
+    documents: [
+      {
+        titre: 'Organisateurs, ce qu\'il faut savoir (jeunes.gouv.fr)',
+        lien: 'https://www.jeunes.gouv.fr/organisateurs-ce-qu-il-faut-savoir-sur-les-accueils-collectifs-de-mineurs-217',
+        genre: 'SITE',
+        aQuoiCaSert: 'Les types d\'accueil, les délais, l\'encadrement et le contrôle d\'honorabilité.',
+      },
+      {
+        titre: 'La téléprocédure TAM',
+        lien: 'https://www.jeunes.gouv.fr/la-teleprocedure-accueils-de-mineurs-tam-250',
+        genre: 'SITE',
+        aQuoiCaSert: "Le service officiel pour déclarer l'accueil, avec ses guides.",
+      },
+    ],
+    renvois: [],
+    quandCestFini: "L'accueil est déclaré, l'équipe est vérifiée, le projet éducatif est écrit.",
+    debloque: "Ton accueil est en règle. Pas d'accueil de mineurs ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'Accueil collectif de mineurs', explication: 'Un accueil de loisirs, un séjour ou un accueil de jeunes, hors de la famille, à partir de 7 mineurs en général.' },
+      { mot: 'SDJES', explication: "Le service départemental à la jeunesse, à l'engagement et aux sports : il reçoit les déclarations." },
+      { mot: 'TAM', explication: "La téléprocédure Accueils de mineurs : le site où l'on déclare." },
+      { mot: 'Honorabilité', explication: "Le fait de n'avoir ni condamnation ni interdiction qui empêche de travailler avec des enfants." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 19,
+    slug: 'les-donnees-des-membres',
+    titre: 'Protéger les données des membres',
+    partie: 'SELON_ACTIVITE',
+    peutNePasConcerner: true,
+    enUnMot: 'La liste des membres contient des données personnelles. Tu les notes dans un registre et tu ne les gardes pas trop longtemps.',
+    pourquoi:
+      "Une association qui garde des noms, des adresses ou des téléphones doit respecter le RGPD, comme une entreprise. La CNIL propose un guide et un modèle de registre gratuits.",
+    ilTeFaut: ['La liste de tes fichiers : membres, bénévoles, donateurs, lettre d\'information.', 'Une heure.'],
+    commentFaire: [
+      {
+        titre: 'Remplis le registre des traitements',
+        detail:
+          "Une fiche par fichier : à quoi il sert, quelles données il contient, qui y a accès, combien de temps on les garde. Le modèle de la CNIL suffit.",
+      },
+      {
+        titre: "Ne garde que l'utile",
+        detail: "Pour une adhésion, le nom et un moyen de contact suffisent souvent. Ne demande rien dont tu n'as pas besoin.",
+      },
+      {
+        titre: 'Fixe les durées de conservation',
+        detail: "La CNIL recommande de garder les données d'un ancien membre trois ans après la fin de son adhésion, puis de les supprimer.",
+      },
+      {
+        titre: 'Informe les personnes',
+        detail: "Sur le bulletin d'adhésion, dis à quoi servent leurs données et comment demander leur effacement.",
+      },
+    ],
+    quoiFaire: [
+      'Remplis le registre des traitements avec le modèle de la CNIL.',
+      "Ne garde que les données utiles.",
+      'Supprime les données des anciens membres après trois ans.',
+      "Informe les personnes sur le bulletin d'adhésion.",
+    ],
+    dureeEstimee: 'Une heure pour le registre, puis un coup d\'œil une fois par an.',
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'Le guide RGPD pour les associations (CNIL)',
+        lien: 'https://www.cnil.fr/sites/cnil/files/atoms/files/cnil-guide_association.pdf',
+        genre: 'MODELE',
+        aQuoiCaSert: 'Ce que le RGPD demande à une association, avec des exemples concrets.',
+      },
+      {
+        titre: 'Le registre des activités de traitement (CNIL)',
+        lien: 'https://www.cnil.fr/fr/RGPD-le-registre-des-activites-de-traitement',
+        genre: 'SITE',
+        aQuoiCaSert: 'Comment tenir le registre, avec le modèle à télécharger.',
+      },
+    ],
+    renvois: [],
+    quandCestFini: 'Ton registre est tenu, les durées sont fixées, les membres sont informés.',
+    debloque: "Les données de tes membres sont protégées. Aucun fichier de personnes ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'RGPD', explication: 'Le règlement européen qui protège les données personnelles.' },
+      { mot: 'Donnée personnelle', explication: "Tout ce qui permet de reconnaître une personne : nom, adresse, téléphone, photo." },
+      { mot: 'Registre des traitements', explication: "Le document qui liste les fichiers de l'association et ce qu'on en fait." },
+      { mot: 'CNIL', explication: "L'autorité publique qui veille à la protection des données personnelles." },
+    ],
+    piecesAjoutees: [],
+  },
+  {
+    numero: 20,
+    slug: 'vendre-des-activites',
+    titre: 'Vérifier les impôts de ce que tu vends',
+    partie: 'SELON_ACTIVITE',
+    peutNePasConcerner: true,
+    enUnMot: "Une buvette, des cours payants, une boutique : selon la façon de vendre, l'association peut devoir la TVA et l'impôt sur les sociétés.",
+    pourquoi:
+      "En principe, une association ne paie pas ces impôts. Mais si elle vend comme une entreprise, elle peut y être soumise. Mieux vaut le vérifier avant qu'un contrôle le fasse.",
+    ilTeFaut: ['La liste de ce que l\'association vend, avec les recettes de l\'année.', 'Les prix pratiqués par les entreprises du coin.'],
+    commentFaire: [
+      {
+        titre: 'Vérifie que la gestion est désintéressée',
+        detail: "Les responsables ne sont pas payés (sauf cas prévus par la loi) et personne ne se partage les bénéfices.",
+      },
+      {
+        titre: 'Regarde si tu concurrences une entreprise',
+        detail: "Une entreprise proche propose-t-elle la même chose au même public ? Si non, l'activité n'est pas lucrative.",
+      },
+      {
+        titre: 'Si oui, applique la règle des 4P',
+        detail:
+          "Le Produit, le Public, le Prix, la Publicité, dans cet ordre d'importance. Un produit qui répond à un besoin mal couvert, un public en difficulté, des prix nettement plus bas : l'association reste exonérée.",
+      },
+      {
+        titre: 'Profite de la franchise si les ventes restent accessoires',
+        detail:
+          "Si l'essentiel de l'activité n'est pas lucratif et que les recettes lucratives restent sous un plafond revu chaque année, l'association reste exonérée. Le montant à jour est sur service-public.gouv.fr.",
+      },
+      {
+        titre: 'Un doute ? Pose la question par écrit',
+        detail: "Ton service des impôts peut te répondre par écrit sur ta situation. Garde sa réponse dans le classeur.",
+      },
+    ],
+    quoiFaire: [
+      'Vérifie que la gestion est désintéressée.',
+      'Regarde si tu concurrences une entreprise.',
+      'Si oui, applique la règle des 4P.',
+      'Vérifie le plafond de la franchise de l\'année.',
+    ],
+    dureeEstimee: "Une heure pour faire le point. Plus si l'activité vendue est importante.",
+    cout: 'Gratuit.',
+    documents: [
+      {
+        titre: 'Fiscalité des activités lucratives (service-public.gouv.fr)',
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F34104',
+        genre: 'SITE',
+        aQuoiCaSert: 'La règle des 4P et le plafond de la franchise, à jour.',
+      },
+      {
+        titre: 'Une association peut-elle avoir une activité commerciale ?',
+        lien: 'https://www.service-public.gouv.fr/particuliers/vosdroits/F31838',
+        genre: 'SITE',
+        aQuoiCaSert: "Ce qui est permis, et ce qu'il faut prévoir dans les statuts.",
+      },
+      {
+        titre: "L'assujettissement aux impôts commerciaux (associations.gouv.fr)",
+        lien: 'https://associations.gouv.fr/lexception-lassujettissement-aux-impots-commerciaux',
+        genre: 'SITE',
+        aQuoiCaSert: 'Les cas où une association paie la TVA et l\'impôt sur les sociétés.',
+      },
+    ],
+    renvois: [],
+    quandCestFini: "Tu sais si ce que vend l'association est imposable, et pourquoi.",
+    debloque: "Tes ventes sont en règle. L'association ne vend rien ? Choisis « Pas concerné ».",
+    lexique: [
+      { mot: 'Gestion désintéressée', explication: "Les responsables ne s'enrichissent pas grâce à l'association." },
+      { mot: 'Lucratif', explication: "Qui rapporte de l'argent comme une entreprise." },
+      { mot: 'Règle des 4P', explication: "Produit, Public, Prix, Publicité : les quatre questions des impôts pour savoir si l'association vend comme une entreprise." },
+      { mot: 'Franchise', explication: "Un plafond de recettes en dessous duquel les petites ventes ne sont pas imposées." },
     ],
     piecesAjoutees: [],
   },

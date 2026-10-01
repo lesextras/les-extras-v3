@@ -99,7 +99,7 @@ export class AssociationEspaceController {
 
   @Post('chemin/:slug')
   marquerEtape(@CurrentAccount() account: RequestAccount, @Param('slug') slug: string, @Body() dto: EtapeFaiteDto) {
-    return this.espace.marquerEtape(account.id, slug, dto.faite);
+    return this.espace.marquerEtape(account.id, slug, dto.faite, dto.pasConcerne === true);
   }
 
   @Post('dossiers')

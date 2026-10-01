@@ -331,7 +331,23 @@ export interface Espace {
   organisation: Organisation;
   classeur: LigneClasseur[];
   dossiers: Dossier[];
-  chemin: { etapes: { numero: number; slug: string; titre: string; faite: boolean; verifiee: boolean }[]; faites: number; total: number; pourcentage: number };
+  chemin: {
+    etapes: {
+      numero: number;
+      slug: string;
+      titre: string;
+      faite: boolean;
+      verifiee: boolean;
+      partie?: string;
+      pasConcerne?: boolean;
+      faiteLe?: string | null;
+      chaqueAnnee?: boolean;
+      peutNePasConcerner?: boolean;
+    }[];
+    faites: number;
+    total: number;
+    pourcentage: number;
+  };
   lundi: {
     perime: { typeCode: string; libelle: string; dateExpiration: string; jours: number; gravite: 'ROUGE' | 'AMBRE'; action: string }[];
     du: { dossierId: string; intitule: string; financeur: string; echeance: string; nature: 'DEPOT' | 'COMPTE_RENDU'; jours: number; gravite: 'ROUGE' | 'AMBRE' }[];

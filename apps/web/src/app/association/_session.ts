@@ -129,7 +129,7 @@ export function formaterEuros(n: number | null | undefined) {
  * association ; sinon null. Ne redirige jamais : les pages publiques s'en
  * servent pour afficher « fait » sans exiger de compte.
  */
-export async function etapesFaitesSiConnecte(): Promise<{ faites: Set<string>; verifiees: Set<string>; nomAssociation: string } | null> {
+export async function etapesFaitesSiConnecte(): Promise<{ faites: Set<string>; verifiees: Set<string>; pasConcernees: Set<string>; nomAssociation: string } | null> {
   const session = await getSession();
   if (!session) return null;
   const compte = await choisirAssociation(session);
@@ -140,11 +140,12 @@ export async function etapesFaitesSiConnecte(): Promise<{ faites: Set<string>; v
       token: session.token,
       accountId: compte.id,
       cache: 'no-store',
-    })) as { chemin?: { etapes?: { slug: string; faite: boolean; verifiee?: boolean }[] }; organisation?: { nom?: string } };
+    })) as { chemin?: { etapes?: { slug: string; faite: boolean; verifiee?: boolean; pasConcerne?: boolean }[] }; organisation?: { nom?: string } };
     const etapes = data.chemin?.etapes ?? [];
     const faites = new Set(etapes.filter((e) => e.faite).map((e) => e.slug));
     const verifiees = new Set(etapes.filter((e) => e.verifiee).map((e) => e.slug));
-    return { faites, verifiees, nomAssociation: data.organisation?.nom ?? compte.name };
+    const pasConcernees = new Set(etapes.filter((e) => e.faite && e.pasConcerne).map((e) => e.slug));
+    return { faites, verifiees, pasConcernees, nomAssociation: data.organisation?.nom ?? compte.name };
   } catch {
     return null;
   }
@@ -154,6 +155,8 @@ export async function etapesFaitesSiConnecte(): Promise<{ faites: Set<string>; v
 export interface ContexteChemin {
   faites: Set<string>;
   verifiees: Set<string>;
+  /** Étapes « selon ton activité » marquées « Pas concerné ». */
+  pasConcernees: Set<string>;
   nomAssociation: string;
   /** Par code de pièce : où elle en est, et le fichier s'il y en a un. */
   classeur: Record<string, { situation: string; fileId: string | null; libelle: string }>;
@@ -162,7 +165,7 @@ export interface ContexteChemin {
 
 interface EspaceBrut {
   organisation?: { nom?: string; adresse?: string | null; codePostal?: string | null; commune?: string | null };
-  chemin?: { etapes?: { slug: string; faite: boolean; verifiee?: boolean }[] };
+  chemin?: { etapes?: { slug: string; faite: boolean; verifiee?: boolean; pasConcerne?: boolean }[] };
   classeur?: { type: { code: string; libelle: string }; situation: string; piece?: { fileId?: string | null } | null }[];
   repertoire?: { membresAJour?: number; benevoles?: number; bureau?: { nom: string; roles: string[] }[]; resume?: { membresAJour?: number; benevoles?: number; bureau?: { nom: string; roles: string[] }[] } };
   actions?: { intitule: string; dateDebut?: string | null; beneficiaires?: number | null }[];
@@ -222,6 +225,7 @@ export async function contexteChemin(): Promise<ContexteChemin | null> {
     return {
       faites: new Set(etapes.filter((e) => e.faite).map((e) => e.slug)),
       verifiees: new Set(etapes.filter((e) => e.verifiee).map((e) => e.slug)),
+      pasConcernees: new Set(etapes.filter((e) => e.faite && e.pasConcerne).map((e) => e.slug)),
       nomAssociation: o.nom ?? compte.name,
       classeur,
       prerempli,

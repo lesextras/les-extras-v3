@@ -205,7 +205,7 @@ const RACCOURCIS = [
   {
     href: '/academie/chemin',
     titre: 'Le chemin',
-    detail: "Les douze étapes de l'organisme.",
+    detail: "Les étapes de l'organisme, puis ce qui revient chaque année.",
     icone: 'M4 20V9a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v0M4 20h16M8 4v4M16 16v4M12 10v10',
     fond: 'border-[#C7C4F2] bg-gradient-to-br from-white to-[#ECEBFC]',
     pastille: 'bg-[#4F46E5]',
@@ -245,7 +245,7 @@ const SECTIONS = [
     questions: [
       {
         q: 'Par où je commence ?',
-        r: 'Par le chemin : les douze étapes dans l’ordre, avec ce qu’il faut pour chacune.',
+        r: 'Par le chemin : les étapes dans l’ordre, avec ce qu’il faut pour chacune.',
         lien: { libelle: 'Voir le chemin', href: '/academie/chemin' },
       },
       {

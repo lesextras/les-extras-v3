@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { chargerChemin, TEMPS, TEINTES } from '../_chemin';
+import { chargerChemin, libelleNumeros, TEMPS, TEINTES } from '../_chemin';
 import { academieConnectee, apiAcademie, sessionAcademie } from '../_session';
 import { Accent, CARTE, Encart, SousTitre, Titre } from '../_ui';
 import type { EspaceAcademie } from '../_types';
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: 'Le chemin',
   alternates: { canonical: '/academie/chemin' },
   description:
-    "Douze étapes, de l'idée à l'organisme de formation certifié Qualiopi et finançable : ce qu'il faut faire, dans l'ordre où ça se pose vraiment.",
+    "De l'idée à l'organisme de formation certifié Qualiopi et finançable, puis ce qui revient chaque année : ce qu'il faut faire, dans l'ordre.",
 };
 
 /**
@@ -34,6 +34,7 @@ export default async function CheminPage() {
   // Ce que l'académie connectée a déjà fait. Sans compte, la liste reste neutre.
   let faites = new Set<string>();
   let automatiques = new Set<string>();
+  let pasConcernees = new Set<string>();
   let nom: string | null = null;
   if (await academieConnectee()) {
     const s = await sessionAcademie('/academie/chemin');
@@ -41,6 +42,7 @@ export default async function CheminPage() {
     if (data) {
       faites = new Set(data.chemin.etapes.filter((e) => e.faite).map((e) => e.slug));
       automatiques = new Set(data.chemin.etapes.filter((e) => e.automatique).map((e) => e.slug));
+      pasConcernees = new Set(data.chemin.etapes.filter((e) => e.faite && e.pasConcerne).map((e) => e.slug));
       nom = data.academie.nom;
     }
   }
@@ -50,7 +52,7 @@ export default async function CheminPage() {
 
   return (
     <>
-      <Titre surtitre={nom ?? 'Gratuit, sans compte'} sousTitre="Douze étapes, trois temps. Une carte par étape.">
+      <Titre surtitre={nom ?? 'Gratuit, sans compte'} sousTitre={`${total} étapes, ${TEMPS.length} temps. Une carte par étape.`}>
         Le <Accent>chemin</Accent> d&apos;une académie
       </Titre>
 
@@ -94,14 +96,23 @@ export default async function CheminPage() {
       {nom ? (
         <KanbanCheminAcademie
           temps={TEMPS.map((t) => ({ titre: t.titre, de: t.de, a: t.a, resume: t.resume, teinte: TEINTES[t.titre] }))}
-          etapes={chemin.etapes.map((e) => ({ slug: e.slug, numero: e.numero, titre: e.titre, pourPasser: e.pourPasser }))}
+          etapes={chemin.etapes.map((e) => ({
+            slug: e.slug,
+            numero: e.numero,
+            titre: e.titre,
+            pourPasser: e.pourPasser,
+            chaqueAnnee: e.chaqueAnnee,
+            peutNePasConcerner: e.peutNePasConcerner,
+          }))}
           faites={[...faites]}
           automatiques={[...automatiques]}
+          pasConcernees={[...pasConcernees]}
         />
       ) : (
       <div className="space-y-10">
         {TEMPS.map((t, i) => {
           const etapes = chemin.etapes.filter((e) => e.numero >= t.de && e.numero <= t.a);
+          if (!etapes.length) return null;
           const teinte = TEINTES[t.titre];
           const faitesIci = etapes.filter((e) => faites.has(e.slug)).length;
           return (
@@ -113,7 +124,7 @@ export default async function CheminPage() {
                   </span>
                   <h2 className={`text-2xl font-extrabold tracking-tight ${teinte.texte}`}>{t.titre}</h2>
                   <span className={`rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide ${teinte.texte}`}>
-                    étapes {t.de} à {t.a}
+                    {libelleNumeros(etapes.map((e) => e.numero))}
                   </span>
                   {nom ? (
                     <span className="ml-auto text-sm font-bold text-[#5E7A6E]">
@@ -145,7 +156,11 @@ export default async function CheminPage() {
                           >
                             {faite ? '✓' : e.numero}
                           </span>
-                          {faite && automatiques.has(e.slug) ? (
+                          {faite && pasConcernees.has(e.slug) ? (
+                            <span className="rounded-full bg-[#EEF0F4] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#3F4A5C]">
+                              Pas concerné
+                            </span>
+                          ) : faite && automatiques.has(e.slug) ? (
                             <span className="rounded-full bg-[#E3F5EC] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#0F5F3E]">
                               Auto
                             </span>
@@ -156,6 +171,10 @@ export default async function CheminPage() {
                           ) : estProchaine && nom ? (
                             <span className="rounded-full bg-[#DDEBE4] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#0F5F3E]">
                               Prochaine
+                            </span>
+                          ) : e.chaqueAnnee ? (
+                            <span className="rounded-full bg-[#E0F4F3] px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#115E59]">
+                              Chaque année
                             </span>
                           ) : null}
                         </span>

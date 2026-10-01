@@ -47,7 +47,7 @@ export default async function AjouterUneAssociationPage() {
             <Link href="/chemin" className="font-bold underline underline-offset-4">
               chemin
             </Link>{' '}
-            : douze étapes, de l&apos;idée à la première subvention. Reviens ici le jour où elle existe.
+            : les étapes de l&apos;idée à la première subvention, puis ce qui revient chaque année. Reviens ici le jour où elle existe.
           </Encart>
         </div>
       </div>

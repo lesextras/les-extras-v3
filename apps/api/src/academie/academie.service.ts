@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   AccountRole,
   AccountType,
@@ -13,6 +13,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { RepertoiresFormationService, prerempliDepuis } from './repertoires';
 import { ETAPES_ACADEMIE, VERSION_CHEMIN_ACADEMIE, trouverEtapeAcademie } from './chemin';
+import { etatEtape, lireSuivi, marquerSuivi } from '../common/chemin-suivi';
 import type {
   ModifierAcademieDto,
   ModifierReclamationDto,
@@ -199,23 +200,31 @@ export class AcademieService {
    */
   private composerChemin(fiche: {
     etapesFaites: string[];
+    etapesSuivi: Prisma.JsonValue | null;
     nda: string | null;
     siret: string | null;
     referentHandicap: string | null;
     auditPrevuLe: Date | null;
     certifieDu: Date | null;
   }) {
-    const aLaMain = new Set(fiche.etapesFaites);
+    // Une étape « chaque année » cochée une autre année repasse à faire ;
+    // une étape « Pas concerné » compte comme faite (common/chemin-suivi.ts).
+    const suivi = lireSuivi(fiche.etapesSuivi);
     const etapes = ETAPES_ACADEMIE.map((e) => {
       const deduite = e.deduite ? Boolean(fiche[e.deduite]) : false;
+      const etat = etatEtape(e, fiche.etapesFaites, suivi);
       return {
         slug: e.slug,
         numero: e.numero,
         titre: e.titre,
         resume: e.resume,
         pourPasser: e.pourPasser,
-        faite: deduite || aLaMain.has(e.slug),
+        faite: deduite || etat.faite,
         automatique: deduite,
+        pasConcerne: !deduite && etat.pasConcerne,
+        faiteLe: etat.faiteLe,
+        chaqueAnnee: Boolean(e.chaqueAnnee),
+        peutNePasConcerner: Boolean(e.peutNePasConcerner),
       };
     });
     const faites = etapes.filter((e) => e.faite).length;
@@ -224,21 +233,23 @@ export class AcademieService {
       etapes,
       faites,
       total: etapes.length,
-      // La première étape non faite : c'est celle qu'on met en avant.
+      // La première étape non faite, dans l'ordre des numéros : le chemin
+      // linéaire d'abord, puis ce qui revient chaque année, puis le reste.
       courante: etapes.find((e) => !e.faite)?.slug ?? null,
     };
   }
 
-  async marquerEtape(accountId: string, slug: string, faite: boolean) {
+  async marquerEtape(accountId: string, slug: string, faite: boolean, pasConcerne = false) {
     const etape = trouverEtapeAcademie(slug);
     if (!etape) throw new NotFoundException("Cette étape n'existe pas.");
+    if (pasConcerne && (!faite || !etape.peutNePasConcerner)) {
+      throw new BadRequestException('Cette étape ne peut pas être marquée « Pas concerné ».');
+    }
     const fiche = await this.fiche(accountId);
-    const actuelles = new Set(fiche.etapesFaites);
-    if (faite) actuelles.add(slug);
-    else actuelles.delete(slug);
+    const suite = marquerSuivi(fiche.etapesFaites, lireSuivi(fiche.etapesSuivi), slug, faite, pasConcerne);
     const majouree = await this.prisma.academie.update({
       where: { id: fiche.id },
-      data: { etapesFaites: [...actuelles] },
+      data: { etapesFaites: suite.faites, etapesSuivi: suite.suivi as unknown as Prisma.InputJsonValue },
     });
     return this.composerChemin(majouree);
   }

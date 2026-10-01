@@ -1,10 +1,18 @@
 /**
- * LE CHEMIN D'UNE ACADÉMIE — douze étapes, de l'idée à l'organisme certifié.
+ * LE CHEMIN D'UNE ACADÉMIE : de l'idée à l'organisme certifié, puis ce qui
+ * revient chaque année.
  *
  * Le pendant exact du chemin de l'association. Rien en base : un référentiel
  * écrit en dur, versionné avec le code, que l'espace coche au fur et à mesure.
- * Une étape se coche de deux façons — automatiquement quand la donnée arrive
+ * Une étape se coche de deux façons : automatiquement quand la donnée arrive
  * (`deduite`), ou à la main par la personne.
+ *
+ * Cinq temps (le web les découpe par numéro, voir apps/web/src/app/academie/_chemin.ts) :
+ *   Exister (1 à 5), Se tenir (6 à 8), Se certifier (9 à 12),
+ *   Chaque année (13 à 17) : ces étapes repassent « À faire » au 1er janvier,
+ *   Être finançable (18 et 19) : chacune peut être marquée « Pas concerné ».
+ * Les temps 4 et 5 ont été ajoutés le 01/10/2026 ; les slugs des étapes 1 à
+ * 12 ne bougent pas (les coches déjà enregistrées restent valables).
  */
 
 export interface EtapeAcademie {
@@ -19,9 +27,15 @@ export interface EtapeAcademie {
    * Sans lui, l'étape se coche à la main.
    */
   deduite?: 'nda' | 'referentHandicap' | 'auditPrevuLe' | 'certifieDu' | 'siret';
+  /** L'étape revient chaque année : cochée une autre année, elle est à refaire. */
+  chaqueAnnee?: boolean;
+  /** L'étape peut être marquée « Pas concerné » (elle compte alors comme faite). */
+  peutNePasConcerner?: boolean;
+  /** Les pages officielles pour faire l'étape. */
+  liens?: { nom: string; lien: string }[];
 }
 
-export const VERSION_CHEMIN_ACADEMIE = '2026-09';
+export const VERSION_CHEMIN_ACADEMIE = '2026-10';
 
 export const ETAPES_ACADEMIE: EtapeAcademie[] = [
   {
@@ -113,7 +127,7 @@ export const ETAPES_ACADEMIE: EtapeAcademie[] = [
     numero: 11,
     titre: 'Passer l\'audit et lever les écarts',
     resume:
-      "L'auditeur échantillonne : il demande des preuves sur des sessions réelles, pas des modèles vides. Une non-conformité mineure se lève sous trois mois ; une majeure bloque la certification. Le certificat vaut trois ans, avec un audit de surveillance entre la quatorzième et la vingt-deuxième mois.",
+      "L'auditeur échantillonne : il demande des preuves sur des sessions réelles, pas des modèles vides. Une non-conformité mineure se lève sous trois mois ; une majeure bloque la certification. Le certificat vaut trois ans, avec un audit de surveillance entre le quatorzième et le vingt-deuxième mois.",
     pourPasser: 'Ton certificat est obtenu et ses dates sont renseignées.',
     deduite: 'certifieDu',
   },
@@ -122,8 +136,96 @@ export const ETAPES_ACADEMIE: EtapeAcademie[] = [
     numero: 12,
     titre: 'S\'ouvrir aux financements',
     resume:
-      "Certifié, tu peux te référencer : EDOF pour le CPF, conventionnement avec les OPCO, catalogue France Travail. Et chaque année avant le 30 avril, le bilan pédagogique et financier : l'oublier suspend la déclaration d'activité.",
+      "Certifié, tu peux te référencer : EDOF pour le CPF, les OPCO pour les entreprises, le Carif-Oref et France Travail pour les demandeurs d'emploi. Le détail de chaque financement suit plus bas dans le chemin, et le bilan pédagogique et financier revient chaque année.",
     pourPasser: 'Tu es référencé sur au moins un dispositif de financement.',
+  },
+  // ------------------------------------------------------ 4. CHAQUE ANNÉE
+  {
+    slug: 'bilan-pedagogique-et-financier',
+    numero: 13,
+    titre: 'Envoyer le bilan pédagogique et financier',
+    chaqueAnnee: true,
+    resume:
+      "Chaque année, le BPF raconte à l'État ton activité de l'année passée : stagiaires, heures, recettes. Il se dépose en ligne sur Mon activité formation, à la date fixée chaque année par le ministère du Travail (le formulaire indique avant le 30 avril). Sans BPF, ou sans formation réalisée, la déclaration d'activité tombe et tout est à refaire.",
+    pourPasser: 'Le BPF de cette année est déposé sur Mon activité formation.',
+    liens: [
+      { nom: 'Mon activité formation, le dépôt du BPF', lien: 'https://www.monactiviteformation.emploi.gouv.fr/mon-activite-formation/' },
+      { nom: "La déclaration d'activité et le BPF (entreprendre.service-public.gouv.fr)", lien: 'https://entreprendre.service-public.gouv.fr/vosdroits/F19087' },
+    ],
+  },
+  {
+    slug: 'qualiopi-dans-la-duree',
+    numero: 14,
+    titre: 'Garder Qualiopi dans la durée',
+    chaqueAnnee: true,
+    resume:
+      "Le certificat vaut trois ans. Un audit de surveillance a lieu entre le quatorzième et le vingt-deuxième mois, puis un audit de renouvellement avant la fin des trois ans. Chaque année, relis tes indicateurs et vérifie que les preuves suivent : l'auditeur juge sur tes sessions réelles.",
+    pourPasser: "Tes indicateurs sont relus cette année et la date du prochain audit est notée.",
+    liens: [
+      {
+        nom: 'Le guide de lecture du référentiel national qualité (France Compétences)',
+        lien: 'https://www.francecompetences.fr/app/uploads/2024/10/Guide-de-lecture-Qualiopi-V8-du-23-novembre-2023.pdf',
+      },
+      { nom: "L'arrêté du 6 juin 2019 sur les audits (Légifrance)", lien: 'https://www.legifrance.gouv.fr/loda/id/JORFTEXT000038565293' },
+    ],
+  },
+  {
+    slug: 'preuves-des-sessions',
+    numero: 15,
+    titre: 'Garder les preuves de chaque session',
+    chaqueAnnee: true,
+    resume:
+      "Pour chaque session : la convocation, les feuilles d'émargement, l'évaluation des acquis, les appréciations des stagiaires (à chaud, et à froid si tu le prévois) et l'attestation de fin de formation. Range-les au fil de l'eau et garde-les au moins trois ans, la durée d'un cycle Qualiopi : c'est là que l'auditeur et les financeurs viennent chercher.",
+    pourPasser: "Les preuves des sessions de l'année sont complètes et rangées.",
+  },
+  {
+    slug: 'reclamations-et-amelioration',
+    numero: 16,
+    titre: 'Traiter les réclamations et améliorer',
+    chaqueAnnee: true,
+    resume:
+      "Le critère 7 de Qualiopi demande trois choses : recueillir les appréciations (indicateur 30), traiter les difficultés et les réclamations (indicateur 31), en tirer des améliorations (indicateur 32). Une fois par an, relis tes réclamations et note ce que tu as changé grâce à elles.",
+    pourPasser: "Le bilan de l'année est écrit : réclamations traitées, améliorations décidées.",
+  },
+  {
+    slug: 'dossier-des-formateurs',
+    numero: 17,
+    titre: 'Tenir le dossier de chaque formateur',
+    chaqueAnnee: true,
+    resume:
+      "Pour chaque formateur : son CV et les justificatifs de ses compétences (indicateur 21). S'il n'est pas salarié, un contrat de sous-traitance signé (indicateur 27) : tu restes responsable de la qualité de ce qu'il fait. Pour une formation vendue sur Mon Compte Formation, le sous-traitant doit aussi avoir son propre numéro de déclaration d'activité.",
+    pourPasser: "Chaque formateur de l'année a son dossier complet.",
+    liens: [
+      { nom: 'Les règles de la sous-traitance (Mon Compte Formation)', lien: 'https://of.moncompteformation.gouv.fr/aide/quelles-sont-les-regles-du-recours-la-sous-traitance' },
+    ],
+  },
+  // ---------------------------------------------------- 5. ÊTRE FINANÇABLE
+  {
+    slug: 'mon-compte-formation',
+    numero: 18,
+    titre: 'Vendre sur Mon Compte Formation',
+    peutNePasConcerner: true,
+    resume:
+      "Pour être payée par le CPF, ta formation doit mener à une certification inscrite au RNCP ou au répertoire spécifique de France Compétences. Il te faut aussi un numéro de déclaration d'activité actif, Qualiopi pour ce type d'action, l'autorisation du porteur de la certification si elle n'est pas la tienne, et un BPF à jour. Ensuite, tu demandes ton référencement sur EDOF.",
+    pourPasser: 'Ta première offre est en ligne sur Mon Compte Formation.',
+    liens: [
+      { nom: 'Comment être référencé sur Mon Compte Formation', lien: 'https://of.moncompteformation.gouv.fr/espace-public/aide/comment-etre-reference-sur-mon-compte-formation' },
+      { nom: 'Démarrer sur EDOF', lien: 'https://of.moncompteformation.gouv.fr/espace-public/demarrer-sur-edof' },
+      { nom: 'Les certifications professionnelles (France Compétences)', lien: 'https://www.francecompetences.fr/certification-professionnelle/' },
+    ],
+  },
+  {
+    slug: 'carif-oref-et-france-travail',
+    numero: 19,
+    titre: 'Publier ton offre au Carif-Oref',
+    peutNePasConcerner: true,
+    resume:
+      "Ton offre déclarée au Carif-Oref de ta région devient visible des conseillers France Travail et remonte dans KAIROS, l'outil où France Travail suit les demandeurs d'emploi en formation et reçoit tes devis. Pour les entreprises, chaque OPCO a ses propres règles de prise en charge : renseigne-toi auprès de celui de tes clients.",
+    pourPasser: 'Ton offre est publiée au Carif-Oref et ton accès KAIROS est ouvert.',
+    liens: [
+      { nom: 'Le réseau des Carif-Oref', lien: 'https://www.intercariforef.org/' },
+      { nom: 'Présentation de KAIROS (France Travail)', lien: 'https://actuformation.francetravail.org/sujets/presentation-applicatif-kairos/' },
+    ],
   },
 ];
 
