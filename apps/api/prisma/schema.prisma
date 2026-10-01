@@ -385,6 +385,8 @@ model Account {
   sallesOrganisme               SalleOrganisme[]
   documentsSession              DocumentSession[]
   facturesOrganisme             FactureOrganisme[]
+  prisesEnCharge                PriseEnCharge[]
+  prospects                     Prospect[]
   compteursNumerotation         CompteurNumerotation[]
   /// Les fils de discussion rattachés à ce compte (interne, service, demande).
   conversations                 Conversation[]
@@ -2343,6 +2345,7 @@ model FormationSession {
   seances        SeanceEmargement[]
   documents      DocumentSession[]
   factures       FactureOrganisme[]
+  prisesEnCharge PriseEnCharge[]
 
   @@index([formationId, startDate])
   @@index([trainerId])
@@ -6181,6 +6184,9 @@ model FactureOrganisme {
   emetteur         Json?
   notes            String?
 
+  prisesEnCharge PriseEnCharge[]
+  prospects      Prospect[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -6202,6 +6208,148 @@ enum StatutFactureOrganisme {
   ANNULEE
   ACCEPTE
   REFUSE
+}
+
+/// UNE PRISE EN CHARGE PAR UN FINANCEUR (Pilote académie, 01/10/2026).
+///
+/// Le dossier qu'un organisme monte auprès d'un OPCO, de France Travail, du
+/// CPF ou de l'entreprise elle-même pour qu'une formation soit payée. ⚠ Rien
+/// à voir avec `DossierFinancement` (subventions de l'espace association).
+///
+/// Les montants sont en CENTIMES (entiers) : pas d'arrondi flottant sur ce
+/// qu'un financeur rembourse au centime près.
+model PriseEnCharge {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  sessionId String?
+  session   FormationSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  entrepriseNom   String
+  entrepriseSiret String?
+  contactNom      String?
+  contactEmail    String?
+
+  financeur     TypeFinanceur @default(OPCO)
+  /// Le nom en clair : « Constructys », « Akto », « OPCO EP »…
+  nomFinanceur  String?
+  numeroDossier String?
+
+  nbStagiaires        Int      @default(1)
+  heures              Decimal  @default(0) @db.Decimal(7, 2)
+  tarifHoraireCents   Int      @default(0)
+  /// Par défaut stagiaires × heures × tarif horaire ; modifiable.
+  montantDemandeCents Int      @default(0)
+  montantAccordeCents Int?
+  /// Le financeur rembourse aussi les salaires des stagiaires.
+  salairesRembourses  Boolean?
+  /// Le financeur paie l'organisme directement (sinon l'entreprise avance).
+  subrogation         Boolean  @default(false)
+
+  dateDebutFormation DateTime?
+  /// Par défaut : début − 15 jours (délai courant des OPCO). Modifiable.
+  dateLimiteDepot    DateTime?
+  dateDepot          DateTime?
+  dateAccord         DateTime?
+  dateFinFormation   DateTime?
+  dateFacturation    DateTime?
+  datePaiement       DateTime?
+
+  statut StatutPriseEnCharge @default(A_DEPOSER)
+
+  factureId String?
+  facture   FactureOrganisme? @relation(fields: [factureId], references: [id], onDelete: SetNull)
+
+  notes String?
+
+  pieces    PiecePriseEnCharge[]
+  prospects Prospect[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, statut])
+  @@index([sessionId])
+  @@index([factureId])
+}
+
+/// Une pièce du dossier, cochée quand elle est faite.
+model PiecePriseEnCharge {
+  id              String        @id @default(cuid())
+  priseEnChargeId String
+  priseEnCharge   PriseEnCharge @relation(fields: [priseEnChargeId], references: [id], onDelete: Cascade)
+  ordre           Int           @default(0)
+  libelle         String
+  cochee          Boolean       @default(false)
+  cocheeLe        DateTime?
+
+  @@index([priseEnChargeId, ordre])
+}
+
+enum TypeFinanceur {
+  OPCO
+  FRANCE_TRAVAIL
+  CPF
+  ENTREPRISE
+  REGION
+  AUTRE
+}
+
+enum StatutPriseEnCharge {
+  A_DEPOSER
+  DEPOSE
+  ACCORDE
+  REFUSE
+  EN_FORMATION
+  A_FACTURER
+  FACTURE
+  PAYE
+  ANNULE
+}
+
+/// UN PROSPECT : une entreprise ou une personne à qui l'organisme veut vendre
+/// une formation. Un CRM volontairement court : cinq étapes, une prochaine
+/// action datée.
+model Prospect {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  nom                String
+  contactNom         String?
+  contactEmail       String?
+  telephone          String?
+  source             String?
+  besoin             String?
+  montantEstimeCents Int?
+
+  etape EtapeProspect @default(NOUVEAU)
+
+  prochaineAction     String?
+  dateProchaineAction DateTime?
+  notes               String?
+
+  priseEnChargeId String?
+  priseEnCharge   PriseEnCharge?    @relation(fields: [priseEnChargeId], references: [id], onDelete: SetNull)
+  /// Le devis (ou la facture) envoyé à ce prospect.
+  factureId       String?
+  facture         FactureOrganisme? @relation(fields: [factureId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accountId, etape])
+  @@index([priseEnChargeId])
+  @@index([factureId])
+}
+
+enum EtapeProspect {
+  NOUVEAU
+  CONTACTE
+  DEVIS_ENVOYE
+  GAGNE
+  PERDU
 }
 
 /// Le dernier numéro utilisé, par compte et par série (« F-2026 », « AV-2026 »,

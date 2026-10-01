@@ -79,6 +79,10 @@ export const ICONES = {
   administration: i('M12 2l8 4v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6zM12 9v4M12 16h.01'),
   menu: i('M3 6h18M3 12h18M3 18h18'),
   fermer: i('M18 6L6 18M6 6l12 12'),
+  /** La cible : les prospects à convaincre. */
+  prospects: i('M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'),
+  /** Le bâtiment à colonnes : le financeur (OPCO, France Travail, CPF). */
+  financements: i('M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7M12 2l8 5H4z'),
 };
 
 interface Groupe {
@@ -132,7 +136,9 @@ const MENU: Element[] = [
       { href: '/academie/sessions', libelle: 'Sessions', icone: ICONES.sessions },
       { href: '/academie/planning', libelle: 'Planning', icone: ICONES.agenda },
       { href: '/academie/formateurs', libelle: 'Formateurs et salles', icone: ICONES.formateurs },
+      { href: '/academie/prospects', libelle: 'Prospects', icone: ICONES.prospects },
       { href: '/academie/facturation', libelle: 'Devis et factures clients', icone: ICONES.factures },
+      { href: '/academie/financements', libelle: 'Financements', icone: ICONES.financements },
       { href: '/academie/qualite', libelle: 'Qualité et enquêtes', icone: ICONES.certification },
       { href: '/academie/bpf', libelle: 'Bilan pédagogique (BPF)', icone: ICONES.statistiques },
       { href: '/academie/edof', libelle: 'Mon Compte Formation', icone: ICONES.cles },

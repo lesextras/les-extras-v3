@@ -12,21 +12,29 @@ import { FacturationOrganismeService } from './facturation-organisme.service';
 import { QualiteSessionService } from './qualite-session.service';
 import { BpfService } from './bpf.service';
 import { EdofService } from './edof';
+import { PrisesEnChargeService } from './prises-en-charge.service';
+import { ProspectsService } from './prospects.service';
 import {
   AvoirDto,
   CreneauDto,
   EnvoiDocumentDto,
+  EtapeProspectDto,
   ModifierCreneauDto,
   FactureDto,
   FacturerSessionDto,
   FormateurDto,
   ModifierFactureOrgDto,
   ModifierFormateurDto,
+  ModifierPriseEnChargeDto,
+  ModifierProspectDto,
   ModifierSalleDto,
   ModifierSessionAdminDto,
   ModifierStagiaireDto,
   OuvrirSeanceDto,
   PaiementFactureDto,
+  PiecePriseEnChargeDto,
+  PriseEnChargeDto,
+  ProspectDto,
   PresenceDto,
   ProgrammeBpfDto,
   ReglagesAdministrationDto,
@@ -35,6 +43,7 @@ import {
   SerieCreneauxDto,
   SignatureFormateurDto,
   StagiaireDto,
+  StatutPriseEnChargeDto,
 } from './dto/gestion.dto';
 
 const annee = (a?: string) => {
@@ -73,6 +82,8 @@ export class GestionController {
     private readonly qualite: QualiteSessionService,
     private readonly bpf: BpfService,
     private readonly edof: EdofService,
+    private readonly financements: PrisesEnChargeService,
+    private readonly prospects: ProspectsService,
   ) {}
 
   /* ------------------------------------------------------------ annuaire */
@@ -225,6 +236,77 @@ export class GestionController {
   @Delete('factures/:id')
   supprimerFacture(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
     return this.facturation.supprimer(a.id, id);
+  }
+
+  /* ------------------------------------------------------------ financements (prises en charge) */
+
+  @Get('financements/resume')
+  resumeFinancements(@CurrentAccount() a: RequestAccount) {
+    return this.financements.resume(a.id);
+  }
+  @Get('financements')
+  listeFinancements(@CurrentAccount() a: RequestAccount, @Query('statut') statut?: string) {
+    return this.financements.liste(a.id, statut);
+  }
+  @Post('financements')
+  creerFinancement(@CurrentAccount() a: RequestAccount, @Body() dto: PriseEnChargeDto) {
+    return this.financements.creer(a.id, dto);
+  }
+  @Post('financements/:id/statut')
+  statutFinancement(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: StatutPriseEnChargeDto) {
+    return this.financements.changerStatut(a.id, id, dto);
+  }
+  @Patch('financements/:id/pieces/:pieceId')
+  pieceFinancement(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Param('pieceId') pieceId: string, @Body() dto: PiecePriseEnChargeDto) {
+    return this.financements.cocherPiece(a.id, id, pieceId, dto.cochee);
+  }
+  @Get('financements/:id')
+  financement(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
+    return this.financements.detail(a.id, id);
+  }
+  @Patch('financements/:id')
+  modifierFinancement(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: ModifierPriseEnChargeDto) {
+    return this.financements.modifier(a.id, id, dto);
+  }
+  @Delete('financements/:id')
+  supprimerFinancement(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
+    return this.financements.supprimer(a.id, id);
+  }
+
+  /* ------------------------------------------------------------ prospects */
+
+  @Get('prospects/resume')
+  resumeProspects(@CurrentAccount() a: RequestAccount) {
+    return this.prospects.resume(a.id);
+  }
+  @Get('prospects')
+  listeProspects(@CurrentAccount() a: RequestAccount) {
+    return this.prospects.liste(a.id);
+  }
+  @Post('prospects')
+  creerProspect(@CurrentAccount() a: RequestAccount, @Body() dto: ProspectDto) {
+    return this.prospects.creer(a.id, dto);
+  }
+  @Post('prospects/:id/etape')
+  etapeProspect(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: EtapeProspectDto) {
+    return this.prospects.changerEtape(a.id, id, dto);
+  }
+  /** Prospect gagné → dossier de financement pré-rempli (ou celui déjà créé). */
+  @Post('prospects/:id/financement')
+  financementProspect(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
+    return this.financements.depuisProspect(a.id, id);
+  }
+  @Get('prospects/:id')
+  prospect(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
+    return this.prospects.detail(a.id, id);
+  }
+  @Patch('prospects/:id')
+  modifierProspect(@CurrentAccount() a: RequestAccount, @Param('id') id: string, @Body() dto: ModifierProspectDto) {
+    return this.prospects.modifier(a.id, id, dto);
+  }
+  @Delete('prospects/:id')
+  supprimerProspect(@CurrentAccount() a: RequestAccount, @Param('id') id: string) {
+    return this.prospects.supprimer(a.id, id);
   }
 
   /* ------------------------------------------------------------ stagiaires */

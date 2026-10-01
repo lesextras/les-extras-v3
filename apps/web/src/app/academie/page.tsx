@@ -11,6 +11,7 @@ import { BlocStatistiques } from './_stats';
 import { BlocInstaller } from '../_shared/BlocInstaller';
 import type { Apprenant, CoursResume, Vente } from './_ecole/types';
 import type { Demarrage } from './_ecole/suite-types';
+import type { ResumeFinancements, ResumeProspects } from './_gestion/types';
 
 /**
  * L'ACCUEIL DE « PILOTER MON ACADÉMIE ».
@@ -206,13 +207,15 @@ async function TableauDeBord() {
   // L'espace d'un côté, l'école de l'autre : les chiffres de vente et de suivi
   // vivent dans le module école, et ils ont leur place ici, pas sur un écran
   // séparé où personne ne va.
-  const [espace, ventesR, apprenantsR, coursR, demarrageR, devoirsR] = await Promise.all([
+  const [espace, ventesR, apprenantsR, coursR, demarrageR, devoirsR, financementsR, prospectsR] = await Promise.all([
     apiAcademie<EspaceAcademie>(s, '/academie/espace'),
     apiAcademie<Vente[]>(s, '/ecole/ventes'),
     apiAcademie<Apprenant[]>(s, '/ecole/apprenants'),
     apiAcademie<CoursResume[]>(s, '/ecole/cours'),
     apiAcademie<Demarrage>(s, '/ecole/demarrage'),
     apiAcademie<{ compteurs: { aCorriger: number } }>(s, '/ecole/devoirs?statut=A_CORRIGER'),
+    apiAcademie<ResumeFinancements>(s, '/academie/gestion/financements/resume'),
+    apiAcademie<ResumeProspects>(s, '/academie/gestion/prospects/resume'),
   ]);
   const demarrage = demarrageR.data ?? null;
   const aCorriger = devoirsR.data?.compteurs.aCorriger ?? 0;
@@ -258,6 +261,32 @@ async function TableauDeBord() {
       titre: `${aCorriger} devoir${aCorriger > 1 ? 's' : ''} à corriger`,
       detail: 'Tant que le devoir n’est pas validé, la formation de l’apprenant n’avance pas.',
       href: '/academie/devoirs',
+    });
+  }
+  const fin = financementsR.data;
+  if (fin && fin.depotsEnRetard + fin.aDeposerBientot > 0) {
+    const n = fin.depotsEnRetard + fin.aDeposerBientot;
+    aFaire.push({
+      titre: fin.depotsEnRetard
+        ? `${fin.depotsEnRetard} dossier${fin.depotsEnRetard > 1 ? 's' : ''} de financement à déposer, date dépassée`
+        : `${n} dossier${n > 1 ? 's' : ''} de financement à déposer sous 7 jours`,
+      detail: 'Sans dépôt avant la date limite, le financeur peut refuser la prise en charge.',
+      href: '/academie/financements',
+    });
+  }
+  if (fin && fin.paiementsEnRetard > 0) {
+    aFaire.push({
+      titre: `${fin.paiementsEnRetard} financement${fin.paiementsEnRetard > 1 ? 's' : ''} impayé${fin.paiementsEnRetard > 1 ? 's' : ''} depuis 45 jours`,
+      detail: 'Relance le financeur avec la facture et le certificat de réalisation.',
+      href: '/academie/financements',
+    });
+  }
+  const relances = prospectsR.data?.actionsEnRetard ?? 0;
+  if (relances > 0) {
+    aFaire.push({
+      titre: `${relances} prospect${relances > 1 ? 's' : ''} à relancer`,
+      detail: 'La prochaine action prévue est passée.',
+      href: '/academie/prospects',
     });
   }
   if (reclamations.ouvertes > 0) {

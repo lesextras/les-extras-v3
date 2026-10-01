@@ -232,3 +232,109 @@ export interface RapportSession {
   positionnement: { mesures: number; progression: number | null };
   commentaires: { type: string; nom: string | null; texte: string }[];
 }
+
+/* ------------------------------------------------------------ financements et prospects (01/10/2026) */
+
+export type StatutDossier = 'A_DEPOSER' | 'DEPOSE' | 'ACCORDE' | 'REFUSE' | 'EN_FORMATION' | 'A_FACTURER' | 'FACTURE' | 'PAYE' | 'ANNULE';
+export type TypeFinanceur = 'OPCO' | 'FRANCE_TRAVAIL' | 'CPF' | 'ENTREPRISE' | 'REGION' | 'AUTRE';
+export type EtapeProspect = 'NOUVEAU' | 'CONTACTE' | 'DEVIS_ENVOYE' | 'GAGNE' | 'PERDU';
+
+export interface PieceDossier {
+  id: string;
+  ordre: number;
+  libelle: string;
+  cochee: boolean;
+  cocheeLe: string | null;
+}
+
+/** Une prise en charge par un financeur. Les montants sont en centimes. */
+export interface DossierFinancement {
+  id: string;
+  sessionId: string | null;
+  session: { id: string; title: string | null; startDate: string; endDate: string | null; formation: { title: string } } | null;
+  entrepriseNom: string;
+  entrepriseSiret: string | null;
+  contactNom: string | null;
+  contactEmail: string | null;
+  financeur: TypeFinanceur;
+  nomFinanceur: string | null;
+  numeroDossier: string | null;
+  nbStagiaires: number;
+  heures: number;
+  tarifHoraireCents: number;
+  montantDemandeCents: number;
+  montantAccordeCents: number | null;
+  salairesRembourses: boolean | null;
+  subrogation: boolean;
+  dateDebutFormation: string | null;
+  dateLimiteDepot: string | null;
+  dateDepot: string | null;
+  dateAccord: string | null;
+  dateFinFormation: string | null;
+  dateFacturation: string | null;
+  datePaiement: string | null;
+  statut: StatutDossier;
+  factureId: string | null;
+  facture: { id: string; numero: string | null; statut: string; totalTtc: number } | null;
+  notes: string | null;
+  pieces: PieceDossier[];
+  piecesFaites: number;
+  joursAvantDepot: number | null;
+  depotProche: boolean;
+  depotEnRetard: boolean;
+  paiementEnRetard: boolean;
+  enRetard: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResumeFinancements {
+  total: number;
+  enCours: number;
+  demandeCents: number;
+  accordeCents: number;
+  payeCents: number;
+  aDeposerBientot: number;
+  depotsEnRetard: number;
+  paiementsEnRetard: number;
+  enRetard: number;
+}
+
+export interface ListeFinancements {
+  dossiers: DossierFinancement[];
+  resume: ResumeFinancements;
+}
+
+export interface ProspectOrg {
+  id: string;
+  nom: string;
+  contactNom: string | null;
+  contactEmail: string | null;
+  telephone: string | null;
+  source: string | null;
+  besoin: string | null;
+  montantEstimeCents: number | null;
+  etape: EtapeProspect;
+  prochaineAction: string | null;
+  dateProchaineAction: string | null;
+  notes: string | null;
+  priseEnChargeId: string | null;
+  priseEnCharge: { id: string; statut: StatutDossier } | null;
+  factureId: string | null;
+  facture: { id: string; numero: string | null; type: string; statut: string } | null;
+  actionEnRetard: boolean;
+  updatedAt: string;
+}
+
+export interface ResumeProspects {
+  total: number;
+  parEtape: Record<EtapeProspect, number>;
+  enCoursCents: number;
+  gagneCents: number;
+  actionsEnRetard: number;
+}
+
+export interface ListeProspects {
+  prospects: ProspectOrg[];
+  resume: ResumeProspects;
+}

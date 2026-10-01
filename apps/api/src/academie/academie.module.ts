@@ -13,6 +13,8 @@ import { FacturationOrganismeService } from './gestion/facturation-organisme.ser
 import { QualiteSessionService } from './gestion/qualite-session.service';
 import { BpfService } from './gestion/bpf.service';
 import { EdofService } from './gestion/edof';
+import { PrisesEnChargeService } from './gestion/prises-en-charge.service';
+import { ProspectsService } from './gestion/prospects.service';
 import { GestionScheduler } from './gestion/gestion.scheduler';
 import { GestionController } from './gestion/gestion.controller';
 import { GestionPublicController } from './gestion/gestion-public.controller';
@@ -27,7 +29,8 @@ import { GestionPublicController } from './gestion/gestion-public.controller';
  *
  * `gestion/` porte l'ADMINISTRATION des sessions (29/09/2026) : formateurs et
  * salles, planning, émargement signé, documents et signatures, facturation
- * des clients, enquêtes, BPF et préparation EDOF.
+ * des clients, enquêtes, BPF et préparation EDOF. Depuis le 01/10/2026 :
+ * prospects (CRM commercial) et financements (prises en charge OPCO, CPF…).
  */
 @Module({
   controllers: [AcademiePublicController, AcademieOuvertureController, AcademieEspaceController, GestionController, GestionPublicController],
@@ -43,6 +46,8 @@ import { GestionPublicController } from './gestion/gestion-public.controller';
     QualiteSessionService,
     BpfService,
     EdofService,
+    PrisesEnChargeService,
+    ProspectsService,
     GestionScheduler,
   ],
   exports: [AcademieService, RepertoiresFormationService, CertificationService],

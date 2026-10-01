@@ -32,6 +32,9 @@ import {
   StatutFormateur,
   TypeDocumentSession,
   TypeStagiaire,
+  TypeFinanceur,
+  StatutPriseEnCharge,
+  EtapeProspect,
 } from '@prisma/client';
 
 /* ------------------------------------------------------------ annuaire */
@@ -324,4 +327,105 @@ export class ReglagesAdministrationDto {
   @IsOptional() @IsString() @MaxLength(300) coordonneesBancaires?: string | null;
   @IsOptional() @IsInt() @Min(0) @Max(90) delaiPaiementJours?: number;
   @IsOptional() @IsString() @MaxLength(500) reglementInterieurUrl?: string | null;
+}
+
+/* ------------------------------------------------------------ financements (prises en charge) */
+
+const SIRET = /^\d{14}$/;
+
+export class PriseEnChargeDto {
+  @IsString() @MinLength(1) @MaxLength(160) entrepriseNom!: string;
+  @IsOptional() @IsString() @Matches(SIRET, { message: 'Le SIRET compte quatorze chiffres.' }) entrepriseSiret?: string;
+  @IsOptional() @IsString() @MaxLength(120) contactNom?: string;
+  @IsOptional() @IsEmail({}, { message: "L'adresse e-mail n'est pas valide." }) contactEmail?: string;
+  @IsOptional() @IsEnum(TypeFinanceur) financeur?: TypeFinanceur;
+  @IsOptional() @IsString() @MaxLength(120) nomFinanceur?: string;
+  @IsOptional() @IsString() @MaxLength(80) numeroDossier?: string;
+  @IsOptional() @IsString() sessionId?: string;
+  @IsOptional() @IsInt() @Min(1) @Max(10000) nbStagiaires?: number;
+  @IsOptional() @IsNumber() @Min(0) @Max(10000) heures?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(100_000_00) tarifHoraireCents?: number;
+  /** Vide : stagiaires × heures × tarif horaire. */
+  @IsOptional() @IsInt() @Min(0) @Max(1_000_000_000) montantDemandeCents?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(1_000_000_000) montantAccordeCents?: number;
+  @IsOptional() @IsBoolean() salairesRembourses?: boolean;
+  @IsOptional() @IsBoolean() subrogation?: boolean;
+  @IsOptional() @IsDateString() dateDebutFormation?: string;
+  /** Vide : début − 15 jours. */
+  @IsOptional() @IsDateString() dateLimiteDepot?: string;
+  @IsOptional() @IsDateString() dateFinFormation?: string;
+  @IsOptional() @IsString() @MaxLength(4000) notes?: string;
+  /** Le prospect gagné d'où vient ce dossier : il y est relié. */
+  @IsOptional() @IsString() prospectId?: string;
+}
+
+export class ModifierPriseEnChargeDto {
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(160) entrepriseNom?: string;
+  @IsOptional() @IsString() @Matches(SIRET, { message: 'Le SIRET compte quatorze chiffres.' }) entrepriseSiret?: string | null;
+  @IsOptional() @IsString() @MaxLength(120) contactNom?: string | null;
+  @IsOptional() @IsEmail({}, { message: "L'adresse e-mail n'est pas valide." }) contactEmail?: string | null;
+  @IsOptional() @IsEnum(TypeFinanceur) financeur?: TypeFinanceur;
+  @IsOptional() @IsString() @MaxLength(120) nomFinanceur?: string | null;
+  @IsOptional() @IsString() @MaxLength(80) numeroDossier?: string | null;
+  @IsOptional() @IsString() sessionId?: string | null;
+  @IsOptional() @IsInt() @Min(1) @Max(10000) nbStagiaires?: number;
+  @IsOptional() @IsNumber() @Min(0) @Max(10000) heures?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(100_000_00) tarifHoraireCents?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(1_000_000_000) montantDemandeCents?: number;
+  @IsOptional() @IsInt() @Min(0) @Max(1_000_000_000) montantAccordeCents?: number | null;
+  @IsOptional() @IsBoolean() salairesRembourses?: boolean | null;
+  @IsOptional() @IsBoolean() subrogation?: boolean;
+  @IsOptional() @IsDateString() dateDebutFormation?: string | null;
+  @IsOptional() @IsDateString() dateLimiteDepot?: string | null;
+  @IsOptional() @IsDateString() dateDepot?: string | null;
+  @IsOptional() @IsDateString() dateAccord?: string | null;
+  @IsOptional() @IsDateString() dateFinFormation?: string | null;
+  @IsOptional() @IsDateString() dateFacturation?: string | null;
+  @IsOptional() @IsDateString() datePaiement?: string | null;
+  @IsOptional() @IsString() factureId?: string | null;
+  @IsOptional() @IsString() @MaxLength(4000) notes?: string | null;
+}
+
+export class StatutPriseEnChargeDto {
+  @IsEnum(StatutPriseEnCharge) statut!: StatutPriseEnCharge;
+  /** La date de l'étape (dépôt, accord…). Vide : aujourd'hui. */
+  @IsOptional() @IsDateString() date?: string;
+}
+
+export class PiecePriseEnChargeDto {
+  @IsBoolean() cochee!: boolean;
+}
+
+/* ------------------------------------------------------------ prospects */
+
+export class ProspectDto {
+  @IsString() @MinLength(1) @MaxLength(160) nom!: string;
+  @IsOptional() @IsString() @MaxLength(120) contactNom?: string;
+  @IsOptional() @IsEmail({}, { message: "L'adresse e-mail n'est pas valide." }) contactEmail?: string;
+  @IsOptional() @IsString() @MaxLength(30) telephone?: string;
+  @IsOptional() @IsString() @MaxLength(80) source?: string;
+  @IsOptional() @IsString() @MaxLength(200) besoin?: string;
+  @IsOptional() @IsInt() @Min(0) @Max(1_000_000_000) montantEstimeCents?: number;
+  @IsOptional() @IsEnum(EtapeProspect) etape?: EtapeProspect;
+  @IsOptional() @IsString() @MaxLength(160) prochaineAction?: string;
+  @IsOptional() @IsDateString() dateProchaineAction?: string;
+  @IsOptional() @IsString() @MaxLength(4000) notes?: string;
+}
+
+export class ModifierProspectDto {
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(160) nom?: string;
+  @IsOptional() @IsString() @MaxLength(120) contactNom?: string | null;
+  @IsOptional() @IsEmail({}, { message: "L'adresse e-mail n'est pas valide." }) contactEmail?: string | null;
+  @IsOptional() @IsString() @MaxLength(30) telephone?: string | null;
+  @IsOptional() @IsString() @MaxLength(80) source?: string | null;
+  @IsOptional() @IsString() @MaxLength(200) besoin?: string | null;
+  @IsOptional() @IsInt() @Min(0) @Max(1_000_000_000) montantEstimeCents?: number | null;
+  @IsOptional() @IsString() @MaxLength(160) prochaineAction?: string | null;
+  @IsOptional() @IsDateString() dateProchaineAction?: string | null;
+  @IsOptional() @IsString() @MaxLength(4000) notes?: string | null;
+  @IsOptional() @IsString() factureId?: string | null;
+}
+
+export class EtapeProspectDto {
+  @IsEnum(EtapeProspect) etape!: EtapeProspect;
 }
