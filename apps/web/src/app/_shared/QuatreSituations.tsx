@@ -98,6 +98,7 @@ import {
   Sparkles,
   Tag,
   UserRoundCheck,
+  Video,
 } from 'lucide-react';
 import { wp } from '@/lib/media';
 import { visioconsultationVisible } from '@/lib/offre';
@@ -169,11 +170,13 @@ const SITUATIONS: Situation[] = [
         icone: GraduationCap,
         valeur: 'ES · ME · AES',
         // ⚠ La visio reste conditionnée : sans la variable, /visio redirige.
-        quoi: VISIO ? 'présentiel ou visio' : 'sur place ou à domicile',
+        quoi: VISIO ? 'sur place ou en visioconférence' : 'sur place ou à domicile',
       },
       { icone: FileCheck, valeur: 'Devis', quoi: 'avant l’intervention' },
     ],
-    badge: 'Éducateurs en renfort',
+    // La visioconférence mise en avant (01/10/2026, demande de Siham),
+    // seulement quand elle est en service.
+    badge: VISIO ? 'Sur place ou en visioconférence' : 'Éducateurs en renfort',
     lien: { href: '/renforteam', libelle: 'Comment ça se passe' },
     image: wp('/wp-content/uploads/2025/02/mineur-protection-de-lenfance.jpg'),
     alt: 'Un professionnel accompagne un enfant lors d’une séance individuelle',
@@ -196,11 +199,13 @@ const SITUATIONS: Situation[] = [
     reperes: [
       // Pas de chiffre ni de prix sur l'accueil (01/10/2026) : le tarif se
       // lit sur chaque fiche.
-      { icone: ListChecks, valeur: 'Public', quoi: 'durée et matériel indiqués' },
+      VISIO
+        ? { icone: Video, valeur: 'Visio', quoi: 'ou sur place, selon l’atelier' }
+        : { icone: ListChecks, valeur: 'Public', quoi: 'durée et matériel indiqués' },
       { icone: Send, valeur: 'Sans compte', quoi: 'pour demander un devis' },
       { icone: Tag, valeur: 'Tarif', quoi: 'écrit sur chaque fiche' },
     ],
-    badge: 'Ateliers clés en main',
+    badge: VISIO ? 'Ateliers sur place ou en visio' : 'Ateliers clés en main',
     lien: { href: '/ateliers', libelle: 'Parcourir le catalogue' },
     image: wp('/wp-content/uploads/2023/02/cerf-volant-game-enfant-400x400.jpg'),
     alt: 'Des enfants en activité collective en extérieur',

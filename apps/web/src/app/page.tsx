@@ -80,6 +80,7 @@ import {
   FileCheck,
   Euro,
   ShieldCheck,
+  Video,
   Handshake,
   HeartHandshake,
 } from 'lucide-react';
@@ -91,7 +92,7 @@ import { fetchPublic } from './_shared/server';
 // ont déjà déménagé deux fois, et les URL écrites en dur sont celles qui
 // survivent au déménagement puis cassent seules.
 import { premierVisuel } from '@/lib/media';
-import { renfortSalarieVisible } from '@/lib/offre';
+import { renfortSalarieVisible, visioconsultationVisible } from '@/lib/offre';
 import { type OfferCard } from './_shared/OfferCarousel';
 import { CatalogueOnglets } from './_shared/CatalogueOnglets';
 import { CentreFormationAdepa } from './_shared/CentreFormationAdepa';
@@ -403,6 +404,15 @@ export default async function LandingPage() {
                   <FileCheck className="size-4 text-primary" />
                   <strong className="font-semibold text-foreground">Devis</strong> avant toute intervention
                 </span>
+                {/* La visioconférence mise en avant (01/10/2026, demande de
+                    Siham), pour les renforts comme pour les ateliers. ⚠ Elle
+                    ne s'affiche que si la visio est en service. */}
+                {visioconsultationVisible() ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Video className="size-4 text-primary" />
+                    Sur place ou en <strong className="font-semibold text-foreground">visioconférence</strong>
+                  </span>
+                ) : null}
               </div>
             </div>
 
