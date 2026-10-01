@@ -820,6 +820,7 @@ function Formulaire({
   onSupprimer: (id: string) => Promise<void>;
 }) {
   const [envoi, setEnvoi] = useState(false);
+  void onAnnuler; // la fenêtre se ferme par ×, Échap ou un clic à côté (01/10/2026 : « Valider » au lieu d'« Annuler »)
   const [erreur, setErreur] = useState<string | null>(null);
   const maj = (p: Partial<Brouillon>) => onChange({ ...brouillon, ...p });
 
@@ -973,10 +974,7 @@ function Formulaire({
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="submit" className={t.btnPrimaire} disabled={envoi}>
-          {envoi ? 'Enregistrement…' : 'Enregistrer'}
-        </button>
-        <button type="button" className={t.btnSecondaire} onClick={onAnnuler} disabled={envoi}>
-          Annuler
+          {envoi ? 'Enregistrement…' : '✓ Valider'}
         </button>
         {brouillon.id ? (
           <button
@@ -1062,6 +1060,47 @@ function ChoixPersonnes({
             <span className="mb-1 block text-[11px] font-bold uppercase tracking-wide" style={{ color: t.encre, opacity: 0.6 }}>
               {g.titre}
             </span>
+            {/* Plus de 7 personnes : une liste déroulante, plus des puces (01/10/2026).
+                Les personnes choisies restent visibles en puces, retirables. */}
+            {liste.length > 7 ? (
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap gap-1.5">
+                  {liste
+                    .filter((p) => choisis.some((c) => c.toLowerCase() === p.nom.toLowerCase()))
+                    .map((p) => (
+                      <button
+                        key={`${g.cle}-${p.nom}`}
+                        type="button"
+                        onClick={() => basculer(p.nom)}
+                        aria-label={`Retirer ${p.nom}`}
+                        className="rounded-full border px-2.5 py-1 text-[12px] font-bold"
+                        style={{ background: t.plein, borderColor: t.plein, color: '#fff' }}
+                      >
+                        {p.nom} ×
+                      </button>
+                    ))}
+                </div>
+                <select
+                  className={t.champ}
+                  value=""
+                  aria-label={`Ajouter depuis ${g.titre.toLowerCase()}`}
+                  onChange={(e) => {
+                    if (e.target.value) basculer(e.target.value);
+                  }}
+                >
+                  <option value="">+ Ajouter depuis {g.titre.toLowerCase()} ({liste.length})</option>
+                  {liste
+                    .filter((p) => !choisis.some((c) => c.toLowerCase() === p.nom.toLowerCase()))
+                    .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'))
+                    .map((p) => (
+                      <option key={`${g.cle}-${p.nom}`} value={p.nom}>
+                        {p.nom}
+                        {p.detail ? ` · ${p.detail}` : ''}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            ) : (
             <div className="flex flex-wrap gap-1.5">
               {liste.map((p) => {
                 const actif = choisis.some((c) => c.toLowerCase() === p.nom.toLowerCase());
@@ -1085,6 +1124,7 @@ function ChoixPersonnes({
                 );
               })}
             </div>
+            )}
           </div>
         );
       })}
