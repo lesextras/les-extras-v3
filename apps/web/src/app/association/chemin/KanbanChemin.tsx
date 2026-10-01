@@ -5,7 +5,16 @@ import { useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { appel } from '../_client';
 import { CARTE } from '../_ui';
-import { TEINTES_PARTIE, type PartieChemin } from '../_chemin';
+import type { PartieChemin } from '../_chemin';
+
+/* Copie de TEINTES_PARTIE (../_chemin.ts) : ce fichier-là importe du code
+   serveur (« server-only »), qu'un composant client ne peut pas charger. Les
+   deux tables bougent ensemble. */
+const TEINTES_PARTIE: Record<PartieChemin, { fond: string; texte: string; bord: string; pastille: string }> = {
+  NAITRE: { fond: 'bg-[#E3F5EC]', texte: 'text-[#0F5F3E]', bord: 'border-[#BFE6D2]', pastille: 'bg-[#1E9E6A]' },
+  VIVRE: { fond: 'bg-[#FEF3E2]', texte: 'text-[#7C3E06]', bord: 'border-[#F5D6A8]', pastille: 'bg-[#F5B400]' },
+  SUBVENTION: { fond: 'bg-[#ECEBFC]', texte: 'text-[#4338CA]', bord: 'border-[#C7C4F2]', pastille: 'bg-[#4F46E5]' },
+};
 
 /**
  * MON CHEMIN EN COLONNES.
