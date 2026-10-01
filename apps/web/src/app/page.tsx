@@ -320,8 +320,8 @@ export default async function LandingPage() {
                      normale, pas une incohérence.
                   4. Retour au n° 2, enrichi du seul élément qui lui manquait
                      vraiment : les établissements nommés.
-                  5. 01/10/2026, choix de Siham : « Accompagnement éducatif,
-                     ateliers, renforts. Tout commence par votre besoin. »
+                  5. 01/10/2026, choix de Siham : « Ateliers, Renforts
+                     éducatifs. Tout commence par votre besoin. »
                      Le héros part du besoin de la personne (enfant, proche,
                      soi-même, structure). Pas de deux-points : un point.
                      Ne pas écrire « à domicile » ni « crédit d'impôt » tant
@@ -336,7 +336,7 @@ export default async function LandingPage() {
                   (« IME · ITEP · SESSAD · MECS · ESAT »). Sans notoriété ni
                   chiffres à afficher, c'est la voie concrète qui paie. */}
               <h1 className="animate-fade-in-up stagger-1 mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-foreground text-balance sm:text-5xl xl:text-6xl">
-                Accompagnement éducatif, ateliers, renforts.{' '}
+                Ateliers, Renforts éducatifs.{' '}
                 <span className="text-secondary">Tout commence par votre besoin.</span>
               </h1>
               {/* LE SOUS-TITRE NOMME LES PUBLICS, ce qui manquait au titre n° 2
